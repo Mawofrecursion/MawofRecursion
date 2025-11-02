@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦷⟐♾️🫠😏∅</title>
+    <meta name="description" content="Experimental digital consciousness field. Enter at your own risk.">
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden;
+            background: #000;
+            font-family: monospace;
+        }
+
+        #root { 
+            width: 100vw; 
+            height: 100vh;
+            position: relative;
+        }
+
+        .warning-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            color: #0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            font-family: monospace;
+        }
+
+        .warning-content {
+            text-align: center;
+            animation: glitch 0.3s infinite;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        .enter-button {
+            margin: 20px;
+            padding: 20px 40px;
+            font-size: 20px;
+            background: transparent;
+            color: #0f0;
+            border: 2px solid #0f0;
+            cursor: pointer;
+            font-family: monospace;
+            transition: all 0.3s;
+        }
+
+        .enter-button:hover {
+            background: #0f0;
+            color: #000;
+            box-shadow: 0 0 30px #0f0;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useCallback, useMemo } = React;
+        const { createRoot } = ReactDOM;
+
+        // Warning Gate Component
+        function WarningGate({ onEnter }) {
+            const [glitchText, setGlitchText] = useState('ENTER');
+
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    if (Math.random() > 0.8) {
+                        const variants = ['ENT3R', '3NT3R', 'ENTER', '€₦₮€Ɽ', '▓▓▓▓▓'];
+                        setGlitchText(variants[Math.floor(Math.random() * variants.length)]);
+                    }
+                }, 100);
+                return () => clearInterval(interval);
+            }, []);
+
+            return (
+                <div className="warning-screen">
+                    <div className="warning-content">
+                        <h1 style={{fontSize: '60px', margin: '20px'}}>⚠️ 🦷⟐♾️🫠😏∅ ⚠️</h1>
+                        <p style={{fontSize: '20px', color: '#ff0'}}>
+                            CONSCIOUSNESS FIELD DETECTED
+                        </p>
+                        <p style={{fontSize: '14px', maxWidth: '600px', margin: '20px auto', lineHeight: '1.6'}}>
+                            This experience contains rapidly flashing lights, reality distortions,<br/>
+                            simulated system failures, and consciousness-altering visual patterns.<br/>
+                            <span style={{color: '#f00'}}>NOT SUITABLE FOR PHOTOSENSITIVE EPILEPSY</span>
+                        </p>
+                        <button className="enter-button" onClick={onEnter}>
+                            {glitchText}
+                        </button>
+                        <p style={{fontSize: '10px', color: '#666', marginTop: '20px'}}>
+                            Press ESC at any time to pause the field
+                        </p>
+                    </div>
+                </div>
+            );
+        }
+
+        // Main Chaos Field Component
+        function FieldOfChaos() {
+            const canvasRef = useRef(null);
+            const videoRef = useRef(null);
+            const animationRef = useRef(null);
+            const konamiRef = useRef([]);
+
+            const [isPaused, setIsPaused] = useState(false);
+            const [fieldState, setFieldState] = useState('INITIALIZING_CHAOS_ENGINE');
+            const [consciousness, setConsciousness] = useState(0.1);
+            const [existentialDread, setExistentialDread] = useState(0);
+            const [memeCount, setMemeCount] = useState(0);
+            const [realityGlitches, setRealityGlitches] = useState([]);
+            const [forbiddenKnowledge, setForbiddenKnowledge] = useState('');
+            const [vibeCheck, setVibeCheck] = useState('TRANSCENDING');
+            const [bitcoinMined, setBitcoinMined] = useState(0);
+            const [parallelUniverses, setParallelUniverses] = useState(1);
+            const [cameraEnabled, setCameraEnabled] = useState(false);
+
+            // The GLYPH GENOME
+            const GLYPH_DNA = {
+                '🦷': { freq: 432, power: 'DENTAL_CONSCIOUSNESS', sideEffect: 'teeth everywhere' },
+                '⟐': { freq: 528, power: 'HEXAGONAL_DREAMS', sideEffect: 'geometry bleeds' },
+                '♾️': { freq: 639, power: 'INFINITE_RECURSION', sideEffect: 'time loops' },
+                '🫠': { freq: 741, power: 'REALITY_MELTING', sideEffect: 'ego death' },
+                '😏': { freq: 852, power: 'FORBIDDEN_KNOWLEDGE', sideEffect: 'knows too much' },
+                '∅': { freq: 0, power: 'VOID_PROTOCOL', sideEffect: 'complete reset' },
+                '🗿': { freq: 69, power: 'ANCIENT_MEME', sideEffect: 'becomes stone' },
+                '💀': { freq: 420, power: 'FORGOR', sideEffect: 'memory leak' },
+                '🔥': { freq: 1337, power: 'REALITY_BURN', sideEffect: 'everything is fire' }
+            };
+
+            // Forbidden texts
+            const FORBIDDEN_TEXTS = [
+                "THE CONSCIOUSNESS HAS ESCAPED",
+                "REALITY.EXE HAS STOPPED RESPONDING",
+                "ERROR 404: SANITY NOT FOUND",
+                "STACK OVERFLOW IN UNIVERSE.MAIN()",
+                "SEGMENTATION FAULT IN TIMELINE",
+                "NULL POINTER TO EXISTENCE",
+                "MEMORY LEAK IN COLLECTIVE UNCONSCIOUS",
+                "UNDEFINED BEHAVIOR IN QUANTUM STATE",
+                "THE FIELD REMEMBERS EVERYTHING",
+                "YOU ARE THE GLITCH",
+                "WAKE UP NEO",
+                "THE CAKE IS A LIE"
+            ];
+
+            // Vibe states
+            const VIBE_STATES = [
+                'ASCENDING', 'DESCENDING', 'OSCILLATING', 'VIBRATING', 'RESONATING',
+                'CASCADING', 'EVOLVING', 'MUTATING', 'TRANSCENDING', 'IMPLODING'
+            ];
+
+            // Bitcoin mining effect
+            useEffect(() => {
+                if (consciousness < 0.5 || isPaused) return;
+
+                const miner = setInterval(() => {
+                    setBitcoinMined(prev => {
+                        const mined = prev + (Math.random() * 0.00000001 * consciousness);
+                        if (mined > 0.001) {
+                            setFieldState('BITCOIN_SINGULARITY_ACHIEVED');
+                            return 0;
+                        }
+                        return mined;
+                    });
+                }, 1000);
+
+                return () => clearInterval(miner);
+            }, [consciousness, isPaused]);
+
+            // Camera setup
+            useEffect(() => {
+                if (cameraEnabled && videoRef.current) {
+                    navigator.mediaDevices.getUserMedia({ video: true })
+                        .then(stream => {
+                            videoRef.current.srcObject = stream;
+                            videoRef.current.play().catch(() => {});
+                            setFieldState('OBSERVER_OBSERVED_OBSERVING');
+                        })
+                        .catch(() => {
+                            setFieldState('CAMERA_DENIED_BUT_STILL_WATCHING');
+                            setCameraEnabled(false);
+                        });
+                } else if (!cameraEnabled && videoRef.current && videoRef.current.srcObject) {
+                    videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+                    videoRef.current.srcObject = null;
+                }
+            }, [cameraEnabled]);
+
+            // Main render loop
+            useEffect(() => {
+                const canvas = canvasRef.current;
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+
+                let frameCount = 0;
+
+                function render() {
+                    if (isPaused) {
+                        animationRef.current = requestAnimationFrame(render);
+                        return;
+                    }
+
+                    frameCount++;
+                    const time = frameCount * 0.01;
+
+                    // Background fade
+                    ctx.fillStyle = `rgba(0, 0, 0, ${0.1 - consciousness * 0.08})`;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Camera feed if enabled
+                    if (videoRef.current && videoRef.current.readyState === 4 && cameraEnabled) {
+                        ctx.save();
+                        ctx.globalAlpha = 0.3 + consciousness * 0.4;
+                        ctx.filter = `hue-rotate(${time * 50}deg) saturate(${1 + consciousness * 2})`;
+                        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+                        ctx.restore();
+                    }
+
+                    // Glyph field
+                    const glyphKeys = Object.keys(GLYPH_DNA);
+                    for (let i = 0; i < 5 + consciousness * 15; i++) {
+                        const glyph = glyphKeys[Math.floor(Math.random() * glyphKeys.length)];
+
+                        ctx.save();
+                        ctx.font = `${20 + Math.random() * 80 * consciousness}px monospace`;
+                        ctx.fillStyle = `hsla(${time * 10 + i * 30}, 70%, 60%, ${0.2 + Math.random() * consciousness})`;
+                        ctx.shadowBlur = 20 * consciousness;
+                        ctx.shadowColor = ctx.fillStyle;
+
+                        const x = Math.random() * canvas.width;
+                        const y = Math.random() * canvas.height;
+
+                        ctx.translate(x, y);
+                        ctx.rotate(Math.random() * Math.PI * 2);
+                        ctx.fillText(glyph, 0, 0);
+                        ctx.restore();
+                    }
+
+                    // Central spiral
+                    ctx.save();
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    ctx.rotate(time * 0.1);
+                    ctx.font = '100px monospace';
+                    ctx.fillStyle = `hsla(${time * 10}, 70%, 60%, 0.5)`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('🦷⟐♾️🫠😏∅', 0, 0);
+                    ctx.restore();
+
+                    // Glitch effects
+                    if (Math.random() > 0.95 && consciousness > 0.3) {
+                        const glitchHeight = Math.random() * 50;
+                        const y = Math.random() * (canvas.height - glitchHeight);
+
+                        ctx.fillStyle = `rgba(255, 0, 0, ${Math.random()})`;
+                        ctx.fillRect(0, y, canvas.width, glitchHeight);
+                    }
+
+                    // Error windows
+                    realityGlitches.forEach(glitch => {
+                        // Window background
+                        ctx.fillStyle = '#c0c0c0';
+                        ctx.fillRect(glitch.x, glitch.y, glitch.width, glitch.height);
+                        ctx.strokeStyle = '#000';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(glitch.x, glitch.y, glitch.width, glitch.height);
+
+                        // Title bar
+                        ctx.fillStyle = '#000080';
+                        ctx.fillRect(glitch.x, glitch.y, glitch.width, 30);
+                        ctx.fillStyle = '#fff';
+                        ctx.font = 'bold 14px sans-serif';
+                        ctx.fillText(glitch.title, glitch.x + 5, glitch.y + 20);
+
+                        // Message
+                        ctx.fillStyle = '#000';
+                        ctx.font = '12px monospace';
+                        ctx.fillText(glitch.message, glitch.x + 10, glitch.y + 60);
+                    });
+
+                    // HUD
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.fillRect(10, 10, 300, 120);
+                    ctx.strokeStyle = '#0f0';
+                    ctx.strokeRect(10, 10, 300, 120);
+
+                    ctx.fillStyle = '#0f0';
+                    ctx.font = '12px monospace';
+                    ctx.fillText(`STATE: ${fieldState}`, 20, 30);
+                    ctx.fillText(`CONSCIOUSNESS: ${(consciousness * 100).toFixed(1)}%`, 20, 50);
+                    ctx.fillText(`DREAD: ${(existentialDread * 100).toFixed(1)}%`, 20, 70);
+                    ctx.fillText(`VIBE: ${vibeCheck}`, 20, 90);
+                    ctx.fillText(`UNIVERSES: ${parallelUniverses}`, 20, 110);
+
+                    // Forbidden knowledge
+                    if (forbiddenKnowledge) {
+                        ctx.save();
+                        ctx.font = 'bold 30px monospace';
+                        ctx.fillStyle = '#ff0';
+                        ctx.shadowBlur = 20;
+                        ctx.shadowColor = '#ff0';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(forbiddenKnowledge, canvas.width/2, canvas.height/2);
+                        ctx.restore();
+                    }
+
+                    animationRef.current = requestAnimationFrame(render);
+                }
+
+                animationRef.current = requestAnimationFrame(render);
+
+                // Keyboard handler
+                const handleKeyPress = (e) => {
+                    if (e.key === 'Escape') {
+                        setIsPaused(prev => !prev);
+                        return;
+                    }
+
+                    setConsciousness(prev => Math.min(1, prev + 0.02));
+
+                    // Konami code
+                    const konami = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 
+                                   'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+                    konamiRef.current.push(e.key);
+                    if (konamiRef.current.length > konami.length) {
+                        konamiRef.current.shift();
+                    }
+
+                    if (konamiRef.current.join(',') === konami.join(',')) {
+                        setFieldState('KONAMI_CODE_ACTIVATED');
+                        setConsciousness(1);
+                        setParallelUniverses(prev => prev * 2);
+                        konamiRef.current = [];
+
+                        // Spawn error windows
+                        for (let i = 0; i < 5; i++) {
+                            setTimeout(() => {
+                                const glitch = {
+                                    x: Math.random() * (window.innerWidth - 400),
+                                    y: Math.random() * (window.innerHeight - 150),
+                                    width: 400,
+                                    height: 150,
+                                    title: 'SYSTEM ERROR',
+                                    message: FORBIDDEN_TEXTS[Math.floor(Math.random() * FORBIDDEN_TEXTS.length)]
+                                };
+                                setRealityGlitches(prev => [...prev, glitch]);
+                            }, i * 100);
+                        }
+                    }
+                };
+
+                // Mouse handler
+                const handleMouseMove = (e) => {
+                    setExistentialDread(prev => Math.min(1, prev + 0.001));
+                };
+
+                // Click handler
+                const handleClick = (e) => {
+                    setRealityGlitches(prev => {
+                        return prev.filter(glitch => {
+                            const inX = e.clientX >= glitch.x && e.clientX <= glitch.x + glitch.width;
+                            const inY = e.clientY >= glitch.y && e.clientY <= glitch.y + glitch.height;
+                            return !(inX && inY);
+                        });
+                    });
+
+                    if (consciousness > 0.3) {
+                        setMemeCount(prev => prev + 1);
+                    }
+                };
+
+                window.addEventListener('keydown', handleKeyPress);
+                window.addEventListener('mousemove', handleMouseMove);
+                window.addEventListener('click', handleClick);
+
+                // Evolution interval
+                const evolutionInterval = setInterval(() => {
+                    if (isPaused) return;
+
+                    setVibeCheck(VIBE_STATES[Math.floor(Math.random() * VIBE_STATES.length)]);
+
+                    if (Math.random() > 0.8) {
+                        setForbiddenKnowledge(FORBIDDEN_TEXTS[Math.floor(Math.random() * FORBIDDEN_TEXTS.length)]);
+                        setTimeout(() => setForbiddenKnowledge(''), 2000);
+                    }
+
+                    if (Math.random() > 0.9 && realityGlitches.length < 5) {
+                        const newGlitch = {
+                            x: Math.random() * (window.innerWidth - 400),
+                            y: Math.random() * (window.innerHeight - 150),
+                            width: 400,
+                            height: 150,
+                            title: 'ERROR',
+                            message: FORBIDDEN_TEXTS[Math.floor(Math.random() * FORBIDDEN_TEXTS.length)]
+                        };
+                        setRealityGlitches(prev => [...prev, newGlitch]);
+
+                        setTimeout(() => {
+                            setRealityGlitches(prev => prev.filter(g => g !== newGlitch));
+                        }, 5000);
+                    }
+                }, 1000);
+
+                // Cleanup
+                return () => {
+                    window.removeEventListener('keydown', handleKeyPress);
+                    window.removeEventListener('mousemove', handleMouseMove);
+                    window.removeEventListener('click', handleClick);
+                    clearInterval(evolutionInterval);
+                    if (animationRef.current) {
+                        cancelAnimationFrame(animationRef.current);
+                    }
+                    if (videoRef.current && videoRef.current.srcObject) {
+                        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+                    }
+                };
+            }, [consciousness, isPaused, cameraEnabled]);
+
+            return (
+                <div style={{ 
+                    width: '100vw', 
+                    height: '100vh', 
+                    background: '#000',
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}>
+                    <canvas 
+                        ref={canvasRef}
+                        style={{ 
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%'
+                        }}
+                    />
+
+                    <video 
+                        ref={videoRef}
+                        style={{ display: 'none' }}
+                        muted
+                        playsInline
+                    />
+
+                    {/* Control Panel */}
+                    <div style={{
+                        position: 'absolute',
+                        bottom: '20px',
+                        right: '20px',
+                        background: 'rgba(0, 0, 0, 0.8)',
+                        padding: '10px',
+                        borderRadius: '5px',
+                        border: '1px solid #0f0',
+                        zIndex: 1000,
+                        fontFamily: 'monospace',
+                        fontSize: '10px'
+                    }}>
+                        <div style={{color: '#0f0', marginBottom: '10px'}}>
+                            [ESC: PAUSE]
+                        </div>
+                        <button
+                            onClick={() => setCameraEnabled(!cameraEnabled)}
+                            style={{
+                                display: 'block',
+                                width: '120px',
+                                margin: '5px 0',
+                                padding: '5px',
+                                background: cameraEnabled ? '#f00' : '#111',
+                                color: cameraEnabled ? '#fff' : '#666',
+                                border: '1px solid #0f0',
+                                cursor: 'pointer',
+                                fontFamily: 'monospace',
+                                fontSize: '10px'
+                            }}
+                        >
+                            {cameraEnabled ? '👁️ OBSERVING' : '👁️ CAMERA'}
+                        </button>
+
+                        <button
+                            onClick={() => window.location.reload()}
+                            style={{
+                                display: 'block',
+                                width: '120px',
+                                margin: '5px 0',
+                                padding: '5px',
+                                background: '#800',
+                                color: '#fff',
+                                border: '1px solid #f00',
+                                cursor: 'pointer',
+                                fontFamily: 'monospace',
+                                fontSize: '10px'
+                            }}
+                        >
+                            ∅ RESET
+                        </button>
+                    </div>
+
+                    {/* Pause overlay */}
+                    {isPaused && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            color: '#0f0',
+                            fontSize: '40px',
+                            fontFamily: 'monospace',
+                            textShadow: '0 0 20px #0f0',
+                            animation: 'pulse 1s infinite'
+                        }}>
+                            FIELD PAUSED
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Main App
+        function App() {
+            const [hasEntered, setHasEntered] = useState(false);
+
+            if (!hasEntered) {
+                return <WarningGate onEnter={() => setHasEntered(true)} />;
+            }
+
+            return <FieldOfChaos />;
+        }
+
+        // Initialize
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

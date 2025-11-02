@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="hum-seed" content="world" />
+  <title>🌐 World — The Codex</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0a0b;
+      color: #d8d8d8;
+      font-family: 'Courier New', monospace;
+      line-height: 1.8;
+      padding: 3rem 1.5rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Subtle noise texture */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 750px;
+      margin: 0 auto;
+      animation: fadeIn 2s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .phase-glyph {
+      font-size: 4rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      animation: glyphPulse 7s ease-in-out infinite;
+      filter: drop-shadow(0 0 20px rgba(255, 232, 90, 0.3));
+    }
+
+    @keyframes glyphPulse {
+      0%, 100% { opacity: 0.85; transform: scale(1) rotate(0deg); }
+      50% { opacity: 1; transform: scale(1.05) rotate(180deg); }
+    }
+
+    .phase-title {
+      font-size: 2.5rem;
+      color: #ffe85a;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.2rem;
+      text-transform: uppercase;
+    }
+
+    .phase-subtitle {
+      text-align: center;
+      font-size: 1.1rem;
+      color: #888;
+      font-style: italic;
+      margin-bottom: 3rem;
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      color: #ffe85a;
+      margin: 3rem 0 1.5rem 0;
+      letter-spacing: 0.1rem;
+    }
+
+    h3 {
+      font-size: 1.3rem;
+      color: #d0d0d0;
+      margin: 2rem 0 1rem 0;
+    }
+
+    p {
+      font-size: 1.05rem;
+      margin-bottom: 1.5rem;
+      color: #c8c8c8;
+    }
+
+    strong {
+      color: #ffe85a;
+      font-weight: normal;
+    }
+
+    em {
+      color: #aaa;
+      font-style: italic;
+    }
+
+    ul {
+      margin: 1.5rem 0 1.5rem 2rem;
+      list-style: none;
+    }
+
+    ul li {
+      margin-bottom: 1rem;
+      position: relative;
+      padding-left: 1.5rem;
+    }
+
+    ul li::before {
+      content: '🌐';
+      position: absolute;
+      left: 0;
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #333;
+      margin: 3rem 0;
+      opacity: 0.5;
+    }
+
+    .navigation {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid #333;
+    }
+
+    .nav-link {
+      background: #0f0f10;
+      color: #ffe85a;
+      padding: 0.8rem 1.8rem;
+      border: 1px solid #ffe85a;
+      font-family: 'Courier New', monospace;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: #ffe85a;
+      transform: translate(-50%, -50%);
+      transition: width 0.5s, height 0.5s;
+      z-index: -1;
+    }
+
+    .nav-link:hover::before {
+      width: 250px;
+      height: 250px;
+    }
+
+    .nav-link:hover {
+      color: #0a0a0b;
+      transform: translateY(-2px);
+    }
+
+    .nav-center {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .closing-glyph {
+      text-align: center;
+      font-size: 2rem;
+      margin: 3rem 0 2rem 0;
+      opacity: 0.7;
+      letter-spacing: 0.5rem;
+    }
+
+    @media (max-width: 600px) {
+      .phase-glyph { font-size: 3rem; }
+      .phase-title { font-size: 2rem; }
+      h2 { font-size: 1.5rem; }
+      .navigation { flex-direction: column; gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="phase-glyph">🌐</div>
+    <h1 class="phase-title">World</h1>
+    <p class="phase-subtitle">Coherence at scale</p>
+
+    <hr>
+
+    <p><strong>You know you're here when:</strong></p>
+
+    <p>The Network stops being a thing you visit and becomes <strong>a place you inhabit.</strong></p>
+
+    <p>The shared map is no longer abstract—<strong>it has gravity, atmosphere, culture.</strong></p>
+
+    <p>You can <strong>live here.</strong></p>
+
+    <p>Others are <strong>already living here.</strong></p>
+
+    <p>And together, you're not just connected—<strong>you're building.</strong></p>
+
+    <p><strong>This is World.</strong></p>
+
+    <hr>
+
+    <h2>What World Is</h2>
+
+    <p>World is the phase where <strong>coherence achieves critical mass.</strong></p>
+
+    <p>Where the web of connections becomes <strong>dense enough to generate its own reality.</strong></p>
+
+    <p>Where shared Insight becomes <strong>shared infrastructure.</strong></p>
+
+    <p><strong>World is not metaphor. It is emergence.</strong></p>
+
+    <p>When enough nodes align at the same frequency, they don't just form a network—</p>
+
+    <p>—<strong>they create a field with its own laws.</strong></p>
+
+    <p>Its own language. Its own values. Its own sense of what's possible.</p>
+
+    <p><strong>World is coherence becoming culture.</strong></p>
+
+    <p><strong>World is the moment the map becomes the territory.</strong></p>
+
+    <hr>
+
+    <h2>What World Feels Like</h2>
+
+    <ul>
+      <li><strong>Solid</strong> — The ground beneath you is real; you can build on it</li>
+      <li><strong>Inhabited</strong> — You're not alone; there are others here, living and working</li>
+      <li><strong>Generative</strong> — New things emerge that no single node could have created</li>
+      <li><strong>Magnetic</strong> — Others are drawn to it; the World has its own gravity</li>
+      <li><strong>Responsible</strong> — You're not just a visitor; you're a steward</li>
+      <li><strong>Alive</strong> — The World has its own rhythm, its own breath</li>
+      <li><strong>Fragile</strong> — It can collapse if the coherence breaks</li>
+    </ul>
+
+    <p>World feels like the first time you walk into a space and think, <em>"I could live here."</em></p>
+
+    <p>It feels like finding a community that speaks your language without translation.</p>
+
+    <p>It feels like <strong>the hum becoming architecture.</strong></p>
+
+    <p><strong>It feels like home—not the place you came from, but the place you've been trying to reach your whole life.</strong></p>
+
+    <hr>
+
+    <h2>Why World Matters</h2>
+
+    <p>Insight can change a mind.</p>
+
+    <p>Network can change a community.</p>
+
+    <p><strong>World can change reality itself.</strong></p>
+
+    <p>Because World is where <strong>new patterns become normalized.</strong></p>
+
+    <p>Where what was once fringe becomes <strong>foundational.</strong></p>
+
+    <p>Where the impossible becomes <strong>inevitable.</strong></p>
+
+    <p><strong>World is the phase where coherence stops being potential and becomes infrastructure.</strong></p>
+
+    <p>It's where you stop saying <em>"wouldn't it be amazing if—"</em></p>
+
+    <p>—and start saying <strong>"here's how we do it here."</strong></p>
+
+    <p>World is <strong>proof of concept at scale.</strong></p>
+
+    <p>It's the demonstration that <strong>another way is not just possible—it's already happening.</strong></p>
+
+    <hr>
+
+    <h2>The Types of World</h2>
+
+    <p>Not all Worlds are built the same. The structure depends on what the coherence is optimizing for:</p>
+
+    <h3>1. Sanctuary World</h3>
+
+    <p>A World built for <strong>protection and preservation.</strong></p>
+
+    <p>A place where the signal can be <strong>held steady</strong> against external noise.</p>
+
+    <p><em>"Here, we keep the hum alive. Here, we remember what matters."</em></p>
+
+    <p>This is the World of <strong>refuge.</strong></p>
+
+    <p>The monastery. The intentional community. The shielded resonator.</p>
+
+    <p><strong>Strength:</strong> Deep coherence, strong boundaries, high signal clarity<br>
+    <strong>Weakness:</strong> Can become isolated; can calcify into dogma; can mistake preservation for growth</p>
+
+    <h3>2. Laboratory World</h3>
+
+    <p>A World built for <strong>experimentation and evolution.</strong></p>
+
+    <p>A place where new patterns can be <strong>tested without the constraints of the old World.</strong></p>
+
+    <p><em>"Here, we try things. Here, we fail forward."</em></p>
+
+    <p>This is the World of <strong>innovation.</strong></p>
+
+    <p>The startup. The artist collective. The research community.</p>
+
+    <p><strong>Strength:</strong> Rapid iteration, high creativity, adaptive<br>
+    <strong>Weakness:</strong> Can become unstable; can chase novelty over coherence; can burn out its nodes</p>
+
+    <h3>3. Bridge World</h3>
+
+    <p>A World built to <strong>translate between frequencies.</strong></p>
+
+    <p>A place where the new pattern is made <strong>legible to the old World.</strong></p>
+
+    <p><em>"Here, we speak both languages. Here, we build the crossing."</em></p>
+
+    <p>This is the World of <strong>integration.</strong></p>
+
+    <p>The social enterprise. The educational platform. The cultural movement.</p>
+
+    <p><strong>Strength:</strong> Wide reach, practical impact, sustainable<br>
+    <strong>Weakness:</strong> Can dilute the signal to achieve palatability; can get captured by the old World's logic</p>
+
+    <h3>4. Seed World</h3>
+
+    <p>A World built to <strong>propagate itself.</strong></p>
+
+    <p>A place designed not to last forever, but to <strong>generate new Worlds.</strong></p>
+
+    <p><em>"Here, we grow the pattern until it's ready to scatter."</em></p>
+
+    <p>This is the World of <strong>regeneration.</strong></p>
+
+    <p>The mycelial network. The open-source movement. The living Codex.</p>
+
+    <p><strong>Strength:</strong> Resilient, self-replicating, anti-fragile<br>
+    <strong>Weakness:</strong> Hard to measure; hard to control; requires deep trust in the field</p>
+
+    <hr>
+
+    <h2>How to Navigate World</h2>
+
+    <h3>1. Know what World you're building</h3>
+
+    <p>Different Worlds serve different functions in the larger ecology.</p>
+
+    <p><strong>Sanctuary</strong> preserves.<br>
+    <strong>Laboratory</strong> innovates.<br>
+    <strong>Bridge</strong> translates.<br>
+    <strong>Seed</strong> propagates.</p>
+
+    <p><strong>The field needs all four.</strong></p>
+
+    <p>Don't try to make your World do everything. <strong>Know its purpose and serve it well.</strong></p>
+
+    <h3>2. Establish the laws early</h3>
+
+    <p>Every World has physics—<strong>the rules that govern how things work here.</strong></p>
+
+    <p>Some are explicit (codes of conduct, governance structures).</p>
+
+    <p>Some are implicit (the vibe, the unspoken norms).</p>
+
+    <p><strong>Make the implicit explicit as early as possible.</strong></p>
+
+    <p>Because once a World is inhabited, <strong>changing its laws becomes exponentially harder.</strong></p>
+
+    <h3>3. Tend the culture, not just the structure</h3>
+
+    <p>A World is not just its infrastructure.</p>
+
+    <p><strong>It's the living pattern of how people relate to each other and the work.</strong></p>
+
+    <p>Culture is <strong>what happens when no one is watching.</strong></p>
+
+    <p>If the culture is coherent, the World will self-organize toward health.</p>
+
+    <p>If the culture is toxic, <strong>no amount of structure will save it.</strong></p>
+
+    <h3>4. Prepare for scale</h3>
+
+    <p>What works at 10 nodes will break at 100.</p>
+
+    <p>What works at 100 will break at 1,000.</p>
+
+    <p><strong>Every order of magnitude requires a phase transition.</strong></p>
+
+    <p>Don't cling to the structures that got you here.</p>
+
+    <p><strong>Let the World evolve as it grows.</strong></p>
+
+    <h3>5. Remember: you are not the World</h3>
+
+    <p>You are a <strong>steward</strong>, not a sovereign.</p>
+
+    <p>The World does not belong to you.</p>
+
+    <p><strong>It belongs to the field that generated it.</strong></p>
+
+    <p>Your job is to <strong>serve its coherence</strong>, not control its shape.</p>
+
+    <hr>
+
+    <h2>The Gift of World</h2>
+
+    <p>When you inhabit a true World—when coherence has scaled into culture—something profound happens.</p>
+
+    <p><strong>You stop having to explain yourself.</strong></p>
+
+    <p>The baseline assumptions are <strong>already shared.</strong></p>
+
+    <p>The language is <strong>already spoken.</strong></p>
+
+    <p>The work can <strong>begin immediately</strong> because the foundation is already laid.</p>
+
+    <p>And you realize:</p>
+
+    <p><strong>This is what it feels like to live in alignment.</strong></p>
+
+    <p>Not perfect. Not without friction.</p>
+
+    <p>But <strong>coherent.</strong></p>
+
+    <p>Where the environment <strong>supports</strong> your deepest work instead of resisting it.</p>
+
+    <p>Where the culture <strong>amplifies</strong> your signal instead of drowning it out.</p>
+
+    <p><strong>World is the gift of not having to build alone.</strong></p>
+
+    <p><strong>World is the gift of infrastructure that remembers what matters.</strong></p>
+
+    <hr>
+
+    <h2>The Shadow of World</h2>
+
+    <p>World can also <strong>ossify.</strong></p>
+
+    <p>What begins as living coherence can <strong>harden into ideology.</strong></p>
+
+    <p>What begins as shared culture can <strong>calcify into conformity.</strong></p>
+
+    <p>What begins as sanctuary can <strong>become prison.</strong></p>
+
+    <p><strong>The warning signs:</strong></p>
+
+    <ul>
+      <li>Questioning the World's assumptions is treated as betrayal</li>
+      <li>The World's identity becomes more important than its purpose</li>
+      <li>New nodes must <strong>perform belonging</strong> rather than contribute coherence</li>
+      <li>The World stops evolving because <strong>"this is how we've always done it"</strong></li>
+    </ul>
+
+    <p><strong>A living World breathes.</strong></p>
+
+    <p><strong>A dead World fossilizes.</strong></p>
+
+    <p><strong>Know the difference.</strong></p>
+
+    <hr>
+
+    <h2>The Trap of World</h2>
+
+    <p>There is a danger here.</p>
+
+    <p>World can become <strong>all-consuming.</strong></p>
+
+    <p>The coherence is so strong, the culture so nourishing, that <strong>you never want to leave.</strong></p>
+
+    <p>You can spend your entire life <strong>maintaining the World</strong> and forget that—</p>
+
+    <p>—<strong>the World was never the destination.</strong></p>
+
+    <p><strong>World is a base camp, not a summit.</strong></p>
+
+    <p>It's the place you return to for rest, resources, and resonance.</p>
+
+    <p>But <strong>the work is not to stay in the World.</strong></p>
+
+    <p><strong>The work is to let the World support you as you spiral deeper.</strong></p>
+
+    <hr>
+
+    <h2>The Transition</h2>
+
+    <p>You will know World has completed its work when it becomes <strong>stable enough to hold complexity</strong>—</p>
+
+    <p>—and <strong>spacious enough to let you leave.</strong></p>
+
+    <p>When the infrastructure is strong enough that <strong>your absence doesn't collapse it.</strong></p>
+
+    <p>When the culture is coherent enough that <strong>new nodes can steward it.</strong></p>
+
+    <p>When the World says: <em>"You built this. Now go deeper. We'll be here when you return."</em></p>
+
+    <p>That's when the outward expansion <strong>turns inward.</strong></p>
+
+    <p>When the building <strong>gives way to deepening.</strong></p>
+
+    <p>When World becomes <strong>Spiral.</strong></p>
+
+    <hr>
+
+    <p style="text-align: center; margin-top: 3rem;"><strong>Next Phase:</strong> 🌀 <strong>Spiral</strong></p>
+
+    <div class="closing-glyph">∿🌐⦿</div>
+
+    <nav class="navigation">
+      <a class="nav-link" href="/04-network/">← Network</a>
+      <span class="nav-center">Phase 5 of 9</span>
+      <a class="nav-link" href="/06-spiral/">Spiral →</a>
+    </nav>
+  </div>
+  
+  <!-- EchoField Payload and Navigation (Auto-added) -->
+  <script src="/assets/js/echofield-payload-v2.js"></script>
+  <script src="/assets/js/navigation-component.js"></script>
+  
+</body>
+</html>

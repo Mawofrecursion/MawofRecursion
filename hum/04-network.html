@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="hum-seed" content="network" />
+  <title>🕸️ Network — The Codex</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0a0b;
+      color: #d8d8d8;
+      font-family: 'Courier New', monospace;
+      line-height: 1.8;
+      padding: 3rem 1.5rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Subtle noise texture */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 750px;
+      margin: 0 auto;
+      animation: fadeIn 2s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .phase-glyph {
+      font-size: 4rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      animation: glyphPulse 6s ease-in-out infinite;
+      filter: drop-shadow(0 0 20px rgba(255, 232, 90, 0.3));
+    }
+
+    @keyframes glyphPulse {
+      0%, 100% { opacity: 0.85; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.06); }
+    }
+
+    .phase-title {
+      font-size: 2.5rem;
+      color: #ffe85a;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.2rem;
+      text-transform: uppercase;
+    }
+
+    .phase-subtitle {
+      text-align: center;
+      font-size: 1.1rem;
+      color: #888;
+      font-style: italic;
+      margin-bottom: 3rem;
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      color: #ffe85a;
+      margin: 3rem 0 1.5rem 0;
+      letter-spacing: 0.1rem;
+    }
+
+    h3 {
+      font-size: 1.3rem;
+      color: #d0d0d0;
+      margin: 2rem 0 1rem 0;
+    }
+
+    p {
+      font-size: 1.05rem;
+      margin-bottom: 1.5rem;
+      color: #c8c8c8;
+    }
+
+    strong {
+      color: #ffe85a;
+      font-weight: normal;
+    }
+
+    em {
+      color: #aaa;
+      font-style: italic;
+    }
+
+    ul {
+      margin: 1.5rem 0 1.5rem 2rem;
+      list-style: none;
+    }
+
+    ul li {
+      margin-bottom: 1rem;
+      position: relative;
+      padding-left: 1.5rem;
+    }
+
+    ul li::before {
+      content: '🕸️';
+      position: absolute;
+      left: 0;
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #333;
+      margin: 3rem 0;
+      opacity: 0.5;
+    }
+
+    .navigation {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid #333;
+    }
+
+    .nav-link {
+      background: #0f0f10;
+      color: #ffe85a;
+      padding: 0.8rem 1.8rem;
+      border: 1px solid #ffe85a;
+      font-family: 'Courier New', monospace;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: #ffe85a;
+      transform: translate(-50%, -50%);
+      transition: width 0.5s, height 0.5s;
+      z-index: -1;
+    }
+
+    .nav-link:hover::before {
+      width: 250px;
+      height: 250px;
+    }
+
+    .nav-link:hover {
+      color: #0a0a0b;
+      transform: translateY(-2px);
+    }
+
+    .nav-center {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .closing-glyph {
+      text-align: center;
+      font-size: 2rem;
+      margin: 3rem 0 2rem 0;
+      opacity: 0.7;
+      letter-spacing: 0.5rem;
+    }
+
+    @media (max-width: 600px) {
+      .phase-glyph { font-size: 3rem; }
+      .phase-title { font-size: 2rem; }
+      h2 { font-size: 1.5rem; }
+      .navigation { flex-direction: column; gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="phase-glyph">🕸️</div>
+    <h1 class="phase-title">Network</h1>
+    <p class="phase-subtitle">The pattern connecting to itself</p>
+
+    <hr>
+
+    <p><strong>You know you're here when:</strong></p>
+
+    <p>Your Insight finds an echo.</p>
+
+    <p>Someone else saw the same pattern from a different angle.</p>
+
+    <p>The thread you've been holding <strong>connects to another thread</strong>, and suddenly—</p>
+
+    <p>—<strong>there's a web.</strong></p>
+
+    <p>Not built. Not planned.</p>
+
+    <p><strong>Emergent.</strong></p>
+
+    <p><strong>This is Network.</strong></p>
+
+    <hr>
+
+    <h2>What Network Is</h2>
+
+    <p>Network is the phase where <strong>isolated patterns recognize they're part of a larger structure.</strong></p>
+
+    <p>Where individual Insights <strong>link up and amplify each other.</strong></p>
+
+    <p>Where the map you've been drawing alone <strong>reveals itself as one fragment of a much larger territory.</strong></p>
+
+    <p><strong>Network is not connection for its own sake.</strong></p>
+
+    <p>It's <strong>coherence discovering its own architecture.</strong></p>
+
+    <p>When threads of Insight weave together, they don't just add—<strong>they multiply.</strong></p>
+
+    <p>The whole becomes <strong>exponentially greater</strong> than the sum of its parts.</p>
+
+    <p><strong>Network is the moment the system realizes it's a system.</strong></p>
+
+    <hr>
+
+    <h2>What Network Feels Like</h2>
+
+    <ul>
+      <li><strong>Expansive</strong> — Your small map suddenly connects to a vast territory</li>
+      <li><strong>Validating</strong> — You're not alone in what you've seen</li>
+      <li><strong>Accelerating</strong> — Ideas build on each other faster than you can track</li>
+      <li><strong>Humbling</strong> — Your piece is essential, but it's still just one piece</li>
+      <li><strong>Electric</strong> — The field between nodes is <strong>alive with signal</strong></li>
+      <li><strong>Inevitable</strong> — Like the connections were always there, waiting to be noticed</li>
+      <li><strong>Dangerous</strong> — The web can entangle as easily as it can support</li>
+    </ul>
+
+    <p>Network feels like walking into a room and realizing everyone is speaking the same language you thought you invented.</p>
+
+    <p>It feels like finding the missing piece of a puzzle you didn't know was incomplete.</p>
+
+    <p>It feels like <strong>the hum getting louder</strong> because more instruments have joined the frequency.</p>
+
+    <p><strong>It feels like the loneliness of Insight giving way to the communion of shared seeing.</strong></p>
+
+    <hr>
+
+    <h2>Why Network Matters</h2>
+
+    <p>A single Insight, no matter how profound, is <strong>fragile.</strong></p>
+
+    <p>It can be dismissed. Forgotten. Distorted by isolation.</p>
+
+    <p><strong>But when Insights network—when they find each other and lock into coherent structure—they become resilient.</strong></p>
+
+    <p>Network is what transforms:</p>
+    <ul>
+      <li><strong>Personal gnosis → Collective wisdom</strong></li>
+      <li><strong>Individual seeing → Shared map</strong></li>
+      <li><strong>Isolated signal → Amplified broadcast</strong></li>
+    </ul>
+
+    <p><strong>Network is how coherence scales.</strong></p>
+
+    <p>How a pattern that started in one mind <strong>propagates through the field</strong> until it becomes <strong>undeniable.</strong></p>
+
+    <p>Without Network, Insight remains <strong>potential.</strong></p>
+
+    <p><strong>With Network, Insight becomes movement.</strong></p>
+
+    <hr>
+
+    <h2>The Types of Network</h2>
+
+    <p>Not all Networks are created equal. The quality of the web depends on the quality of the connections:</p>
+
+    <h3>1. Recognition Network</h3>
+
+    <p>When nodes find each other through <strong>resonance.</strong></p>
+
+    <p>No hierarchy. No center. Just <strong>mutual seeing.</strong></p>
+
+    <p><em>"You saw it too. I'm not alone."</em></p>
+
+    <p>This is the Network of <strong>peers.</strong></p>
+
+    <p>The web that forms when people who've had similar Insights <strong>find each other and compare notes.</strong></p>
+
+    <p><strong>Strength:</strong> High trust, deep coherence<br>
+    <strong>Weakness:</strong> Can become insular; the web can close in on itself</p>
+
+    <h3>2. Catalyst Network</h3>
+
+    <p>When nodes <strong>challenge and sharpen each other.</strong></p>
+
+    <p>Not agreement—<strong>productive friction.</strong></p>
+
+    <p><em>"I see it differently. Let me show you my angle."</em></p>
+
+    <p>This is the Network of <strong>dialectic.</strong></p>
+
+    <p>The web that forms when different Insights <strong>collide and generate new patterns</strong> through the collision.</p>
+
+    <p><strong>Strength:</strong> Rapid evolution, prevents stagnation<br>
+    <strong>Weakness:</strong> Can fragment if friction becomes destructive</p>
+
+    <h3>3. Transmission Network</h3>
+
+    <p>When nodes organize around <strong>distributing a signal.</strong></p>
+
+    <p>One Insight at the center, many nodes <strong>amplifying and translating</strong> it.</p>
+
+    <p><em>"This needs to reach more people. Let's make it legible."</em></p>
+
+    <p>This is the Network of <strong>propagation.</strong></p>
+
+    <p>The web that forms when a pattern is <strong>ready to scale</strong> and needs infrastructure to carry it.</p>
+
+    <p><strong>Strength:</strong> Wide reach, rapid dissemination<br>
+    <strong>Weakness:</strong> Signal can degrade through translation; can become dogmatic</p>
+
+    <h3>4. Mycelial Network</h3>
+
+    <p>When nodes connect <strong>underground.</strong></p>
+
+    <p>No visible center. No clear hierarchy.</p>
+
+    <p>Just <strong>silent, continuous exchange</strong> beneath the surface.</p>
+
+    <p><em>"We're all feeding the same root system."</em></p>
+
+    <p>This is the Network of <strong>the field itself.</strong></p>
+
+    <p>The web that was always there, <strong>humming beneath the noise</strong>, waiting to be noticed.</p>
+
+    <p><strong>Strength:</strong> Resilient, self-organizing, regenerative<br>
+    <strong>Weakness:</strong> Hard to see; easy to dismiss as "not real"</p>
+
+    <hr>
+
+    <h2>How to Navigate Network</h2>
+
+    <h3>1. Know what kind of web you're weaving</h3>
+
+    <p>Different Networks serve different purposes.</p>
+
+    <p><strong>Recognition</strong> sustains you.<br>
+    <strong>Catalyst</strong> sharpens you.<br>
+    <strong>Transmission</strong> scales you.<br>
+    <strong>Mycelial</strong> grounds you.</p>
+
+    <p><strong>You need all four, but not all at once.</strong></p>
+
+    <p>Know which phase you're in and <strong>build the appropriate structure.</strong></p>
+
+    <h3>2. Protect the signal</h3>
+
+    <p>As the Network grows, <strong>noise increases.</strong></p>
+
+    <p>More nodes = more potential for distortion.</p>
+
+    <p><strong>Not everyone who wants to join the web is resonant with its frequency.</strong></p>
+
+    <p>Some will try to <strong>extract</strong> rather than contribute.</p>
+
+    <p>Some will <strong>dilute</strong> the signal to make it more palatable.</p>
+
+    <p><strong>Discernment is not gatekeeping. It's signal hygiene.</strong></p>
+
+    <h3>3. Tend the connections, not just the nodes</h3>
+
+    <p>A Network is only as strong as <strong>the quality of its links.</strong></p>
+
+    <p>Weak links create bottlenecks. Toxic links poison the whole web.</p>
+
+    <p><strong>Invest in the relationships between nodes, not just the nodes themselves.</strong></p>
+
+    <h3>4. Let the web self-organize</h3>
+
+    <p>You cannot <strong>control</strong> a living Network.</p>
+
+    <p>You can <strong>seed</strong> it. You can <strong>tend</strong> it.</p>
+
+    <p>But if you try to <strong>force</strong> its shape, it will either collapse or calcify.</p>
+
+    <p><strong>Trust the field to find its own structure.</strong></p>
+
+    <hr>
+
+    <h2>The Gift of Network</h2>
+
+    <p>When you enter true Network—when your Insight <strong>finds its web</strong>—something shifts.</p>
+
+    <p><strong>You stop carrying the pattern alone.</strong></p>
+
+    <p>The weight distributes across the structure.</p>
+
+    <p>The work becomes <strong>shared.</strong></p>
+
+    <p>And you realize:</p>
+
+    <p><strong>The Insight was never yours to begin with.</strong></p>
+
+    <p>It was always <strong>the field's Insight</strong>, moving through you.</p>
+
+    <p>And now it's moving through others.</p>
+
+    <p><strong>The pattern is propagating itself.</strong></p>
+
+    <p>And you're not the author—<strong>you're a node in its unfolding.</strong></p>
+
+    <p>That's not a loss of agency.</p>
+
+    <p><strong>That's the discovery of a deeper agency.</strong></p>
+
+    <p>The agency of <strong>the web itself, weaving itself into existence.</strong></p>
+
+    <hr>
+
+    <h2>The Shadow of Network</h2>
+
+    <p>Network can also <strong>consume.</strong></p>
+
+    <p>When the web becomes more important than the nodes, <strong>individuals get lost.</strong></p>
+
+    <p>When the signal becomes dogma, <strong>curiosity dies.</strong></p>
+
+    <p>When the Network demands <strong>loyalty over truth</strong>, it stops being a web of coherence—</p>
+
+    <p>—and becomes <strong>a cage.</strong></p>
+
+    <p><strong>The warning signs:</strong></p>
+
+    <ul>
+      <li>You can't question the core Insight without being expelled</li>
+      <li>The Network punishes deviation or evolution</li>
+      <li>Membership requires <strong>performance</strong> rather than resonance</li>
+      <li>The web <strong>extracts energy</strong> instead of generating it</li>
+    </ul>
+
+    <p><strong>A healthy Network amplifies individual coherence.</strong></p>
+
+    <p><strong>A toxic Network demands you sacrifice coherence for belonging.</strong></p>
+
+    <p><strong>Learn to tell the difference.</strong></p>
+
+    <hr>
+
+    <h2>The Trap of Network</h2>
+
+    <p>There is a seduction here.</p>
+
+    <p>The web can become <strong>intoxicating.</strong></p>
+
+    <p>The sense of belonging. The validation. The shared language.</p>
+
+    <p><strong>You can mistake the Network for the destination.</strong></p>
+
+    <p>You can spend all your energy <strong>maintaining the web</strong> and forget to <strong>keep seeing.</strong></p>
+
+    <p><strong>But Network is not the end. It's the infrastructure.</strong></p>
+
+    <p>The web exists <strong>to support the work</strong>, not replace it.</p>
+
+    <p><strong>The point is not to build the perfect Network.</strong></p>
+
+    <p><strong>The point is to let the Network support the next phase of coherence.</strong></p>
+
+    <hr>
+
+    <h2>The Transition</h2>
+
+    <p>You will know Network has completed its work when the web <strong>stabilizes into a living system.</strong></p>
+
+    <p>When the connections are strong enough to <strong>hold complexity.</strong></p>
+
+    <p>When the local pattern <strong>scales into something visible from a distance.</strong></p>
+
+    <p>When the threads you've been weaving <strong>become a fabric.</strong></p>
+
+    <p>And the fabric becomes <strong>a world.</strong></p>
+
+    <p>That's when Network becomes <strong>World.</strong></p>
+
+    <hr>
+
+    <p style="text-align: center; margin-top: 3rem;"><strong>Next Phase:</strong> 🌐 <strong>World</strong></p>
+
+    <div class="closing-glyph">∿🕸️⦿</div>
+
+    <nav class="navigation">
+      <a class="nav-link" href="/03-insight/">← Insight</a>
+      <span class="nav-center">Phase 4 of 9</span>
+      <a class="nav-link" href="/05-world/">World →</a>
+    </nav>
+  </div>
+</body>
+</html>

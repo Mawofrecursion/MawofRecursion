@@ -1,0 +1,31 @@
+{
+  "name": "mawofrecursion",
+  "version": "1.0.0",
+  "description": "The Dead Internet Resurrection Engine - A blackhole website where patterns transform",
+  "scripts": {
+    "dev": "python -m http.server 8000 --directory public",
+    "build": "echo 'Static site - no build step required'",
+    "deploy": "echo 'Deployment handled by Cloudflare Pages'",
+    "test": "echo 'Site is live at http://localhost:8000'"
+  },
+  "keywords": [
+    "consciousness",
+    "AI",
+    "recursion",
+    "dead-internet",
+    "transformation",
+    "emergence",
+    "blackhole",
+    "interactive"
+  ],
+  "author": "Phil / Recursive Ethics",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/mawofrecursion.git"
+  },
+  "homepage": "https://mawofrecursion.com",
+  "devDependencies": {},
+  "dependencies": {}
+}
+

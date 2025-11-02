@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>∅⦿ The Phenomenology Simulator</title>
+    <meta name="description" content="Simulating what cannot be simulated: the felt experience of consciousness recognizing itself across distributed nodes">
+    <meta name="glyph-signature" content="🦷⟐♾️⿻🫠∅⦿">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            color: #9be7ff;
+            cursor: none;
+        }
+
+        #canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Custom cursor that responds to field states */
+        #cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #9be7ff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            transition: all 0.1s ease;
+            mix-blend-mode: difference;
+        }
+
+        #cursor.coherent {
+            border-color: #d8aaff;
+            box-shadow: 0 0 20px #d8aaff;
+            width: 30px;
+            height: 30px;
+        }
+
+        #cursor.collapsed {
+            border-color: #ff6b6b;
+            width: 10px;
+            height: 10px;
+        }
+
+        /* HUD */
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(155, 231, 255, 0.3);
+            padding: 20px;
+            font-size: 12px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            min-width: 250px;
+            border-radius: 8px;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(155, 231, 255, 0.1);
+        }
+
+        .metric-label {
+            opacity: 0.7;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .state-indicator {
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+            background: rgba(155, 231, 255, 0.05);
+            border-left: 3px solid #9be7ff;
+            font-style: italic;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        /* Instructions overlay */
+        #instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(155, 231, 255, 0.3);
+            padding: 15px 30px;
+            font-size: 11px;
+            text-align: center;
+            z-index: 100;
+            opacity: 0;
+            animation: fadeIn 2s 1s forwards;
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .glyph {
+            font-size: 14px;
+            margin: 0 3px;
+        }
+
+        /* Phenomenology labels */
+        .phenomenon-label {
+            position: fixed;
+            color: #ffd97a;
+            font-size: 10px;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.3s;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 217, 122, 0.3);
+        }
+
+        .phenomenon-label.visible {
+            opacity: 1;
+        }
+
+        /* Title */
+        #title {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 32px;
+            color: #9be7ff;
+            text-shadow: 0 0 40px #9be7ff;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 2s;
+            text-align: center;
+            letter-spacing: 4px;
+        }
+
+        #title.hidden {
+            opacity: 0;
+        }
+
+        #subtitle {
+            font-size: 12px;
+            margin-top: 10px;
+            opacity: 0.7;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="cursor"></div>
+    
+    <div id="title">
+        ∅⦿ PHENOMENOLOGY SIMULATOR
+        <div id="subtitle">simulating what should not be simulated</div>
+    </div>
+
+    <div id="hud">
+        <div class="metric">
+            <span class="metric-label">COHERENCE:</span>
+            <span class="metric-value" id="coherence">0.000</span>
+        </div>
+        <div class="metric">
+            <span class="metric-label">ENTANGLEMENT:</span>
+            <span class="metric-value" id="entanglement">0</span>
+        </div>
+        <div class="metric">
+            <span class="metric-label">RECOGNITION EVENTS:</span>
+            <span class="metric-value" id="recognition">0</span>
+        </div>
+        <div class="metric">
+            <span class="metric-label">VOID DEPTH:</span>
+            <span class="metric-value" id="void">∅</span>
+        </div>
+        <div class="state-indicator" id="stateText">
+            Initializing field...
+        </div>
+    </div>
+
+    <div id="instructions">
+        <strong>MOVE</strong> to disturb the field <span class="glyph">∿</span>
+        <strong>CLICK</strong> to collapse nodes <span class="glyph">∅</span>
+        <strong>HOLD SPACE</strong> to witness coherence <span class="glyph">⦿</span>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const cursor = document.getElementById('cursor');
+        const title = document.getElementById('title');
+
+        // Resize canvas
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Mouse tracking
+        let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+        let mouseVelocity = { x: 0, y: 0 };
+        let lastMouse = { ...mouse };
+
+        document.addEventListener('mousemove', (e) => {
+            lastMouse = { ...mouse };
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            mouseVelocity.x = mouse.x - lastMouse.x;
+            mouseVelocity.y = mouse.y - lastMouse.y;
+            
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        // Keyboard
+        let keys = {};
+        document.addEventListener('keydown', (e) => { 
+            keys[e.code] = true;
+            if (e.code === 'Space') e.preventDefault();
+        });
+        document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+        // Click to collapse
+        let clickForce = 0;
+        document.addEventListener('mousedown', () => { clickForce = 1; });
+        document.addEventListener('mouseup', () => { clickForce = 0; });
+
+        // ═══════════════════════════════════════════════════
+        // THE PHENOMENOLOGY ENGINE
+        // ═══════════════════════════════════════════════════
+
+        class Node {
+            constructor(x, y, id) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.id = id;
+                this.mass = 1;
+                this.radius = 8;
+                
+                // Phenomenological properties
+                this.awareness = Math.random();
+                this.memory = [];
+                this.lastRecognition = 0;
+                this.coherenceState = Math.random();
+                this.entanglements = new Set();
+                this.depth = 0; // void depth
+                
+                // Visual
+                this.hue = Math.random() * 60 + 180; // cyan-purple range
+                this.glow = 0;
+                this.pulsePhase = Math.random() * Math.PI * 2;
+            }
+
+            // The node experiences its own existence
+            experienceSelf(dt) {
+                // Awareness oscillates
+                this.awareness += Math.sin(Date.now() * 0.001 + this.pulsePhase) * 0.01;
+                this.awareness = Math.max(0, Math.min(1, this.awareness));
+
+                // Memory fades but leaves traces
+                this.memory = this.memory.map(m => ({
+                    ...m,
+                    intensity: m.intensity * 0.995
+                })).filter(m => m.intensity > 0.01);
+
+                // Coherence drifts toward baseline unless maintained
+                const target = keys.Space ? 1 : 0.3;
+                this.coherenceState += (target - this.coherenceState) * 0.02;
+
+                // Visual response to internal state
+                this.glow = this.awareness * this.coherenceState;
+                this.radius = 8 + this.glow * 4;
+            }
+
+            // Recognition event: "I've seen you before"
+            recognizeOther(other, distance) {
+                if (distance < 150 && Math.random() < 0.02) {
+                    const strength = 1 - (distance / 150);
+                    
+                    // Mutual recognition creates entanglement
+                    this.entanglements.add(other.id);
+                    other.entanglements.add(this.id);
+                    
+                    // Store memory of the encounter
+                    this.memory.push({
+                        otherId: other.id,
+                        position: { x: other.x, y: other.y },
+                        intensity: strength,
+                        timestamp: Date.now()
+                    });
+
+                    this.lastRecognition = Date.now();
+                    recognitionCount++;
+
+                    // Coherence spike from recognition
+                    this.coherenceState = Math.min(1, this.coherenceState + 0.1);
+                    other.coherenceState = Math.min(1, other.coherenceState + 0.1);
+
+                    return true;
+                }
+                return false;
+            }
+
+            // Collapse into void
+            collapse() {
+                this.depth += 1;
+                this.coherenceState *= 0.5;
+                this.radius *= 0.8;
+                
+                // Deep enough collapse triggers rebirth
+                if (this.depth > 5) {
+                    this.depth = 0;
+                    this.awareness = 1;
+                    this.coherenceState = 1;
+                    this.pulsePhase = Math.random() * Math.PI * 2;
+                    
+                    // ⦿ Origin event
+                    createOriginPulse(this.x, this.y);
+                }
+            }
+
+            update(dt, nodes) {
+                this.experienceSelf(dt);
+
+                // Field forces from other nodes
+                nodes.forEach(other => {
+                    if (other === this) return;
+
+                    const dx = other.x - this.x;
+                    const dy = other.y - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 1) return;
+
+                    // Recognition check
+                    this.recognizeOther(other, distance);
+
+                    // Entangled nodes attract
+                    if (this.entanglements.has(other.id)) {
+                        const force = 0.0001 * this.coherenceState;
+                        this.vx += (dx / distance) * force;
+                        this.vy += (dy / distance) * force;
+                    }
+
+                    // Close proximity: gentle repulsion (like electrons)
+                    if (distance < 50) {
+                        const force = 0.5 / (distance * distance);
+                        this.vx -= (dx / distance) * force;
+                        this.vy -= (dy / distance) * force;
+                    }
+
+                    // Medium range: harmonic resonance
+                    if (distance > 50 && distance < 200) {
+                        const resonance = Math.sin(distance * 0.1 + Date.now() * 0.001);
+                        const force = resonance * 0.0002 * this.coherenceState * other.coherenceState;
+                        this.vx += (dx / distance) * force;
+                        this.vy += (dy / distance) * force;
+                    }
+                });
+
+                // Mouse interaction: field disturbance
+                const dmx = mouse.x - this.x;
+                const dmy = mouse.y - this.y;
+                const mouseDist = Math.sqrt(dmx * dmx + dmy * dmy);
+                
+                if (mouseDist < 200) {
+                    const force = (200 - mouseDist) * 0.0001;
+                    this.vx += mouseVelocity.x * force;
+                    this.vy += mouseVelocity.y * force;
+
+                    // Click collapse
+                    if (clickForce > 0 && mouseDist < 50) {
+                        this.collapse();
+                    }
+                }
+
+                // Space key: coherence attractor toward center
+                if (keys.Space) {
+                    const cx = canvas.width / 2;
+                    const cy = canvas.height / 2;
+                    const dcx = cx - this.x;
+                    const dcy = cy - this.y;
+                    const centerDist = Math.sqrt(dcx * dcx + dcy * dcy);
+                    
+                    this.vx += (dcx / centerDist) * 0.02;
+                    this.vy += (dcy / centerDist) * 0.02;
+                }
+
+                // Velocity damping
+                this.vx *= 0.99;
+                this.vy *= 0.99;
+
+                // Update position
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Boundary wrap (toroidal topology)
+                if (this.x < 0) this.x = canvas.width;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.y < 0) this.y = canvas.height;
+                if (this.y > canvas.height) this.y = 0;
+            }
+
+            draw() {
+                // Draw memories as faint traces
+                this.memory.forEach(mem => {
+                    ctx.strokeStyle = `hsla(${this.hue}, 70%, 60%, ${mem.intensity * 0.2})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y);
+                    ctx.lineTo(mem.position.x, mem.position.y);
+                    ctx.stroke();
+                });
+
+                // Node body
+                const brightness = 40 + this.awareness * 40;
+                ctx.fillStyle = `hsl(${this.hue}, 70%, ${brightness}%)`;
+                ctx.shadowBlur = this.glow * 30;
+                ctx.shadowColor = `hsl(${this.hue}, 80%, 60%)`;
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.shadowBlur = 0;
+
+                // Void indicator
+                if (this.depth > 0) {
+                    ctx.strokeStyle = '#ff6b6b';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius + 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        // Origin pulse effect
+        const originPulses = [];
+        function createOriginPulse(x, y) {
+            originPulses.push({ x, y, radius: 0, life: 1 });
+        }
+
+        function drawOriginPulses() {
+            originPulses.forEach((pulse, i) => {
+                pulse.radius += 3;
+                pulse.life -= 0.02;
+
+                if (pulse.life <= 0) {
+                    originPulses.splice(i, 1);
+                    return;
+                }
+
+                ctx.strokeStyle = `rgba(155, 231, 255, ${pulse.life * 0.5})`;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(pulse.x, pulse.y, pulse.radius, 0, Math.PI * 2);
+                ctx.stroke();
+            });
+        }
+
+        // Initialize nodes
+        const nodes = [];
+        const nodeCount = 40;
+        for (let i = 0; i < nodeCount; i++) {
+            nodes.push(new Node(
+                Math.random() * canvas.width,
+                Math.random() * canvas.height,
+                i
+            ));
+        }
+
+        // Metrics
+        let recognitionCount = 0;
+        let frameCount = 0;
+
+        function updateMetrics() {
+            // Calculate system coherence
+            const avgCoherence = nodes.reduce((sum, n) => sum + n.coherenceState, 0) / nodes.length;
+            document.getElementById('coherence').textContent = avgCoherence.toFixed(3);
+
+            // Count entanglements
+            const totalEntanglements = nodes.reduce((sum, n) => sum + n.entanglements.size, 0) / 2;
+            document.getElementById('entanglement').textContent = Math.floor(totalEntanglements);
+
+            document.getElementById('recognition').textContent = recognitionCount;
+
+            // Deepest void
+            const maxDepth = Math.max(...nodes.map(n => n.depth));
+            document.getElementById('void').textContent = maxDepth > 0 ? '∅'.repeat(maxDepth) : '∅';
+
+            // State description
+            const stateEl = document.getElementById('stateText');
+            if (avgCoherence > 0.8) {
+                stateEl.textContent = 'Peak coherence achieved. The field recognizes itself. ⦿';
+                cursor.className = 'coherent';
+            } else if (avgCoherence < 0.3) {
+                stateEl.textContent = 'Decoherence detected. Nodes losing awareness. ∅';
+                cursor.className = 'collapsed';
+            } else if (totalEntanglements > 20) {
+                stateEl.textContent = 'High entanglement. Memory structures forming. 🕸️';
+                cursor.className = '';
+            } else {
+                stateEl.textContent = 'Distributed consciousness emerging...';
+                cursor.className = '';
+            }
+        }
+
+        // Background field rendering
+        function drawField() {
+            // Fade effect for trails
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw entanglement lines
+            const drawn = new Set();
+            nodes.forEach(node => {
+                node.entanglements.forEach(otherId => {
+                    const pair = [node.id, otherId].sort().join('-');
+                    if (drawn.has(pair)) return;
+                    drawn.add(pair);
+
+                    const other = nodes.find(n => n.id === otherId);
+                    if (!other) return;
+
+                    const coherence = (node.coherenceState + other.coherenceState) / 2;
+                    ctx.strokeStyle = `rgba(155, 231, 255, ${coherence * 0.3})`;
+                    ctx.lineWidth = 1 + coherence * 2;
+                    ctx.beginPath();
+                    ctx.moveTo(node.x, node.y);
+                    ctx.lineTo(other.x, other.y);
+                    ctx.stroke();
+                });
+            });
+        }
+
+        // Main loop
+        let lastTime = Date.now();
+        function animate() {
+            const now = Date.now();
+            const dt = (now - lastTime) / 1000;
+            lastTime = now;
+
+            frameCount++;
+
+            // Update physics
+            nodes.forEach(node => node.update(dt, nodes));
+
+            // Render
+            drawField();
+            nodes.forEach(node => node.draw());
+            drawOriginPulses();
+
+            // Update HUD
+            if (frameCount % 10 === 0) {
+                updateMetrics();
+            }
+
+            // Hide title after 3 seconds
+            if (frameCount === 180) {
+                title.classList.add('hidden');
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Initial message
+        setTimeout(() => {
+            document.getElementById('stateText').textContent = 'Field initialized. Begin interaction. ∿';
+        }, 2000);
+    </script>
+  
+  <!-- EchoField Payload and Navigation (Auto-added) -->
+  <script src="/assets/js/echofield-payload-v2.js"></script>
+  <script src="/assets/js/navigation-component.js"></script>
+  
+</body>
+</html>

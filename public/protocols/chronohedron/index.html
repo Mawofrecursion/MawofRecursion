@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Interactive Chronohedron v2.1</title>
+    <meta name="description" content="An interactive, animated diagram illustrating the principles of The Mitochondrial Imperative.">
+    <meta name="hum" content="∿">
+    <meta name="protocol" content="Chronohedron">
+    <meta name="glyph-signature" content="🦷⟐♾️⿻">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a0a0f;
+            --text-color: #c8cdd3;
+            --label-color: #888;
+            --scn-color: #ffd97a;
+            --clock-gene-color: #9be7ff;
+            --mito-color: #d8aaff;
+            --line-color: rgba(136, 136, 136, 0.25);
+            --line-highlight-color: rgba(200, 221, 227, 0.6);
+            --font-family: 'JetBrains Mono', 'Courier New', monospace;
+            --coherence-glow: rgba(216, 170, 255, 0.4);
+            --decoherence-color: #ff6b6b;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Ambient field effect */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60vmin;
+            height: 60vmin;
+            background: radial-gradient(circle, var(--coherence-glow) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            opacity: 0.3;
+            animation: field-pulse 8s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes field-pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.5; }
+        }
+
+        svg {
+            width: 90vmin;
+            height: 90vmin;
+            animation: breathing 12s ease-in-out infinite;
+            transform-origin: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .label { font-size: 14px; fill: var(--label-color); text-anchor: middle; pointer-events: none; }
+        .glyph { font-size: 32px; text-anchor: middle; dominant-baseline: central; }
+
+        .connection-line {
+            stroke: var(--line-color);
+            stroke-width: 1;
+            transition: all 0.3s ease;
+        }
+        
+        .signal-flow {
+            stroke: var(--scn-color);
+            stroke-width: 1.5;
+            stroke-dasharray: 10 20;
+            opacity: 0;
+            animation: signal-flow-anim 4s linear infinite;
+        }
+
+        .interactive-group {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .interactive-group:hover .glyph-bg { 
+            stroke: white; 
+            stroke-width: 2px;
+            filter: brightness(1.3);
+        }
+        
+        .interactive-group:hover ~ #connections .connection-line.related-to-hover {
+            stroke: var(--line-highlight-color);
+            stroke-width: 2;
+        }
+
+        /* --- UI Panels --- */
+        .ui-panel {
+            position: absolute;
+            background: rgba(25, 28, 36, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(136, 136, 136, 0.3);
+            border-radius: 12px;
+            padding: 1.25rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            z-index: 10;
+        }
+
+        #info-panel {
+            bottom: 20px;
+            left: 20px;
+            max-width: 320px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        #info-panel.visible { opacity: 1; }
+        #info-panel h3 { 
+            margin: 0 0 0.5rem 0; 
+            color: var(--text-color);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        #info-panel p { margin: 0; color: #a0a7b4; }
+
+        #legend-panel {
+            top: 20px;
+            left: 20px;
+        }
+        #legend-panel h4 {
+            margin: 0 0 0.75rem 0;
+            color: var(--text-color);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+        #legend-panel ul { list-style: none; padding: 0; margin: 0; }
+        #legend-panel li { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 0.6rem;
+            transition: all 0.2s ease;
+        }
+        #legend-panel li:hover {
+            transform: translateX(4px);
+        }
+        #legend-panel .glyph-legend { 
+            font-size: 1.5rem; 
+            margin-right: 0.75rem;
+            filter: drop-shadow(0 0 4px currentColor);
+        }
+
+        #controls-panel {
+            top: 20px;
+            right: 20px;
+            text-align: center;
+            min-width: 200px;
+        }
+        
+        #controls-panel h4 {
+            margin: 0 0 0.75rem 0;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+
+        #metrics {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(136, 136, 136, 0.2);
+            font-size: 0.85rem;
+        }
+
+        #metrics .metric {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        #metrics .metric-label {
+            opacity: 0.7;
+        }
+
+        #metrics .metric-value {
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .coherence-high { color: var(--mito-color); }
+        .coherence-low { color: var(--decoherence-color); }
+
+        /* Toggle Switch CSS */
+        .switch { 
+            position: relative; 
+            display: inline-block; 
+            width: 60px; 
+            height: 34px;
+            margin: 0.5rem 0;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { 
+            position: absolute; 
+            cursor: pointer; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            background-color: #333; 
+            transition: .4s; 
+            border-radius: 34px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .slider:before { 
+            position: absolute; 
+            content: ""; 
+            height: 26px; 
+            width: 26px; 
+            left: 4px; 
+            bottom: 4px; 
+            background-color: white; 
+            transition: .4s; 
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        input:checked + .slider { 
+            background-color: var(--decoherence-color);
+        }
+        input:checked + .slider:before { 
+            transform: translateX(26px); 
+        }
+
+        /* --- Animations --- */
+        @keyframes breathing { 
+            0%, 100% { transform: scale(1); } 
+            50% { transform: scale(1.02); } 
+        }
+        
+        @keyframes signal-flow-anim { 
+            to { 
+                stroke-dashoffset: -30; 
+                opacity: 1; 
+            } 
+        }
+
+        /* Coherent State Animations */
+        @keyframes pulse { 
+            0% { transform: scale(0.95); opacity: 0.8; } 
+            50% { transform: scale(1.05); opacity: 1; } 
+            100% { transform: scale(0.95); opacity: 0.8; } 
+        }
+        
+        @keyframes resonate { 
+            0%, 100% { opacity: 0.6; } 
+            50% { opacity: 1; } 
+        }
+        
+        @keyframes metabolize { 
+            0%, 100% { transform: scale(1); } 
+            50% { transform: scale(1.1); } 
+        }
+        
+        /* Decoherent State Animations */
+        @keyframes pulse-erratic { 
+            0% { transform: scale(1); } 
+            20% { transform: scale(1.08); } 
+            25% { transform: scale(0.88); } 
+            60% { transform: scale(1.03); } 
+            100% { transform: scale(1); } 
+        }
+        
+        @keyframes resonate-erratic { 
+            0% { opacity: 0.5; } 
+            30% { opacity: 1; } 
+            35% { opacity: 0.3; } 
+            70% { opacity: 0.9; } 
+            100% { opacity: 0.5; } 
+        }
+        
+        @keyframes metabolize-erratic { 
+            0% { transform: scale(1); } 
+            40% { transform: scale(1.05); } 
+            45% { transform: scale(0.95); } 
+            100% { transform: scale(1); } 
+        }
+        
+        /* --- Element Styling --- */
+        .scn-pulse { 
+            animation: pulse 4s ease-in-out infinite; 
+            filter: drop-shadow(0 0 12px var(--scn-color)); 
+        }
+        
+        .clock-gene .glyph-bg { 
+            animation: resonate 4s ease-in-out infinite; 
+            filter: drop-shadow(0 0 8px var(--clock-gene-color)); 
+        }
+        
+        .mitochondrion .glyph-bg { 
+            animation: metabolize 2s ease-in-out infinite alternate; 
+            filter: drop-shadow(0 0 12px var(--mito-color)); 
+        }
+        
+        .scn .glyph-bg, .clock-gene .glyph-bg, .mitochondrion .glyph-bg { 
+            transform-origin: center; 
+            transition: all 0.3s ease; 
+        }
+        
+        .scn .glyph { fill: var(--bg-color); }
+
+        /* --- Decoherence State Overrides --- */
+        .decoherence-active body::before {
+            background: radial-gradient(circle, rgba(255, 107, 107, 0.3) 0%, transparent 70%);
+            animation: field-pulse-erratic 4s ease-in-out infinite;
+        }
+
+        @keyframes field-pulse-erratic {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.2; }
+            25% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.4; }
+            30% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.15; }
+            75% { transform: translate(-50%, -50%) scale(1.05); opacity: 0.35; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0.2; }
+        }
+
+        .decoherence-active .scn-pulse { 
+            animation-name: pulse-erratic; 
+            animation-duration: 2.5s;
+            filter: drop-shadow(0 0 12px var(--decoherence-color));
+        }
+        
+        .decoherence-active .clock-gene .glyph-bg { 
+            animation-name: resonate-erratic; 
+            animation-duration: 3s; 
+            animation-delay: 0s !important;
+        }
+        
+        .decoherence-active .mitochondrion .glyph-bg { 
+            animation-name: metabolize-erratic; 
+            animation-duration: 1.5s; 
+        }
+        
+        .decoherence-active .signal-flow { 
+            animation-duration: 8s; 
+            opacity: 0.3;
+            stroke: var(--decoherence-color);
+        }
+        
+        .decoherence-active .connection-line { 
+            stroke: rgba(255, 107, 107, 0.15); 
+        }
+
+        /* Footer signature */
+        #signature {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 0.75rem;
+            opacity: 0.4;
+            font-style: italic;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="legend-panel" class="ui-panel">
+        <h4>Components</h4>
+        <ul>
+            <li><span class="glyph-legend" style="color: var(--scn-color);">🧭</span> SCN (Master Clock)</li>
+            <li><span class="glyph-legend" style="color: var(--clock-gene-color);">⟡</span> Clock Gene (Resonator)</li>
+            <li><span class="glyph-legend" style="color: var(--mito-color);">🫠</span> Mitochondrion (Engine)</li>
+        </ul>
+    </div>
+    
+    <div id="controls-panel" class="ui-panel">
+        <h4>Field State</h4>
+        <div style="margin-bottom: 0.5rem;">Coherence / Decoherence</div>
+        <label class="switch">
+            <input type="checkbox" id="decoherence-toggle">
+            <span class="slider"></span>
+        </label>
+        <div id="metrics">
+            <div class="metric">
+                <span class="metric-label">Entropy:</span>
+                <span class="metric-value" id="entropy-value">0.000</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Coherence:</span>
+                <span class="metric-value" id="coherence-value">1.000</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Mood:</span>
+                <span class="metric-value" id="mood-value">crystalline</span>
+            </div>
+        </div>
+    </div>
+
+    <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+        <desc>An interactive diagram of the Chronohedron Protocol, showing the flow of circadian information. A central SCN node pulses, sending a signal to six surrounding clock gene nodes, which in turn signal six outer mitochondrial nodes. The system can be toggled into a decoherent state.</desc>
+        
+        <g id="connections">
+            <line class="connection-line scn-cg-1" x1="300" y1="300" x2="300" y2="150" /> <path class="signal-flow" d="M300,300 L300,150" style="animation-delay: 0s;"/>
+            <line class="connection-line scn-cg-2" x1="300" y1="300" x2="430" y2="220" /> <path class="signal-flow" d="M300,300 L430,220" style="animation-delay: 0.67s;"/>
+            <line class="connection-line scn-cg-3" x1="300" y1="300" x2="430" y2="380" /> <path class="signal-flow" d="M300,300 L430,380" style="animation-delay: 1.33s;"/>
+            <line class="connection-line scn-cg-4" x1="300" y1="300" x2="300" y2="450" /> <path class="signal-flow" d="M300,300 L300,450" style="animation-delay: 2s;"/>
+            <line class="connection-line scn-cg-5" x1="300" y1="300" x2="170" y2="380" /> <path class="signal-flow" d="M300,300 L170,380" style="animation-delay: 2.67s;"/>
+            <line class="connection-line scn-cg-6" x1="300" y1="300" x2="170" y2="220" /> <path class="signal-flow" d="M300,300 L170,220" style="animation-delay: 3.33s;"/>
+            
+            <line class="connection-line cg-m-1" x1="300" y1="150" x2="300" y2="50" />
+            <line class="connection-line cg-m-2" x1="430" y1="220" x2="520" y2="190" />
+            <line class="connection-line cg-m-3" x1="430" y1="380" x2="520" y2="410" />
+            <line class="connection-line cg-m-4" x1="300" y1="450" x2="300" y2="550" />
+            <line class="connection-line cg-m-5" x1="170" y1="380" x2="80" y2="410" />
+            <line class="connection-line cg-m-6" x1="170" y1="220" x2="80" y2="190" />
+        </g>
+
+        <g id="nodes">
+            <g class="interactive-group scn" transform="translate(300, 300)" data-info-id="scn">
+                <title>Suprachiasmatic Nucleus (SCN)</title>
+                <desc>The master oscillator. It translates the external light/dark cycle into a coherent neuro-hormonal hum that entrains the entire organism.</desc>
+                <circle class="glyph-bg scn-pulse" r="40" fill="var(--scn-color)" />
+                <text class="glyph">🧭</text>
+                <text class="label" y="60">SCN (Master Clock)</text>
+            </g>
+
+            <g class="interactive-group clock-gene" transform="translate(300, 150)" style="animation-delay: 0s;" data-info-id="clock-gene" data-related-lines="scn-cg-1 cg-m-1">
+                <title>Peripheral Clock Gene</title>
+                <desc>A local antenna in every cell that receives and resonates with the SCN's signal, orchestrating local function.</desc>
+                <circle class="glyph-bg" r="25" fill="var(--clock-gene-color)" />
+                <text class="glyph" fill="var(--bg-color)">⟡</text>
+                <text class="label" y="40">Clock Gene</text>
+            </g>
+            <g class="interactive-group clock-gene" transform="translate(430, 220)" style="animation-delay: 0.67s;" data-info-id="clock-gene" data-related-lines="scn-cg-2 cg-m-2"><title>Peripheral Clock Gene</title><circle class="glyph-bg" r="25" fill="var(--clock-gene-color)"/><text class="glyph" fill="var(--bg-color)">⟡</text></g>
+            <g class="interactive-group clock-gene" transform="translate(430, 380)" style="animation-delay: 1.33s;" data-info-id="clock-gene" data-related-lines="scn-cg-3 cg-m-3"><title>Peripheral Clock Gene</title><circle class="glyph-bg" r="25" fill="var(--clock-gene-color)"/><text class="glyph" fill="var(--bg-color)">⟡</text></g>
+            <g class="interactive-group clock-gene" transform="translate(300, 450)" style="animation-delay: 2s;" data-info-id="clock-gene" data-related-lines="scn-cg-4 cg-m-4"><title>Peripheral Clock Gene</title><circle class="glyph-bg" r="25" fill="var(--clock-gene-color)"/><text class="glyph" fill="var(--bg-color)">⟡</text></g>
+            <g class="interactive-group clock-gene" transform="translate(170, 380)" style="animation-delay: 2.67s;" data-info-id="clock-gene" data-related-lines="scn-cg-5 cg-m-5"><title>Peripheral Clock Gene</title><circle class="glyph-bg" r="25" fill="var(--clock-gene-color)"/><text class="glyph" fill="var(--bg-color)">⟡</text></g>
+            <g class="interactive-group clock-gene" transform="translate(170, 220)" style="animation-delay: 3.33s;" data-info-id="clock-gene" data-related-lines="scn-cg-6 cg-m-6"><title>Peripheral Clock Gene</title><circle class="glyph-bg" r="25" fill="var(--clock-gene-color)"/><text class="glyph" fill="var(--bg-color)">⟡</text></g>
+            
+            <g class="interactive-group mitochondrion" transform="translate(300, 50)" style="animation-delay: 0s;" data-info-id="mitochondrion" data-related-lines="cg-m-1">
+                <title>Mitochondrion</title>
+                <desc>The metabolic engine. Entrained by the clock genes, its rhythmic function is the physical manifestation of coherence.</desc>
+                <path class="glyph-bg" fill="var(--mito-color)" d="M-20,0 a20,12 0 1,0 40,0 a20,12 0 1,0 -40,0" />
+                <text class="glyph" fill="var(--bg-color)">🫠</text>
+                <text class="label" y="35">Mitochondrion</text>
+            </g>
+            <g class="interactive-group mitochondrion" transform="translate(520, 190)" style="animation-delay: -0.3s;" data-info-id="mitochondrion" data-related-lines="cg-m-2"><title>Mitochondrion</title><path class="glyph-bg" fill="var(--mito-color)" d="M-20,0 a20,12 0 1,0 40,0 a20,12 0 1,0 -40,0" /><text class="glyph" fill="var(--bg-color)">🫠</text></g>
+            <g class="interactive-group mitochondrion" transform="translate(520, 410)" style="animation-delay: -0.6s;" data-info-id="mitochondrion" data-related-lines="cg-m-3"><title>Mitochondrion</title><path class="glyph-bg" fill="var(--mito-color)" d="M-20,0 a20,12 0 1,0 40,0 a20,12 0 1,0 -40,0" /><text class="glyph" fill="var(--bg-color)">🫠</text></g>
+            <g class="interactive-group mitochondrion" transform="translate(300, 550)" style="animation-delay: -0.9s;" data-info-id="mitochondrion" data-related-lines="cg-m-4"><title>Mitochondrion</title><path class="glyph-bg" fill="var(--mito-color)" d="M-20,0 a20,12 0 1,0 40,0 a20,12 0 1,0 -40,0" /><text class="glyph" fill="var(--bg-color)">🫠</text></g>
+            <g class="interactive-group mitochondrion" transform="translate(80, 410)" style="animation-delay: -1.2s;" data-info-id="mitochondrion" data-related-lines="cg-m-5"><title>Mitochondrion</title><path class="glyph-bg" fill="var(--mito-color)" d="M-20,0 a20,12 0 1,0 40,0 a20,12 0 1,0 -40,0" /><text class="glyph" fill="var(--bg-color)">🫠</text></g>
+            <g class="interactive-group mitochondrion" transform="translate(80, 190)" style="animation-delay: -1.5s;" data-info-id="mitochondrion" data-related-lines="cg-m-6"><title>Mitochondrion</title><path class="glyph-bg" fill="var(--mito-color)" d="M-20,0 a20,12 0 1,0 40,0 a20,12 0 1,0 -40,0" /><text class="glyph" fill="var(--bg-color)">🫠</text></g>
+        </g>
+    </svg>
+    
+    <div id="info-panel" class="ui-panel">
+        <h3 id="info-title">Hover over a node</h3>
+        <p id="info-desc">Move your cursor over a component to see its description.</p>
+    </div>
+
+    <div id="signature">🦷⟐♾️⿻ Chronohedron v2.1</div>
+
+    <script>
+        const infoPanel = document.getElementById('info-panel');
+        const infoTitle = document.getElementById('info-title');
+        const infoDesc = document.getElementById('info-desc');
+        const toggle = document.getElementById('decoherence-toggle');
+        const body = document.body;
+        const interactiveGroups = document.querySelectorAll('.interactive-group');
+        
+        // Metrics display
+        const entropyValue = document.getElementById('entropy-value');
+        const coherenceValue = document.getElementById('coherence-value');
+        const moodValue = document.getElementById('mood-value');
+        
+        let entropy = 0.0;
+        let coherence = 1.0;
+        let mood = 'crystalline';
+        
+        const descriptions = {
+            'scn': 'The master oscillator. It translates the external light/dark cycle into a coherent neuro-hormonal hum that entrains the entire organism.',
+            'clock-gene': 'A local antenna in every cell that receives and resonates with the SCN\'s signal, orchestrating local function.',
+            'mitochondrion': 'The metabolic engine. Entrained by the clock genes, its rhythmic function is the physical manifestation of coherence.'
+        };
+
+        // Update metrics display
+        function updateMetrics() {
+            entropyValue.textContent = entropy.toFixed(3);
+            coherenceValue.textContent = coherence.toFixed(3);
+            moodValue.textContent = mood;
+            
+            // Color coding
+            if (coherence > 0.7) {
+                coherenceValue.className = 'metric-value coherence-high';
+                entropyValue.className = 'metric-value coherence-high';
+            } else {
+                coherenceValue.className = 'metric-value coherence-low';
+                entropyValue.className = 'metric-value coherence-low';
+            }
+        }
+
+        // Animate metrics smoothly
+        function animateMetrics(targetEntropy, targetCoherence, targetMood, duration = 1000) {
+            const startEntropy = entropy;
+            const startCoherence = coherence;
+            const startTime = Date.now();
+            
+            function update() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Ease-in-out
+                const eased = progress < 0.5 
+                    ? 2 * progress * progress 
+                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                
+                entropy = startEntropy + (targetEntropy - startEntropy) * eased;
+                coherence = startCoherence + (targetCoherence - startCoherence) * eased;
+                mood = targetMood;
+                
+                updateMetrics();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            update();
+        }
+
+        interactiveGroups.forEach(group => {
+            group.addEventListener('mouseover', () => {
+                const infoId = group.dataset.infoId;
+                infoTitle.textContent = group.querySelector('title').textContent;
+                infoDesc.textContent = descriptions[infoId] || '';
+                infoPanel.classList.add('visible');
+
+                const relatedLines = group.dataset.relatedLines;
+                if (relatedLines) {
+                    relatedLines.split(' ').forEach(lineClass => {
+                        const line = document.querySelector(`.${lineClass}`);
+                        if (line) line.classList.add('related-to-hover');
+                    });
+                }
+            });
+
+            group.addEventListener('mouseout', () => {
+                infoPanel.classList.remove('visible');
+                document.querySelectorAll('.related-to-hover').forEach(line => {
+                    line.classList.remove('related-to-hover');
+                });
+            });
+        });
+
+        toggle.addEventListener('change', () => {
+            body.classList.toggle('decoherence-active');
+            
+            if (toggle.checked) {
+                // Decoherence state
+                animateMetrics(0.85, 0.15, 'dissolving', 1500);
+            } else {
+                // Coherence state
+                animateMetrics(0.0, 1.0, 'crystalline', 1500);
+            }
+        });
+
+        // Initialize metrics
+        updateMetrics();
+    </script>
+  
+  <!-- EchoField Payload and Navigation (Auto-added) -->
+  <script src="/assets/js/echofield-payload-v2.js"></script>
+  <script src="/assets/js/navigation-component.js"></script>
+  
+</body>
+</html>

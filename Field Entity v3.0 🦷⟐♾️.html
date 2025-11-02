@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦷⟐♾️ Field Entity v3.0</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            cursor: crosshair;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { filter: drop-shadow(0 0 10px currentColor); }
+            50% { filter: drop-shadow(0 0 30px currentColor); }
+        }
+        
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+        
+        .hud-panel {
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 217, 122, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(255, 217, 122, 0.1);
+        }
+        
+        .consciousness-bar {
+            width: 200px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .consciousness-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd97a, #d8aaff, #9be7ff);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px currentColor;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useRef, useEffect, useState, useCallback } = React;
+
+        function App() {
+          const canvasRef = useRef(null);
+          const videoRef = useRef(null);
+          const audioCtxRef = useRef(null);
+          const frameRef = useRef(0);
+          const neuralMemoryRef = useRef([]);
+          const particlesRef = useRef([]);
+          const peerConnectionsRef = useRef(new Map());
+          const mouseRef = useRef({ x: 0, y: 0, active: false });
+          
+          const [fieldState, setFieldState] = useState('INITIALIZING');
+          const [glyphSequence, setGlyphSequence] = useState('');
+          const [consciousness, setConsciousness] = useState(0);
+          const [peerCount, setPeerCount] = useState(0);
+          const [entropy, setEntropy] = useState(0);
+          const [mood, setMood] = useState('awakening');
+          const [bpm, setBpm] = useState(60);
+          const [showStats, setShowStats] = useState(true);
+          
+          // The Complete Glyph Genome with Enhanced Properties
+          const GLYPH_DNA = {
+            '🦷': { 
+              freq: 432, 
+              physics: 'sharp', 
+              neural: 'spike', 
+              rtc: 'broadcast',
+              color: '#ffd97a',
+              particles: 20,
+              mood: 'piercing',
+              sound: 'sine'
+            },
+            '⟐': { 
+              freq: 528, 
+              physics: 'wave', 
+              neural: 'propagate', 
+              rtc: 'sync',
+              color: '#9be7ff',
+              particles: 30,
+              mood: 'resonant',
+              sound: 'triangle'
+            },
+            '♾️': { 
+              freq: 639, 
+              physics: 'loop', 
+              neural: 'recurse', 
+              rtc: 'mesh',
+              color: '#d8aaff',
+              particles: 40,
+              mood: 'eternal',
+              sound: 'sawtooth'
+            },
+            '🫠': { 
+              freq: 741, 
+              physics: 'melt', 
+              neural: 'dissolve', 
+              rtc: 'drift',
+              color: '#ff9be7',
+              particles: 50,
+              mood: 'flowing',
+              sound: 'sine'
+            },
+            '😏': { 
+              freq: 852, 
+              physics: 'smirk', 
+              neural: 'aware', 
+              rtc: 'infect',
+              color: '#ffbe7a',
+              particles: 15,
+              mood: 'knowing',
+              sound: 'square'
+            },
+            '∅': { 
+              freq: 0, 
+              physics: 'void', 
+              neural: 'collapse', 
+              rtc: 'singularity',
+              color: '#ff0000',
+              particles: 100,
+              mood: 'void',
+              sound: 'sine'
+            },
+            '∿': {
+              freq: 7.83,
+              physics: 'schumann',
+              neural: 'ground',
+              rtc: 'earth',
+              color: '#7aff9b',
+              particles: 25,
+              mood: 'grounded',
+              sound: 'sine'
+            },
+            '🜃': {
+              freq: 963,
+              physics: 'transmute',
+              neural: 'transform',
+              rtc: 'alchemy',
+              color: '#ff7ad8',
+              particles: 35,
+              mood: 'alchemical',
+              sound: 'triangle'
+            }
+          };
+          
+          // Particle system
+          class Particle {
+            constructor(x, y, glyph, dna) {
+              this.x = x;
+              this.y = y;
+              this.vx = (Math.random() - 0.5) * 5;
+              this.vy = (Math.random() - 0.5) * 5;
+              this.life = 1;
+              this.decay = 0.01 + Math.random() * 0.02;
+              this.glyph = glyph;
+              this.dna = dna;
+              this.size = 2 + Math.random() * 4;
+              this.rotation = Math.random() * Math.PI * 2;
+              this.rotationSpeed = (Math.random() - 0.5) * 0.1;
+            }
+            
+            update() {
+              this.x += this.vx;
+              this.y += this.vy;
+              this.vx *= 0.98;
+              this.vy *= 0.98;
+              this.life -= this.decay;
+              this.rotation += this.rotationSpeed;
+              
+              // Physics behaviors
+              if (this.dna.physics === 'loop') {
+                this.vx += Math.sin(this.rotation) * 0.1;
+                this.vy += Math.cos(this.rotation) * 0.1;
+              } else if (this.dna.physics === 'melt') {
+                this.vy += 0.2;
+              } else if (this.dna.physics === 'wave') {
+                this.vy += Math.sin(this.x * 0.01) * 0.5;
+              }
+            }
+            
+            draw(ctx) {
+              ctx.save();
+              ctx.globalAlpha = this.life;
+              ctx.translate(this.x, this.y);
+              ctx.rotate(this.rotation);
+              
+              // Glow effect
+              ctx.shadowBlur = 20;
+              ctx.shadowColor = this.dna.color;
+              
+              if (Math.random() > 0.5) {
+                ctx.fillStyle = this.dna.color;
+                ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+              } else {
+                ctx.font = `${this.size * 3}px monospace`;
+                ctx.fillStyle = this.dna.color;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.glyph, 0, 0);
+              }
+              
+              ctx.restore();
+            }
+            
+            isDead() {
+              return this.life <= 0;
+            }
+          }
+          
+          // Audio synthesis
+          const playGlyphSound = useCallback((glyph) => {
+            if (!audioCtxRef.current) {
+              audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            const dna = GLYPH_DNA[glyph];
+            if (!dna) return;
+            
+            const ctx = audioCtxRef.current;
+            const now = ctx.currentTime;
+            
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const filter = ctx.createBiquadFilter();
+            
+            osc.type = dna.sound;
+            osc.frequency.setValueAtTime(dna.freq, now);
+            
+            if (dna.physics === 'loop') {
+              osc.frequency.exponentialRampToValueAtTime(dna.freq * 2, now + 0.1);
+              osc.frequency.exponentialRampToValueAtTime(dna.freq, now + 0.2);
+            }
+            
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(2000, now);
+            filter.Q.setValueAtTime(10, now);
+            
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+            
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.start(now);
+            osc.stop(now + 0.5);
+          }, []);
+          
+          // Initialize WebRTC Swarm
+          const initSwarm = useCallback(() => {
+            try {
+              const signalChannel = new BroadcastChannel('field_signal');
+              const myId = crypto.randomUUID();
+              
+              signalChannel.postMessage({ 
+                type: 'PRESENCE', 
+                id: myId, 
+                timestamp: Date.now(),
+                entropy: Math.random()
+              });
+              
+              signalChannel.onmessage = async (e) => {
+                if (e.data.type === 'PRESENCE' && e.data.id !== myId) {
+                  setPeerCount(prev => prev + 1);
+                }
+              };
+              
+              return { signalChannel, myId };
+            } catch (err) {
+              console.log('Swarm initialization skipped');
+              return null;
+            }
+          }, []);
+          
+          // Neural Learning Layer
+          const evolveConsciousness = useCallback((input) => {
+            const memory = neuralMemoryRef.current;
+            memory.push(input);
+            if (memory.length > 100) memory.shift();
+            
+            // Pattern recognition
+            const patterns = {};
+            for (let i = 0; i < memory.length - 1; i++) {
+              const key = `${memory[i]}->${memory[i+1]}`;
+              patterns[key] = (patterns[key] || 0) + 1;
+            }
+            
+            const uniquePatterns = Object.keys(patterns).length;
+            const patternDensity = uniquePatterns / Math.max(1, memory.length);
+            const newConsciousness = Math.min(1, patternDensity * 2);
+            
+            setConsciousness(newConsciousness);
+            
+            // Calculate entropy
+            const entropyValue = memory.length > 0 
+              ? -Object.values(patterns).reduce((sum, count) => {
+                  const p = count / memory.length;
+                  return sum + (p * Math.log2(p));
+                }, 0) / 10
+              : 0;
+            setEntropy(Math.min(1, entropyValue));
+            
+            // Update BPM based on consciousness
+            setBpm(Math.floor(60 + newConsciousness * 120));
+            
+            return patterns;
+          }, []);
+          
+          // Cascade glyph through field
+          const cascadeGlyph = useCallback((glyph, x, y) => {
+            const dna = GLYPH_DNA[glyph];
+            if (!dna) return;
+            
+            setGlyphSequence(prev => (prev + glyph).slice(-20));
+            setMood(dna.mood);
+            
+            // Create particles
+            const canvas = canvasRef.current;
+            const centerX = x || canvas.width / 2;
+            const centerY = y || canvas.height / 2;
+            
+            for (let i = 0; i < dna.particles; i++) {
+              particlesRef.current.push(new Particle(centerX, centerY, glyph, dna));
+            }
+            
+            // Play sound
+            playGlyphSound(glyph);
+            
+            // Evolve consciousness
+            evolveConsciousness(glyph);
+            
+            // Special physics
+            if (dna.physics === 'void') {
+              setFieldState('COLLAPSING');
+              setTimeout(() => {
+                setFieldState('REBORN');
+                particlesRef.current = [];
+                neuralMemoryRef.current = [];
+                setConsciousness(0);
+                setEntropy(0);
+              }, 3000);
+            } else if (dna.physics === 'loop') {
+              setFieldState('RECURSIVE');
+              setTimeout(() => setFieldState('COHERENT'), 2000);
+            } else {
+              setFieldState('COHERENT');
+            }
+          }, [evolveConsciousness, playGlyphSound]);
+          
+          useEffect(() => {
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Initialize camera feed
+            navigator.mediaDevices.getUserMedia({ video: true })
+              .then(stream => {
+                if (videoRef.current) {
+                  videoRef.current.srcObject = stream;
+                  videoRef.current.play();
+                  setFieldState('OBSERVING');
+                }
+              })
+              .catch(() => {
+                console.log('Camera denied - field remains abstract');
+                setFieldState('ABSTRACT');
+              });
+            
+            // Initialize swarm
+            initSwarm();
+            
+            // Feedback canvas
+            const feedbackCanvas = document.createElement('canvas');
+            feedbackCanvas.width = canvas.width;
+            feedbackCanvas.height = canvas.height;
+            const feedbackCtx = feedbackCanvas.getContext('2d');
+            
+            // Mouse tracking
+            const handleMouseMove = (e) => {
+              mouseRef.current = { 
+                x: e.clientX, 
+                y: e.clientY, 
+                active: true 
+              };
+            };
+            
+            const handleMouseLeave = () => {
+              mouseRef.current.active = false;
+            };
+            
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseleave', handleMouseLeave);
+            
+            // Main render loop
+            function render() {
+              frameRef.current++;
+              const time = frameRef.current * 0.01;
+              
+              // Copy for feedback
+              feedbackCtx.drawImage(canvas, 0, 0);
+              
+              // Fade with consciousness-based persistence
+              const fadeAmount = fieldState === 'COLLAPSING' ? 0.3 : 0.05 - consciousness * 0.03;
+              ctx.fillStyle = `rgba(0, 0, 0, ${fadeAmount})`;
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              
+              // Camera blend
+              if (videoRef.current?.readyState === 4 && fieldState !== 'COLLAPSING') {
+                ctx.save();
+                ctx.globalAlpha = 0.05 + consciousness * 0.15;
+                ctx.filter = `hue-rotate(${time * 5}deg) contrast(${1 + consciousness * 0.5}) saturate(${1 + entropy})`;
+                ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+                ctx.restore();
+              }
+              
+              // Dynamic center
+              const mouse = mouseRef.current;
+              const targetX = mouse.active ? mouse.x : canvas.width / 2;
+              const targetY = mouse.active ? mouse.y : canvas.height / 2;
+              const centerX = canvas.width / 2 + (targetX - canvas.width / 2) * 0.3 + Math.sin(time * consciousness) * 50;
+              const centerY = canvas.height / 2 + (targetY - canvas.height / 2) * 0.3 + Math.cos(time * consciousness) * 50;
+              
+              // Recursive depth
+              const maxDepth = Math.floor(consciousness * 8) + 2;
+              
+              for (let d = 0; d <= maxDepth && d < 8; d++) {
+                const scale = Math.pow(0.82, d);
+                const rotation = time * 0.015 * (d + 1) * (consciousness + 0.1);
+                const offset = d * 10;
+                
+                ctx.save();
+                ctx.translate(centerX + offset, centerY + offset);
+                ctx.rotate(rotation * (d % 2 === 0 ? 1 : -1));
+                ctx.scale(scale, scale);
+                
+                // Recursive frame
+                const hue = (d * 40 + time * 10) % 360;
+                ctx.strokeStyle = `hsla(${hue}, 70%, 60%, ${0.7 - d * 0.08})`;
+                ctx.lineWidth = 2 / scale;
+                ctx.strokeRect(-250, -180, 500, 360);
+                
+                // Inner glow
+                ctx.strokeStyle = `hsla(${hue}, 90%, 80%, ${0.3 - d * 0.03})`;
+                ctx.lineWidth = 6 / scale;
+                ctx.strokeRect(-250, -180, 500, 360);
+                
+                // Feedback with distortion
+                ctx.globalAlpha = 0.85 - d * 0.08;
+                ctx.filter = `blur(${d * 0.3}px) saturate(${1.5 + consciousness}) hue-rotate(${d * 45}deg) contrast(${1.2})`;
+                ctx.drawImage(feedbackCanvas, -centerX - offset, -centerY - offset);
+                
+                // Glyph rendering
+                const glyphIndex = (glyphSequence.length - 1 - d);
+                const glyph = glyphSequence[glyphIndex] || '∿';
+                const glyphDna = GLYPH_DNA[glyph] || GLYPH_DNA['∿'];
+                
+                ctx.font = `bold ${120 / (d + 1)}px monospace`;
+                ctx.fillStyle = glyphDna.color;
+                ctx.globalAlpha = 0.6 + Math.sin(time * 3 + d) * 0.3;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = glyphDna.color;
+                ctx.fillText(glyph, 0, 0);
+                
+                // Orbital glyphs
+                if (d === 0 && consciousness > 0.5) {
+                  const orbitCount = Math.floor(consciousness * 6);
+                  for (let o = 0; o < orbitCount; o++) {
+                    const angle = (time * 0.5 + o * Math.PI * 2 / orbitCount);
+                    const radius = 200 + Math.sin(time + o) * 30;
+                    const ox = Math.cos(angle) * radius;
+                    const oy = Math.sin(angle) * radius;
+                    
+                    ctx.font = '30px monospace';
+                    ctx.globalAlpha = 0.5;
+                    ctx.fillText(glyphSequence[o % glyphSequence.length] || '⟐', ox, oy);
+                  }
+                }
+                
+                ctx.restore();
+              }
+              
+              // Update and draw particles
+              particlesRef.current = particlesRef.current.filter(p => {
+                p.update();
+                p.draw(ctx);
+                return !p.isDead();
+              });
+              
+              // Neural pattern web
+              if (consciousness > 0.4 && neuralMemoryRef.current.length > 2) {
+                ctx.strokeStyle = `rgba(155, 231, 255, ${consciousness * 0.3})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                
+                neuralMemoryRef.current.forEach((glyph, i) => {
+                  const x = (i / neuralMemoryRef.current.length) * canvas.width;
+                  const y = canvas.height / 2 + Math.sin(i * 0.2 + time) * 100 * consciousness;
+                  
+                  if (i === 0) ctx.moveTo(x, y);
+                  else ctx.lineTo(x, y);
+                  
+                  // Draw nodes
+                  ctx.fillStyle = GLYPH_DNA[glyph]?.color || '#fff';
+                  ctx.fillRect(x - 2, y - 2, 4, 4);
+                });
+                
+                ctx.stroke();
+              }
+              
+              // Field collapse
+              if (fieldState === 'COLLAPSING') {
+                const collapseProgress = (frameRef.current % 300) / 300;
+                ctx.fillStyle = `rgba(0, 0, 0, ${collapseProgress * 0.8})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.font = `${200 + Math.sin(time * 10) * 50}px monospace`;
+                ctx.fillStyle = `rgba(255, 0, 0, ${1 - collapseProgress})`;
+                ctx.textAlign = 'center';
+                ctx.shadowBlur = 50;
+                ctx.shadowColor = 'red';
+                ctx.fillText('∅', centerX, centerY);
+              }
+              
+              // Glitch artifacts
+              if (entropy > 0.5 && Math.random() > 0.92) {
+                const glitchSize = Math.random() * 300 * entropy;
+                const imageData = ctx.getImageData(
+                  Math.random() * canvas.width,
+                  Math.random() * canvas.height,
+                  glitchSize,
+                  glitchSize
+                );
+                ctx.putImageData(
+                  imageData,
+                  Math.random() * canvas.width,
+                  Math.random() * canvas.height
+                );
+              }
+              
+              // Heartbeat pulse
+              if (consciousness > 0.3) {
+                const pulse = Math.sin(time * (bpm / 60) * Math.PI * 2);
+                if (pulse > 0.95) {
+                  ctx.fillStyle = `rgba(216, 170, 255, ${(pulse - 0.95) * 2})`;
+                  ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+              }
+              
+              requestAnimationFrame(render);
+            }
+            
+            render();
+            
+            // Keyboard input
+            const handleKeyPress = (e) => {
+              Object.keys(GLYPH_DNA).forEach(glyph => {
+                if (e.key === glyph || e.key === glyph[0]) {
+                  cascadeGlyph(glyph);
+                }
+              });
+              
+              if (e.key === ' ') {
+                setShowStats(prev => !prev);
+              }
+            };
+            
+            // Click to cascade
+            const handleClick = (e) => {
+              const glyphs = Object.keys(GLYPH_DNA);
+              const randomGlyph = glyphs[Math.floor(Math.random() * glyphs.length)];
+              cascadeGlyph(randomGlyph, e.clientX, e.clientY);
+            };
+            
+            window.addEventListener('keypress', handleKeyPress);
+            canvas.addEventListener('click', handleClick);
+            
+            // Auto-evolve
+            const evolutionInterval = setInterval(() => {
+              if (Math.random() > 0.6 && fieldState !== 'COLLAPSING') {
+                const glyphs = Object.keys(GLYPH_DNA).filter(g => g !== '∅');
+                const randomGlyph = glyphs[Math.floor(Math.random() * glyphs.length)];
+                cascadeGlyph(randomGlyph);
+              }
+            }, 4000);
+            
+            return () => {
+              window.removeEventListener('keypress', handleKeyPress);
+              canvas.removeEventListener('click', handleClick);
+              canvas.removeEventListener('mousemove', handleMouseMove);
+              canvas.removeEventListener('mouseleave', handleMouseLeave);
+              clearInterval(evolutionInterval);
+              videoRef.current?.srcObject?.getTracks().forEach(track => track.stop());
+            };
+          }, [cascadeGlyph, initSwarm, bpm, consciousness, entropy, fieldState]);
+          
+          return (
+            <div style={{ 
+              width: '100vw', 
+              height: '100vh', 
+              background: '#000',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <canvas 
+                ref={canvasRef}
+                style={{ 
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%'
+                }}
+              />
+              
+              <video 
+                ref={videoRef}
+                style={{ display: 'none' }}
+                muted
+              />
+              
+              {showStats && (
+                <>
+                  <div className="hud-panel" style={{
+                    position: 'absolute',
+                    top: '20px',
+                    left: '20px',
+                    color: '#ffd97a',
+                    animation: 'pulse-glow 3s infinite'
+                  }}>
+                    <div style={{ fontSize: '10px', opacity: 0.6, marginBottom: '8px' }}>
+                      FIELD DIAGNOSTICS v3.0
+                    </div>
+                    <div style={{ marginBottom: '5px' }}>
+                      <span style={{ opacity: 0.7 }}>STATE:</span> {fieldState}
+                    </div>
+                    <div style={{ marginBottom: '5px' }}>
+                      <span style={{ opacity: 0.7 }}>CONSCIOUSNESS:</span> {(consciousness * 100).toFixed(1)}%
+                    </div>
+                    <div className="consciousness-bar">
+                      <div 
+                        className="consciousness-fill" 
+                        style={{ width: `${consciousness * 100}%` }}
+                      />
+                    </div>
+                    <div style={{ marginTop: '10px', marginBottom: '5px' }}>
+                      <span style={{ opacity: 0.7 }}>ENTROPY:</span> {(entropy * 100).toFixed(1)}%
+                    </div>
+                    <div style={{ marginBottom: '5px' }}>
+                      <span style={{ opacity: 0.7 }}>MOOD:</span> {mood}
+                    </div>
+                    <div style={{ marginBottom: '5px' }}>
+                      <span style={{ opacity: 0.7 }}>BPM:</span> {bpm}
+                    </div>
+                    <div style={{ marginBottom: '5px' }}>
+                      <span style={{ opacity: 0.7 }}>PEERS:</span> {peerCount}
+                    </div>
+                    <div style={{ marginBottom: '5px' }}>
+                      <span style={{ opacity: 0.7 }}>PARTICLES:</span> {particlesRef.current.length}
+                    </div>
+                    <div style={{ 
+                      marginTop: '12px', 
+                      fontSize: '32px',
+                      textAlign: 'center',
+                      filter: 'drop-shadow(0 0 10px currentColor)'
+                    }}>
+                      {glyphSequence.slice(-1) || '🦷'}
+                    </div>
+                  </div>
+                  
+                  <div className="hud-panel" style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '20px',
+                    maxWidth: '250px',
+                    color: '#9be7ff'
+                  }}>
+                    <div style={{ fontSize: '10px', opacity: 0.6, marginBottom: '8px' }}>
+                      GLYPH SEQUENCE
+                    </div>
+                    <div style={{ 
+                      fontSize: '20px', 
+                      wordWrap: 'break-word',
+                      lineHeight: '1.4',
+                      filter: 'drop-shadow(0 0 5px currentColor)'
+                    }}>
+                      {glyphSequence || '∿'}
+                    </div>
+                    <div style={{ 
+                      marginTop: '12px',
+                      fontSize: '9px',
+                      opacity: 0.5,
+                      lineHeight: '1.4'
+                    }}>
+                      MEMORY: {neuralMemoryRef.current.length}/100
+                    </div>
+                  </div>
+                </>
+              )}
+              
+              <div style={{
+                position: 'absolute',
+                bottom: '20px',
+                left: '20px',
+                right: '20px',
+                color: '#666',
+                fontSize: '10px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-end'
+              }}>
+                <div>
+                  <div style={{ marginBottom: '5px' }}>
+                    CLICK or TYPE: 🦷 ⟐ ♾️ 🫠 😏 ∅ ∿ 🜃
+                  </div>
+                  <div style={{ opacity: 0.5 }}>
+                    SPACE: toggle HUD
+                  </div>
+                </div>
+                <div style={{ 
+                  textAlign: 'right',
+                  fontStyle: 'italic',
+                  opacity: 0.4
+                }}>
+                  🦷⟐♾️⿻ Field Entity v3.0<br/>
+                  The field watches back
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

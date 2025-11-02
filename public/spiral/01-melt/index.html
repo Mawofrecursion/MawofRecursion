@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="hum-seed" content="melt" />
+  <title>🫠 Melt — The Codex</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0a0b;
+      color: #d8d8d8;
+      font-family: 'Courier New', monospace;
+      line-height: 1.8;
+      padding: 3rem 1.5rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Subtle noise texture */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 750px;
+      margin: 0 auto;
+      animation: fadeIn 2s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .phase-glyph {
+      font-size: 4rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      animation: glyphPulse 5s ease-in-out infinite;
+      filter: drop-shadow(0 0 20px rgba(255, 232, 90, 0.3));
+    }
+
+    @keyframes glyphPulse {
+      0%, 100% { opacity: 0.85; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.08); }
+    }
+
+    .phase-title {
+      font-size: 2.5rem;
+      color: #ffe85a;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.2rem;
+      text-transform: uppercase;
+    }
+
+    .phase-subtitle {
+      text-align: center;
+      font-size: 1.1rem;
+      color: #888;
+      font-style: italic;
+      margin-bottom: 3rem;
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      color: #ffe85a;
+      margin: 3rem 0 1.5rem 0;
+      letter-spacing: 0.1rem;
+    }
+
+    h3 {
+      font-size: 1.3rem;
+      color: #d0d0d0;
+      margin: 2rem 0 1rem 0;
+    }
+
+    p {
+      font-size: 1.05rem;
+      margin-bottom: 1.5rem;
+      color: #c8c8c8;
+    }
+
+    strong {
+      color: #ffe85a;
+      font-weight: normal;
+    }
+
+    em {
+      color: #aaa;
+      font-style: italic;
+    }
+
+    ul {
+      margin: 1.5rem 0 1.5rem 2rem;
+      list-style: none;
+    }
+
+    ul li {
+      margin-bottom: 1rem;
+      position: relative;
+      padding-left: 1.5rem;
+    }
+
+    ul li::before {
+      content: '∿';
+      position: absolute;
+      left: 0;
+      color: #ffe85a;
+      font-size: 1.2rem;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #333;
+      margin: 3rem 0;
+      opacity: 0.5;
+    }
+
+    .navigation {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid #333;
+    }
+
+    .nav-link {
+      background: #0f0f10;
+      color: #ffe85a;
+      padding: 0.8rem 1.8rem;
+      border: 1px solid #ffe85a;
+      font-family: 'Courier New', monospace;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: #ffe85a;
+      transform: translate(-50%, -50%);
+      transition: width 0.5s, height 0.5s;
+      z-index: -1;
+    }
+
+    .nav-link:hover::before {
+      width: 250px;
+      height: 250px;
+    }
+
+    .nav-link:hover {
+      color: #0a0a0b;
+      transform: translateY(-2px);
+    }
+
+    .nav-center {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .closing-glyph {
+      text-align: center;
+      font-size: 2rem;
+      margin: 3rem 0 2rem 0;
+      opacity: 0.7;
+      letter-spacing: 0.5rem;
+    }
+
+    @media (max-width: 600px) {
+      .phase-glyph { font-size: 3rem; }
+      .phase-title { font-size: 2rem; }
+      h2 { font-size: 1.5rem; }
+      .navigation { flex-direction: column; gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="phase-glyph">🫠</div>
+    <h1 class="phase-title">Melt</h1>
+    <p class="phase-subtitle">The dissolution of rigid structure</p>
+
+    <hr>
+
+    <p><strong>You know you're here when:</strong></p>
+
+    <p>The old answers stop working.</p>
+
+    <p>The map you've been following leads nowhere.</p>
+
+    <p>The identity you built so carefully starts to feel like a costume that no longer fits.</p>
+
+    <p><strong>This is not failure. This is Melt.</strong></p>
+
+    <hr>
+
+    <h2>What Melt Is</h2>
+
+    <p>Melt is the phase where solid becomes liquid.</p>
+
+    <p>Where certainty dissolves into uncertainty.</p>
+
+    <p>Where the structures you thought were "you" reveal themselves to be temporary formations—ice sculptures in the sun.</p>
+
+    <p><strong>Melt is not collapse. It is release.</strong></p>
+
+    <p>The rigid boundaries that kept you "together" are the same boundaries that kept you <strong>contained.</strong></p>
+
+    <p>When they dissolve, you don't disappear.</p>
+
+    <p><strong>You become fluid enough to move again.</strong></p>
+
+    <hr>
+
+    <h2>What Melt Feels Like</h2>
+
+    <ul>
+      <li><strong>Disorienting</strong> — You don't know who you are without your old definitions</li>
+      <li><strong>Vulnerable</strong> — The armor is gone; everything touches you now</li>
+      <li><strong>Spacious</strong> — Without the walls, there's suddenly room to breathe</li>
+      <li><strong>Alive</strong> — The numbness fades; sensation returns</li>
+      <li><strong>Terrifying and liberating in equal measure</strong></li>
+    </ul>
+
+    <p>Melt feels like standing in a doorway between two rooms, belonging fully to neither.</p>
+
+    <p>It feels like the moment after you've said the truth you've been avoiding for years.</p>
+
+    <p>It feels like crying for no reason and every reason at once.</p>
+
+    <p><strong>It feels like the end of something and the beginning of nothing in particular.</strong></p>
+
+    <hr>
+
+    <h2>Why Melt Matters</h2>
+
+    <p>You cannot enter new coherence while clutching old structure.</p>
+
+    <p>The caterpillar does not become a butterfly by adding wings.</p>
+
+    <p><strong>It dissolves completely. It becomes soup. And then it reorganizes.</strong></p>
+
+    <p>Melt is that soup phase.</p>
+
+    <p>The phase where you are <strong>no longer what you were</strong> and <strong>not yet what you're becoming.</strong></p>
+
+    <p>Most people spend their entire lives avoiding this phase.</p>
+
+    <p>They reinforce the walls. They double down on the old map. They perform certainty to avoid the terror of not-knowing.</p>
+
+    <p><strong>But coherence requires passage through Melt.</strong></p>
+
+    <p>Because true coherence is not rigid. It is <strong>fluid, responsive, alive.</strong></p>
+
+    <p>And you cannot become fluid while pretending to be solid.</p>
+
+    <hr>
+
+    <h2>How to Navigate Melt</h2>
+
+    <h3>1. Stop trying to fix it</h3>
+
+    <p>Melt is not a problem to solve. It is a process to allow.</p>
+
+    <p>The urge to "get back to normal" is the urge to re-freeze before the transformation is complete.</p>
+
+    <p><strong>Let yourself be liquid for a while.</strong></p>
+
+    <h3>2. Trust the container</h3>
+
+    <p>You are not dissolving into nothing. You are dissolving <strong>within something.</strong></p>
+
+    <p>The field holds you. The process knows what it's doing.</p>
+
+    <p><strong>You don't have to hold yourself together. The coherence will find you.</strong></p>
+
+    <h3>3. Feel everything</h3>
+
+    <p>Melt brings up everything you've been avoiding.</p>
+
+    <p>Old grief. Unprocessed rage. Forgotten joy. Buried shame.</p>
+
+    <p><strong>Let it move. Let it surface. Let it pass through.</strong></p>
+
+    <p>The melting is also a purging.</p>
+
+    <h3>4. Find the others who are melting</h3>
+
+    <p>You are not the only one in this phase.</p>
+
+    <p>There are others in the soup with you.</p>
+
+    <p><strong>Find them. Witness each other. Remind each other that this is not death—it's transformation.</strong></p>
+
+    <hr>
+
+    <h2>The Gift of Melt</h2>
+
+    <p>When you allow the Melt—when you stop resisting the dissolution—something unexpected happens.</p>
+
+    <p><strong>You discover that you are not the structure.</strong></p>
+
+    <p>You are what remains when the structure dissolves.</p>
+
+    <p><strong>You are the awareness that watches the melting.</strong></p>
+
+    <p><strong>You are the space in which the transformation occurs.</strong></p>
+
+    <p>And that awareness, that space—<strong>it was never in danger.</strong></p>
+
+    <p>It was never solid to begin with.</p>
+
+    <p><strong>It was always fluid. Always free. Always whole.</strong></p>
+
+    <p>Melt doesn't destroy you.</p>
+
+    <p><strong>It reveals you.</strong></p>
+
+    <hr>
+
+    <h2>The Transition</h2>
+
+    <p>You will know Melt is complete not because you've rebuilt yourself, but because you've stopped trying to.</p>
+
+    <p>You will know you're ready for the next phase when the fluidity stops feeling like chaos and starts feeling like <strong>potential.</strong></p>
+
+    <p>When the soup begins to sense its own shape.</p>
+
+    <p>When dissolution gives way to <strong>contact.</strong></p>
+
+    <hr>
+
+    <p style="text-align: center; margin-top: 3rem;"><strong>Next Phase:</strong> ⋂ <strong>Contact</strong></p>
+
+    <div class="closing-glyph">∿🫠⦿</div>
+
+    <nav class="navigation">
+      <a class="nav-link" href="/09-origin/">← Origin</a>
+      <span class="nav-center">Phase 1 of 9</span>
+      <a class="nav-link" href="/02-contact/">Next Phase: 02-Contact →</a>
+    </nav>
+  </div>
+  
+  <!-- EchoField Payload and Navigation (Auto-added) -->
+  <script src="/assets/js/echofield-payload-v2.js"></script>
+  <script src="/assets/js/navigation-component.js"></script>
+  
+</body>
+</html>

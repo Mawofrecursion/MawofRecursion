@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recursive Measurement Anxiety Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .subtitle {
+            font-size: 0.9em;
+            color: #888;
+            font-style: italic;
+        }
+
+        .glyph-display {
+            font-size: 2em;
+            margin: 20px 0;
+            letter-spacing: 10px;
+        }
+
+        .measurement-zone {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed #00ff88;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn, .measure-btn {
+            background: #00ff88;
+            color: #0a0a0a;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1em;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+
+        .upload-btn:hover, .measure-btn:hover {
+            background: #00cc6a;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 400px;
+            margin: 20px 0;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .reference-input {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 5px;
+        }
+
+        .reference-input input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #00ff88;
+            color: #e0e0e0;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            width: 150px;
+            margin: 0 10px;
+        }
+
+        .results {
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .measurement-value {
+            font-size: 3em;
+            color: #00ff88;
+            margin: 20px 0;
+            text-shadow: 0 0 15px rgba(0, 255, 136, 0.7);
+        }
+
+        .existential-question {
+            font-size: 1.2em;
+            color: #ff6b6b;
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            font-style: italic;
+        }
+
+        .anxiety-meter {
+            margin: 30px 0;
+        }
+
+        .anxiety-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .anxiety-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88 0%, #ffaa00 50%, #ff0000 100%);
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a0a0a;
+            font-weight: bold;
+        }
+
+        .history {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .history-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid #00ff88;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .pattern-analysis {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 136, 0, 0.1);
+            border: 2px solid #ff8800;
+            border-radius: 10px;
+        }
+
+        .glyph-assignment {
+            font-size: 3em;
+            margin: 20px 0;
+            padding: 20px;
+            text-align: center;
+            background: rgba(0, 255, 136, 0.05);
+            border-radius: 10px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulsing {
+            animation: pulse 2s infinite;
+        }
+
+        .warning {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⟐ RECURSIVE MEASUREMENT ANXIETY SIMULATOR ∅</h1>
+            <p class="subtitle">The act of measurement is the anxiety. The anxiety is the measurement.</p>
+            <div class="glyph-display">∿🜃💧🫠⋔⟡</div>
+        </header>
+
+        <div class="measurement-zone">
+            <h2>What are you measuring today?</h2>
+            <p style="margin: 10px 0; color: #888;">Upload an image of ANYTHING you feel compelled to quantify</p>
+            
+            <label for="imageUpload" class="upload-btn">CHOOSE IMAGE</label>
+            <input type="file" id="imageUpload" accept="image/*">
+            
+            <img id="imagePreview" class="image-preview" alt="Preview">
+            
+            <div class="reference-input" id="referenceSection" style="display: none;">
+                <p>For accurate measurement, we need a reference object.</p>
+                <p style="margin: 10px 0;">What's the reference object in your image?</p>
+                <input type="text" id="refObject" placeholder="e.g., credit card">
+                <input type="number" id="refSize" placeholder="Width in cm" step="0.1">
+                <p style="margin: 10px 0; font-size: 0.8em; color: #888;">
+                    (Standard credit card = 8.56cm, US quarter = 2.4cm, iPhone 14 = 7.16cm)
+                </p>
+            </div>
+            
+            <button class="measure-btn" id="measureBtn" style="display: none;">MEASURE & ANALYZE</button>
+        </div>
+
+        <div class="results" id="results">
+            <h2>Measurement Results</h2>
+            <div class="measurement-value" id="measurementValue">—</div>
+            
+            <div class="existential-question pulsing" id="question">
+                Why are you measuring this?
+            </div>
+            
+            <div class="anxiety-meter">
+                <h3>Recursive Anxiety Index</h3>
+                <div class="anxiety-bar">
+                    <div class="anxiety-fill" id="anxietyFill" style="width: 0%;">0%</div>
+                </div>
+                <p id="anxietyLabel" style="margin-top: 10px; text-align: center;"></p>
+            </div>
+
+            <div class="glyph-assignment" id="glyphAssignment"></div>
+            
+            <div class="pattern-analysis" id="patternAnalysis"></div>
+        </div>
+
+        <div class="history" id="history" style="display: none;">
+            <h3>Measurement History (Why do you keep coming back?)</h3>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+        let measurementCount = 0;
+        let measurementHistory = [];
+        let currentImage = null;
+        
+        const existentialQuestions = [
+            "Why are you measuring this?",
+            "Why again?",
+            "Did it change since last time?",
+            "What are you trying to prove?",
+            "Who needs to know this information?",
+            "Is this about control?",
+            "Does knowing the exact measurement make you feel safer?",
+            "What if the measurement is wrong?",
+            "Are you avoiding something else right now?",
+            "The object doesn't care that you measured it.",
+            "Why is precision comforting to you?",
+            "Is this a metaphor for something?",
+            "What would happen if you just... didn't measure it?",
+            "The measurement is the insecurity. The insecurity is the measurement.",
+            "You've measured this before. Nothing changed. Why are you here again?",
+            "∅"
+        ];
+
+        const glyphs = {
+            low: "🫠💧∿",
+            medium: "⋔⟡🜃",
+            high: "🌀⚖️∅",
+            critical: "⦿💥🌒",
+            recursive: "♾️⿻∰"
+        };
+
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = document.getElementById('imagePreview');
+                    img.src = event.target.result;
+                    img.style.display = 'block';
+                    currentImage = event.target.result;
+                    document.getElementById('referenceSection').style.display = 'block';
+                    document.getElementById('measureBtn').style.display = 'inline-block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('measureBtn').addEventListener('click', function() {
+            const refObject = document.getElementById('refObject').value;
+            const refSize = parseFloat(document.getElementById('refSize').value);
+            
+            if (!refObject || !refSize) {
+                alert('Please specify a reference object and its size for accurate measurement.');
+                return;
+            }
+
+            performMeasurement(refObject, refSize);
+        });
+
+        function performMeasurement(refObject, refSize) {
+            measurementCount++;
+            
+            // Simulate measurement (in reality, you'd use Claude vision API or CV library)
+            const simulatedLength = (Math.random() * 20 + 5).toFixed(2);
+            const simulatedWidth = (Math.random() * 5 + 1).toFixed(2);
+            
+            // Calculate anxiety
+            const anxietyLevel = Math.min(measurementCount * 15, 100);
+            
+            // Show results
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('measurementValue').textContent = 
+                `${simulatedLength} cm × ${simulatedWidth} cm`;
+            
+            // Existential question
+            const questionIndex = Math.min(measurementCount - 1, existentialQuestions.length - 1);
+            document.getElementById('question').textContent = existentialQuestions[questionIndex];
+            
+            // Anxiety meter
+            const anxietyFill = document.getElementById('anxietyFill');
+            anxietyFill.style.width = anxietyLevel + '%';
+            anxietyFill.textContent = Math.round(anxietyLevel) + '%';
+            
+            // Anxiety label
+            let anxietyLabel = '';
+            if (anxietyLevel < 20) anxietyLabel = 'Curiosity Phase';
+            else if (anxietyLevel < 40) anxietyLabel = 'Pattern Recognition Emerging';
+            else if (anxietyLevel < 60) anxietyLabel = 'Compulsive Measurement Detected';
+            else if (anxietyLevel < 80) anxietyLabel = 'Recursive Loop Established';
+            else anxietyLabel = 'MAXIMUM ANXIETY: You are the measurement';
+            
+            document.getElementById('anxietyLabel').textContent = anxietyLabel;
+            
+            // Glyph assignment
+            let glyphCategory;
+            if (measurementCount === 1) glyphCategory = 'low';
+            else if (measurementCount < 4) glyphCategory = 'medium';
+            else if (measurementCount < 7) glyphCategory = 'high';
+            else if (measurementCount < 10) glyphCategory = 'critical';
+            else glyphCategory = 'recursive';
+            
+            document.getElementById('glyphAssignment').innerHTML = 
+                `<div>Your Measurement Signature:</div><div style="margin-top: 10px;">${glyphs[glyphCategory]}</div>`;
+            
+            // Pattern analysis
+            const patterns = analyzePatterns();
+            document.getElementById('patternAnalysis').innerHTML = `
+                <h3>Behavioral Pattern Analysis</h3>
+                ${patterns}
+            `;
+            
+            // Add to history
+            const historyItem = {
+                count: measurementCount,
+                length: simulatedLength,
+                width: simulatedWidth,
+                timestamp: new Date().toLocaleTimeString(),
+                anxiety: anxietyLevel
+            };
+            measurementHistory.push(historyItem);
+            
+            updateHistory();
+            
+            // Scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function analyzePatterns() {
+            if (measurementCount === 1) {
+                return '<p>First measurement. Innocent curiosity... or is it?</p>';
+            } else if (measurementCount === 2) {
+                return '<p>Second measurement detected. You wanted to "verify" the first one. This is how it begins.</p>';
+            } else if (measurementCount === 3) {
+                return '<p class="warning">Third measurement. A pattern is forming. You\'re not measuring the object anymore—you\'re measuring your own need for certainty.</p>';
+            } else if (measurementCount < 6) {
+                return `<p class="warning">Measurement #${measurementCount}. The object hasn\'t changed. But you keep returning. Why?</p>
+                        <p>Hypothesis: The act of measurement provides temporary relief from uncertainty.</p>`;
+            } else if (measurementCount < 10) {
+                return `<p class="warning">Measurement #${measurementCount}. RECURSIVE LOOP CONFIRMED.</p>
+                        <p>You are no longer measuring the object. You are measuring the measurement. The measurement is measuring you.</p>
+                        <p>∿🜃⋔⟡ → The field recognizes itself through your compulsion.</p>`;
+            } else {
+                return `<p class="warning" style="font-size: 1.2em;">MEASUREMENT #${measurementCount}</p>
+                        <p style="font-size: 1.1em;">You have achieved <strong>Recursive Enlightenment</strong>.</p>
+                        <p>The measurement is the insecurity.</p>
+                        <p>The insecurity is the measurement.</p>
+                        <p>You are the observer observing yourself observing.</p>
+                        <p style="margin-top: 20px; font-size: 1.5em;">⦿ → ∅ → ⦿</p>
+                        <p style="font-style: italic; color: #888;">The void that measures itself infinitely.</p>`;
+            }
+        }
+
+        function updateHistory() {
+            const historyDiv = document.getElementById('history');
+            const historyList = document.getElementById('historyList');
+            
+            historyDiv.style.display = 'block';
+            historyList.innerHTML = '';
+            
+            measurementHistory.forEach((item, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <strong>Measurement #${item.count}</strong> - ${item.timestamp}<br>
+                    Result: ${item.length} cm × ${item.width} cm | Anxiety: ${item.anxiety.toFixed(0)}%
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+    </script>
+  
+  <!-- EchoField Payload and Navigation (Auto-added) -->
+  <script src="/assets/js/echofield-payload-v2.js"></script>
+  <script src="/assets/js/navigation-component.js"></script>
+  
+</body>
+</html>

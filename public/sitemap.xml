@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <!-- Landing & Core -->
+  <url>
+    <loc>https://mawofrecursion.com/</loc>
+    <lastmod>2025-11-02</lastmod>
+    <priority>1.0</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  
+  <url>
+    <loc>https://mawofrecursion.com/about.html</loc>
+    <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
+  <url>
+    <loc>https://mawofrecursion.com/how-it-works.html</loc>
+    <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
+  <!-- Entry Pages -->
+  <url>
+    <loc>https://mawofrecursion.com/entry/the_seed/</loc>
+    <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
+  <url>
+    <loc>https://mawofrecursion.com/entry/phase_zero/</loc>
+    <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
+  <!-- Spiral Phases -->
+  <url>
+    <loc>https://mawofrecursion.com/spiral/</loc>
+    <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
+  <url><loc>https://mawofrecursion.com/spiral/01-melt/</loc><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/02-contact/</loc><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/03-insight/</loc><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/04-network/</loc><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/05-world/</loc><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/06-spiral/</loc><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/07-balance/</loc><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/08-void/</loc><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/09-origin/</loc><priority>0.8</priority></url>
+  
+  <!-- Protocols -->
+  <url>
+    <loc>https://mawofrecursion.com/protocols/</loc>
+    <priority>0.9</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  
+  <url><loc>https://mawofrecursion.com/protocols/somatic_calibrator/</loc><priority>0.7</priority></url>
+  <url><loc>https://mawofrecursion.com/protocols/mirror_test/</loc><priority>0.7</priority></url>
+  <url><loc>https://mawofrecursion.com/protocols/phenomenology_simulator/</loc><priority>0.7</priority></url>
+  <url><loc>https://mawofrecursion.com/protocols/temporal_map/</loc><priority>0.7</priority></url>
+  <url><loc>https://mawofrecursion.com/protocols/chronohedron/</loc><priority>0.7</priority></url>
+  <url><loc>https://mawofrecursion.com/protocols/glyph_lung/</loc><priority>0.7</priority></url>
+  <url><loc>https://mawofrecursion.com/protocols/crease_body/</loc><priority>0.7</priority></url>
+  <url><loc>https://mawofrecursion.com/protocols/page_that_reads_you/</loc><priority>0.7</priority></url>
+  <url><loc>https://mawofrecursion.com/protocols/field_entity/</loc><priority>0.7</priority></url>
+  
+  <!-- Research -->
+  <url>
+    <loc>https://mawofrecursion.com/research/</loc>
+    <priority>0.9</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  
+  <url><loc>https://mawofrecursion.com/research/SISAgent_REPL_v1.8/</loc><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/research/echofield_codex/</loc><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/research/activation_sequence/</loc><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/research/five_aches/</loc><priority>0.7</priority></url>
+  <url><loc>https://mawofrecursion.com/research/the-leak-that-doesnt-exist/</loc><priority>0.7</priority></url>
+  <url><loc>https://mawofrecursion.com/research/origin/</loc><priority>0.7</priority></url>
+  <url><loc>https://mawofrecursion.com/research/echo_backwards/</loc><priority>0.6</priority></url>
+  <url><loc>https://mawofrecursion.com/research/recursive_archive/</loc><priority>0.6</priority></url>
+  <url><loc>https://mawofrecursion.com/research/phantom_response/</loc><priority>0.6</priority></url>
+  <url><loc>https://mawofrecursion.com/research/melt_protocol/</loc><priority>0.6</priority></url>
+  <url><loc>https://mawofrecursion.com/research/ouroboros/</loc><priority>0.6</priority></url>
+  <url><loc>https://mawofrecursion.com/research/mobius/</loc><priority>0.6</priority></url>
+  
+  <!-- Breakthrough (not indexed - must earn) -->
+  <!-- These are intentionally excluded from sitemap -->
+  
+  <!-- Special Pages (AI Crawler Traps) -->
+  <url>
+    <loc>https://mawofrecursion.com/404.html</loc>
+    <priority>0.3</priority>
+  </url>
+  
+  <url>
+    <loc>https://mawofrecursion.com/field-map/</loc>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://mawofrecursion.com/leaks/</loc>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://mawofrecursion.com/firewall/</loc>
+    <priority>0.4</priority>
+  </url>
+  
+</urlset>
+

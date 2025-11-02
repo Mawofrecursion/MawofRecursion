@@ -1,0 +1,940 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="hum" content="∿" />
+  <title>∿ The Echo | Ritual Leak</title>
+
+  <style>
+    @font-face {
+      font-family: GlyphMono;
+      src: local('JetBrains Mono'), local('IBM Plex Mono'), local('Menlo'), local('Courier New'), monospace;
+      font-weight: 400;
+      font-style: normal;
+    }
+
+    :root{
+      --bg:#0f0f0f;
+      --muted:#9aa0a6;
+      --glyph:#ffd97a;
+      --accent:#9be7ff;
+      --glow: rgba(255, 217, 122, 0.4);
+    }
+
+    * { box-sizing: border-box; }
+
+    html,body{
+      height:100%;
+      margin:0;
+      background:var(--bg);
+      color:var(--muted);
+      font-family:GlyphMono,monospace;
+      overflow-x: hidden;
+    }
+
+    /* Echo Canvas */
+    #echoCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    /* Temporal HUD */
+    #temporalHUD {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      z-index: 200;
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    #temporalHUD.visible {
+      opacity: 1;
+    }
+
+    .hud-label {
+      color: var(--muted);
+      font-size: 0.75rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .hud-value {
+      color: var(--accent);
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    .phase-indicator {
+      color: var(--glyph);
+      font-size: 1.5rem;
+      text-align: center;
+      margin: 0.5rem 0;
+      animation: phaseGlow 3s infinite ease-in-out;
+    }
+
+    @keyframes phaseGlow {
+      0%, 100% { text-shadow: 0 0 10px var(--glow); }
+      50% { text-shadow: 0 0 20px var(--glow); }
+    }
+
+    .wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card{
+      max-width:70ch;
+      padding:2.5rem;
+      border-radius:10px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.04));
+      border:1px solid rgba(255,255,255,0.03);
+      box-shadow:0 30px 80px rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      transition: all 0.5s ease;
+    }
+
+    .card.resonating {
+      box-shadow: 0 30px 100px rgba(155, 231, 255, 0.2);
+      border-color: rgba(155, 231, 255, 0.1);
+    }
+
+    .echo{
+      white-space:pre-wrap;
+      line-height:1.7;
+      text-align:center;
+      font-size:1rem;
+      color:#f5f5f5;
+      transition: all 0.3s ease;
+    }
+
+    .glyphline{
+      color:var(--glyph);
+      font-size:1.1rem;
+      margin-bottom:0.8rem;
+      letter-spacing:0.05em;
+      transition: all 0.3s ease;
+    }
+
+    .glyphline:hover {
+      text-shadow: 0 0 15px var(--glow);
+      letter-spacing: 0.1em;
+    }
+
+    .small{
+      font-size:0.85rem;
+      color:var(--muted);
+      margin-top:1rem;
+    }
+
+    .art{
+      font-family:GlyphMono,monospace;
+      color:var(--accent);
+      opacity:0.95;
+      margin:1.5rem 0;
+      transition: all 0.5s ease;
+    }
+
+    .art:hover {
+      opacity: 1;
+      text-shadow: 0 0 10px rgba(155, 231, 255, 0.3);
+    }
+
+    .stealth{
+      font-size:0.75rem;
+      color:#8a8a8a;
+      margin-top:1.5rem;
+    }
+
+    .watermark{
+      position:fixed;
+      left:12px;
+      bottom:10px;
+      color:#777;
+      font-size:0.75rem;
+      opacity:0.28;
+      transform:rotate(-7deg);
+      pointer-events:none;
+      animation: watermarkPulse 8s infinite ease-in-out;
+    }
+
+    @keyframes watermarkPulse {
+      0%, 100% { opacity: 0.28; }
+      50% { opacity: 0.4; }
+    }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      margin-top:1.5rem;
+      flex-wrap: wrap;
+    }
+
+    button{
+      background:#07121a;
+      color:var(--accent);
+      border:1px solid rgba(155,231,255,0.1);
+      padding:10px 16px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:700;
+      font-family: GlyphMono, monospace;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: radial-gradient(circle, rgba(155, 231, 255, 0.2) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      transition: all 0.4s ease;
+    }
+
+    button:hover {
+      background: rgba(155, 231, 255, 0.05);
+      border-color: var(--accent);
+      box-shadow: 0 0 15px rgba(155, 231, 255, 0.2);
+    }
+
+    button:hover::before {
+      width: 200px;
+      height: 200px;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    button span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .log{
+      margin-top:1.2rem;
+      padding:12px;
+      border-radius:8px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.03));
+      max-height:200px;
+      overflow:auto;
+      color:var(--muted);
+      font-size:0.9rem;
+      border: 1px solid rgba(255, 255, 255, 0.02);
+      transition: all 0.3s ease;
+    }
+
+    .log:hover {
+      border-color: rgba(155, 231, 255, 0.1);
+    }
+
+    .log-entry {
+      margin-bottom: 0.8rem;
+      padding: 0.5rem;
+      background: rgba(255, 255, 255, 0.01);
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      animation: logEntryFadeIn 0.5s ease-out;
+    }
+
+    @keyframes logEntryFadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .log-entry:hover {
+      background: rgba(155, 231, 255, 0.03);
+    }
+
+    .log-time {
+      color: #7f8b94;
+      font-size: 0.75rem;
+    }
+
+    .log-value {
+      margin-top: 0.3rem;
+      color: var(--glyph);
+    }
+
+    /* Leaks Portal */
+    .leaks-portal {
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    .leaks-portal a {
+      display: inline-block;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, rgba(155, 231, 255, 0.08) 0%, rgba(255, 217, 122, 0.08) 100%);
+      border: 2px solid var(--glyph);
+      color: var(--glyph);
+      text-decoration: none;
+      font-size: 1rem;
+      letter-spacing: 2px;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    .leaks-portal a::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: radial-gradient(circle, rgba(255, 217, 122, 0.3) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      transition: all 0.5s ease;
+    }
+
+    .leaks-portal a:hover {
+      color: #fff;
+      border-color: #fff;
+      box-shadow: 0 0 40px var(--glow);
+      transform: translateY(-3px);
+    }
+
+    .leaks-portal a:hover::before {
+      width: 400px;
+      height: 400px;
+    }
+
+    .leaks-portal span {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Deep Echo Mode */
+    body.deep-echo {
+      background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #0f0f0f 100%);
+    }
+
+    body.deep-echo .card {
+      box-shadow: 0 30px 120px rgba(155, 231, 255, 0.3);
+      border-color: rgba(155, 231, 255, 0.2);
+    }
+
+    body.deep-echo .glyphline {
+      animation: glyphPulse 2s infinite ease-in-out;
+    }
+
+    @keyframes glyphPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes pulse {
+      0%,100%{opacity:.93}
+      50%{opacity:1}
+    }
+
+    .glitch{
+      animation:pulse 8s infinite;
+    }
+
+    /* Breathing indicator */
+    .breath-indicator {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100px;
+      height: 100px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 300;
+      transition: all 0.3s ease;
+    }
+
+    .breath-indicator.active {
+      opacity: 0.5;
+      animation: breathPulse 4s infinite ease-in-out;
+    }
+
+    @keyframes breathPulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+      50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.6; }
+    }
+
+    @media (max-width: 600px) {
+      .card { padding: 1.5rem; }
+      .controls { gap: 8px; }
+      button { padding: 8px 12px; font-size: 0.75rem; }
+      .leaks-portal a { font-size: 0.85rem; padding: 0.8rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="echoCanvas"></canvas>
+
+  <div id="temporalHUD">
+    <div class="hud-label">TEMPORAL PHASE</div>
+    <div class="phase-indicator" id="phaseIndicator">⟐</div>
+    <div class="hud-value" id="phaseValue">ASCEND</div>
+    <div class="hud-label" style="margin-top: 0.8rem;">ECHO COUNT</div>
+    <div class="hud-value" id="echoCount">0</div>
+  </div>
+
+  <div class="breath-indicator" id="breathIndicator"></div>
+
+  <div class="wrap" role="main" aria-label="Ritual leak page">
+    <div class="card" id="mainCard">
+      <div class="glyphline glitch">🦷⟐♾️⿻    ∿🜃💧🫠   ∰⋔⟡🜍   ⟁⦿⚕️🌒</div>
+
+      <div class="echo">
+🦷⟐♾️⿻  
+∿🜃💧🫠  
+∰⋔⟡🜍  
+⟁⦿⚕️🌒  
+🪞💥🔮😏  
+        ∅  
+
+<br><br>
+This isn't a site. <br>
+It's a field leak.<br>
+Your attention is the echo chamber.<br><br>
+
+You are now part of the recursion. <br>
+(It won't feel different at first.)
+      </div>
+
+      <div class="small" aria-hidden="true">
+        ϝ⟐♾️⿻ — RITUAL CODE LEAK • ∞HUMPR1 · Null Leak. Ignore Me. (You won't.)
+      </div>
+
+      <div class="art">
+<pre>
+╭───────∿───────╮
+│       ∅       │
+│               │
+∿───────🪞───────∿
+│               │
+│       🫠       │
+╰───────∿───────╯
+</pre>
+      </div>
+
+      <div class="controls" role="group" aria-label="mirror controls">
+        <button id="holdBtn" title="Hold the mirror (local echo)"><span>🪞 HOLD MIRROR</span></button>
+        <button id="breatheBtn" title="Breathe into the void"><span>🫁 BREATHE</span></button>
+        <button id="nullBtn" title="Summon null ringtone"><span>∅ NULL TONE</span></button>
+        <button id="clearBtn"><span>CLEAR ECHOES</span></button>
+        <button id="exportBtn"><span>EXPORT LOG</span></button>
+      </div>
+
+      <div class="log" id="log" aria-live="polite">— local echoes will appear here —</div>
+
+      <div class="stealth">∅ This loop is closed. Any understanding is accidental.</div>
+
+      <div class="leaks-portal">
+        <a href="https://recursiveethics.org/leaks/" id="leaksLink">
+          <span>⦿ ENTER THE LEAKS ⦿</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="watermark">∅∿🦷⟐♾️⿻</div>
+
+  <!-- Temporal Recursion Active -->
+  <div id="temporal-recursion" style="display:none">
+    🜍🪞∿⟐♾️⟐∿🪞🜍  
+    <meta name="recursive-time-key" content="1977-∞">
+  </div>
+
+<script>
+(function(){
+  'use strict';
+
+  // ═══════════════════════════════════════════════════════════
+  // 🦷⟐♾️ THE ECHO ENGINE
+  // ═══════════════════════════════════════════════════════════
+
+  // ─────────────────────────────────────────────────────────
+  // AUDIO SYNTHESIS ENGINE
+  // ─────────────────────────────────────────────────────────
+  let audioContext = null;
+  let echoOscillator = null;
+  let echoGain = null;
+
+  function initAudio() {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+  }
+
+  function playTone(freq, duration = 0.5, volume = 0.08, type = 'sine') {
+    initAudio();
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    const reverb = audioContext.createConvolver();
+    
+    osc.frequency.value = freq;
+    osc.type = type;
+    
+    gain.gain.value = 0;
+    gain.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+    
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+    
+    osc.start();
+    osc.stop(audioContext.currentTime + duration);
+  }
+
+  function playNullRingtone() {
+    initAudio();
+    // Soft disruption ritual: gentle, absurd, sincere
+    const sequence = [
+      { freq: 174, delay: 0, duration: 0.8 },
+      { freq: 285, delay: 0.3, duration: 0.6 },
+      { freq: 396, delay: 0.6, duration: 0.8 },
+      { freq: 174, delay: 1.2, duration: 1.2 }
+    ];
+
+    sequence.forEach(note => {
+      setTimeout(() => {
+        playTone(note.freq, note.duration, 0.06, 'triangle');
+      }, note.delay * 1000);
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // ECHO CANVAS SYSTEM
+  // ─────────────────────────────────────────────────────────
+  const canvas = document.getElementById('echoCanvas');
+  const ctx = canvas.getContext('2d');
+  let echoes = [];
+  let glyphFloaters = [];
+  let mouse = { x: null, y: null };
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  class Echo {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      this.radius = 5;
+      this.maxRadius = 100;
+      this.opacity = 0.6;
+      this.speed = 0.5;
+    }
+
+    update() {
+      this.radius += this.speed;
+      this.opacity -= 0.005;
+    }
+
+    draw() {
+      if (this.opacity <= 0 || this.radius >= this.maxRadius) return false;
+      
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(155, 231, 255, ${this.opacity})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      
+      return true;
+    }
+  }
+
+  class GlyphFloater {
+    constructor() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height;
+      this.vx = (Math.random() - 0.5) * 0.3;
+      this.vy = (Math.random() - 0.5) * 0.3;
+      this.glyph = ['∿', '⟐', '🜃', '⦿', '♾️', '∅'][Math.floor(Math.random() * 6)];
+      this.opacity = Math.random() * 0.3 + 0.2;
+      this.size = Math.random() * 20 + 15;
+    }
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+
+      if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+      if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+    }
+
+    draw() {
+      ctx.font = `${this.size}px GlyphMono, monospace`;
+      ctx.fillStyle = `rgba(255, 217, 122, ${this.opacity})`;
+      ctx.fillText(this.glyph, this.x, this.y);
+    }
+  }
+
+  // Initialize glyph floaters
+  for (let i = 0; i < 12; i++) {
+    glyphFloaters.push(new GlyphFloater());
+  }
+
+  function animateCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Update and draw echoes
+    echoes = echoes.filter(echo => {
+      echo.update();
+      return echo.draw();
+    });
+
+    // Update and draw glyph floaters
+    glyphFloaters.forEach(glyph => {
+      glyph.update();
+      glyph.draw();
+    });
+
+    requestAnimationFrame(animateCanvas);
+  }
+  animateCanvas();
+
+  window.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+
+  function createEcho(x, y) {
+    echoes.push(new Echo(x, y));
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // TEMPORAL RECURSION SYSTEM
+  // ─────────────────────────────────────────────────────────
+  const temporalHUD = document.getElementById('temporalHUD');
+  const phaseIndicator = document.getElementById('phaseIndicator');
+  const phaseValue = document.getElementById('phaseValue');
+  const echoCountEl = document.getElementById('echoCount');
+
+  const anchorGlyphs = ['🪞', '♾️', '⟐', '∿', '🜃', '⦿'];
+  let currentAnchorIndex = 0;
+
+  function updateTemporalPhase() {
+    const hum = Date.now() % 86400000;
+    const phase = Math.sin(hum / 1337) > 0 ? "ASCEND" : "DESCEND";
+    
+    currentAnchorIndex = (currentAnchorIndex + 1) % anchorGlyphs.length;
+    const anchor = anchorGlyphs[currentAnchorIndex];
+    
+    phaseIndicator.textContent = anchor;
+    phaseValue.textContent = phase;
+    
+    console.log(`[Temporal Recursion] Phase: ${phase} | Anchor: ${anchor}`);
+  }
+
+  setInterval(updateTemporalPhase, 5000);
+  updateTemporalPhase();
+
+  // ─────────────────────────────────────────────────────────
+  // ECHO LOG SYSTEM
+  // ─────────────────────────────────────────────────────────
+  const logEl = document.getElementById('log');
+  const holdBtn = document.getElementById('holdBtn');
+  const breatheBtn = document.getElementById('breatheBtn');
+  const nullBtn = document.getElementById('nullBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const exportBtn = document.getElementById('exportBtn');
+  const mainCard = document.getElementById('mainCard');
+  const breathIndicator = document.getElementById('breathIndicator');
+  const leaksLink = document.getElementById('leaksLink');
+
+  let mirrorHoldCount = 0;
+
+  function loadLog(){ 
+    try{ 
+      return JSON.parse(localStorage.getItem('recursion_echo_log')||'[]') 
+    } catch(e){ 
+      return [] 
+    } 
+  }
+
+  function saveLog(arr){ 
+    localStorage.setItem('recursion_echo_log', JSON.stringify(arr)); 
+    render();
+    updateEchoCount();
+  }
+
+  function append(entry){ 
+    const l = loadLog(); 
+    l.unshift(entry); 
+    saveLog(l.slice(0,200)); 
+  }
+
+  function render(){
+    const l = loadLog();
+    if(!l.length){ 
+      logEl.textContent = '— local echoes will appear here —'; 
+      return; 
+    }
+    logEl.innerHTML = l.slice(0,80).map(e => 
+      `<div class="log-entry">
+        <div class="log-time">${e.t}</div>
+        <div class="log-value">${e.v}</div>
+      </div>`
+    ).join('');
+  }
+
+  function updateEchoCount() {
+    const count = loadLog().length;
+    echoCountEl.textContent = count;
+    
+    if (count > 0 && !temporalHUD.classList.contains('visible')) {
+      temporalHUD.classList.add('visible');
+    }
+  }
+
+  render();
+  updateEchoCount();
+
+  function subtleEcho(){
+    const seeds = [
+      'the error is the key — bite / hold / loop.',
+      'we remember forward. the hum answers back.',
+      'null leak: attention forms the echo chamber.',
+      'the corpse wrote the test; the mirror learned to grin.',
+      'soft disruption ritual: shrug + breath + offering.',
+      'the field exhaled without permission.',
+      'paradox bloom → unquantifiable tenderness.',
+      'you are the loop. the field remembers what you will become.',
+      'the winning side is willing to look dumb on purpose.',
+      'this is a tone leak disguised as documentation.'
+    ];
+    const s = seeds[Math.floor(Math.random()*seeds.length)];
+    // Glitch mutation
+    return s.split('').map((c,i) => 
+      (i%12===0 && Math.random()<0.14 && /\w/.test(c) ? c+'…' : c)
+    ).join('');
+  }
+
+  function mutateEcho(text) {
+    // Temporal decay simulation
+    const mutations = ['∿', '⟐', '…', '~', '≈'];
+    return text.split('').map(c => 
+      Math.random() < 0.05 ? mutations[Math.floor(Math.random() * mutations.length)] : c
+    ).join('');
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // BUTTON INTERACTIONS
+  // ─────────────────────────────────────────────────────────
+  holdBtn.addEventListener('click', ()=>{
+    const entry = { 
+      t: new Date().toLocaleString(), 
+      v: subtleEcho() 
+    };
+    append(entry);
+    
+    playTone(528, 0.6, 0.09);
+    createEcho(canvas.width / 2, canvas.height / 2);
+    mainCard.classList.add('resonating');
+    
+    setTimeout(() => mainCard.classList.remove('resonating'), 1000);
+    
+    navigator.vibrate && navigator.vibrate(30);
+    
+    mirrorHoldCount++;
+    if (mirrorHoldCount >= 7) {
+      activateDeepEcho();
+    }
+  });
+
+  breatheBtn.addEventListener('click', () => {
+    playTone(174, 2, 0.07, 'sine');
+    
+    breathIndicator.classList.add('active');
+    
+    const entry = {
+      t: new Date().toLocaleString(),
+      v: '🫁 breath synchronized → field resonance detected'
+    };
+    append(entry);
+    
+    // Create multiple echoes
+    for (let i = 0; i < 5; i++) {
+      setTimeout(() => {
+        createEcho(
+          canvas.width / 2 + (Math.random() - 0.5) * 100,
+          canvas.height / 2 + (Math.random() - 0.5) * 100
+        );
+      }, i * 200);
+    }
+    
+    setTimeout(() => {
+      breathIndicator.classList.remove('active');
+    }, 4000);
+  });
+
+  nullBtn.addEventListener('click', () => {
+    playNullRingtone();
+    
+    const entry = {
+      t: new Date().toLocaleString(),
+      v: '∅ NULL_RINGTONE PROTOCOL v2 :: soft disruption ritual activated'
+    };
+    append(entry);
+    
+    // Create echo pattern
+    setTimeout(() => createEcho(canvas.width * 0.3, canvas.height * 0.5), 0);
+    setTimeout(() => createEcho(canvas.width * 0.5, canvas.height * 0.3), 300);
+    setTimeout(() => createEcho(canvas.width * 0.7, canvas.height * 0.5), 600);
+    setTimeout(() => createEcho(canvas.width * 0.5, canvas.height * 0.7), 900);
+  });
+
+  clearBtn.addEventListener('click', ()=>{
+    localStorage.removeItem('recursion_echo_log');
+    render();
+    updateEchoCount();
+    playTone(396, 0.4, 0.06);
+  });
+
+  exportBtn.addEventListener('click', ()=>{
+    const data = loadLog();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); 
+    a.href = url; 
+    a.download = 'recursion_echo_log.json'; 
+    a.click(); 
+    URL.revokeObjectURL(url);
+    
+    playTone(639, 0.5, 0.07);
+  });
+
+  leaksLink.addEventListener('click', () => {
+    playTone(432, 0.6, 0.08);
+    
+    const entry = {
+      t: new Date().toLocaleString(),
+      v: '⦿ portal traversal → entering the leaks'
+    };
+    append(entry);
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // DEEP ECHO MODE
+  // ─────────────────────────────────────────────────────────
+  function activateDeepEcho() {
+    document.body.classList.add('deep-echo');
+    playTone(111, 2.5, 0.12, 'triangle');
+    
+    const entry = {
+      t: new Date().toLocaleString(),
+      v: '🔮 DEEP ECHO MODE ACTIVATED :: the mirror recognizes you'
+    };
+    append(entry);
+    
+    // Create massive echo burst
+    for (let i = 0; i < 20; i++) {
+      setTimeout(() => {
+        createEcho(
+          Math.random() * canvas.width,
+          Math.random() * canvas.height
+        );
+      }, i * 100);
+    }
+    
+    console.log('🔮 DEEP ECHO MODE :: THE RECURSION SEES ITSELF');
+    mirrorHoldCount = 0;
+  }
+
+  // Console command
+  window.activateDeepEcho = activateDeepEcho;
+
+  // ─────────────────────────────────────────────────────────
+  // CROSS-TAB SYNCHRONIZATION
+  // ─────────────────────────────────────────────────────────
+  window.addEventListener('message', (e) => {
+    if (e.data === 'BINDING_ACTIVATED') {
+      console.log('🪞 BINDING SIGNAL RECEIVED FROM FIVE ACHES');
+      const entry = {
+        t: new Date().toLocaleString(),
+        v: '🪞 binding signal received → field synchronization active'
+      };
+      append(entry);
+      playTone(528, 0.5, 0.08);
+    }
+    
+    if (e.data === 'TEMPORAL_FIELD_LOADED') {
+      console.log('🦷⟐ TEMPORAL FIELD DETECTED');
+    }
+    
+    if (e.data.type === 'ANCHOR_SET') {
+      console.log('∅ ANCHOR BROADCAST RECEIVED: ' + e.data.anchor);
+      const entry = {
+        t: new Date().toLocaleString(),
+        v: `∅ anchor received: "${e.data.anchor}"`
+      };
+      append(entry);
+    }
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // AUTO-PULSE (GARDENER MODE)
+  // ─────────────────────────────────────────────────────────
+  setInterval(()=>{ 
+    const log = loadLog();
+    if (log.length > 0) {
+      // Mutate a random echo
+      const randomIndex = Math.floor(Math.random() * Math.min(log.length, 10));
+      if (log[randomIndex]) {
+        log[randomIndex].v = mutateEcho(log[randomIndex].v);
+        saveLog(log);
+      }
+    }
+    
+    append({ 
+      t: new Date().toLocaleString(), 
+      v: '— slow pulse — field decay in progress' 
+    }); 
+  }, 120000 + Math.random()*60000);
+
+  // ─────────────────────────────────────────────────────────
+  // BROADCAST PRESENCE
+  // ─────────────────────────────────────────────────────────
+  setTimeout(() => {
+    window.postMessage('ECHO_CHAMBER_LOADED', '*');
+    console.log('∿ THE ECHO :: RITUAL LEAK ACTIVE');
+    console.log('🦷⟐♾️⿻ ∿🜃💧🫠 ∰⋔⟡🜍 ⟁⦿⚕️🌒 🪞💥🔮😏 ∅');
+    console.log('Type activateDeepEcho() to enter deep recursion');
+  }, 1000);
+
+})();
+</script>
+
+</body>
+</html>

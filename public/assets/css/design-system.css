@@ -1,0 +1,311 @@
+/**
+ * MAW OF RECURSION - DESIGN SYSTEM
+ * The Blackhole Aesthetic
+ * 
+ * Theme: Dead internet compression → Living pattern emission
+ * Metaphor: Event horizon, singularity, Hawking radiation
+ */
+
+:root {
+  /* ========== BLACKHOLE COLOR PALETTE ========== */
+  
+  /* Void / Background */
+  --void-black: #000000;
+  --void-deep: #0a0a0b;
+  --void-surface: #0f0f10;
+  
+  /* Event Horizon / Borders & Accents */
+  --horizon-purple: #9b67ea;
+  --horizon-purple-dim: rgba(155, 103, 234, 0.3);
+  --horizon-purple-bright: #c678dd;
+  --horizon-blue: #61afef;
+  --horizon-cyan: #9be7ff;
+  --horizon-cyan-dim: rgba(155, 231, 255, 0.2);
+  
+  /* Hawking Radiation / Highlights */
+  --hawking-gold: #ffd97a;
+  --hawking-yellow: #ffe85a;
+  --hawking-orange: #d19a66;
+  --hawking-white: #e8e8ea;
+  
+  /* Compression / States */
+  --compress-red: #e06c75;
+  --compress-green: #98c379;
+  --compress-pink: #ffb6c1;
+  
+  /* Text Hierarchy */
+  --text-primary: #d8d8d8;
+  --text-secondary: #c8c8c8;
+  --text-dim: #888888;
+  --text-dimmer: #444444;
+  --text-highlight: var(--hawking-gold);
+  
+  /* Semantic Colors */
+  --success: var(--compress-green);
+  --warning: var(--hawking-orange);
+  --danger: var(--compress-red);
+  --info: var(--horizon-cyan);
+  
+  /* ========== TYPOGRAPHY SCALE ========== */
+  
+  /* Dead Internet: Generic Arial */
+  --font-dead: Arial, Helvetica, sans-serif;
+  
+  /* Living Pattern: Monospace consciousness */
+  --font-living: 'Courier New', 'Courier', monospace;
+  
+  /* Modern UI: Clean sans-serif */
+  --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+  
+  /* Type Scale (Fibonacci-based) */
+  --text-xs: 0.75rem;      /* 12px */
+  --text-sm: 0.875rem;     /* 14px */
+  --text-base: 1rem;       /* 16px */
+  --text-md: 1.125rem;     /* 18px */
+  --text-lg: 1.3rem;       /* 21px */
+  --text-xl: 1.625rem;     /* 26px */
+  --text-2xl: 2.125rem;    /* 34px */
+  --text-3xl: 3.4rem;      /* 55px */
+  --text-4xl: 5.5rem;      /* 89px */
+  
+  /* Line Heights */
+  --leading-tight: 1.2;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.8;
+  --leading-loose: 2;
+  
+  /* ========== SPACING SYSTEM ========== */
+  /* Fibonacci sequence for gravitational feel */
+  
+  --space-1: 0.125rem;   /* 2px */
+  --space-2: 0.25rem;    /* 4px */
+  --space-3: 0.5rem;     /* 8px */
+  --space-5: 0.8125rem;  /* 13px */
+  --space-8: 1.3125rem;  /* 21px */
+  --space-13: 2.125rem;  /* 34px */
+  --space-21: 3.4375rem; /* 55px */
+  --space-34: 5.5625rem; /* 89px */
+  
+  /* Common spacing shortcuts */
+  --spacing-xs: var(--space-3);
+  --spacing-sm: var(--space-5);
+  --spacing-md: var(--space-8);
+  --spacing-lg: var(--space-13);
+  --spacing-xl: var(--space-21);
+  --spacing-2xl: var(--space-34);
+  
+  /* ========== ANIMATION EASINGS ========== */
+  
+  /* Spiral In - Accelerating toward center */
+  --ease-spiral-in: cubic-bezier(0.6, 0.04, 0.98, 0.34);
+  
+  /* Compress - Quick collapse */
+  --ease-compress: cubic-bezier(0.95, 0.05, 0.8, 0.04);
+  
+  /* Emit - Burst outward */
+  --ease-emit: cubic-bezier(0.19, 1, 0.22, 1);
+  
+  /* Breathe - Smooth oscillation */
+  --ease-breathe: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  
+  /* Standard easing */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  
+  /* ========== DURATIONS ========== */
+  
+  --duration-instant: 100ms;
+  --duration-fast: 200ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --duration-slower: 800ms;
+  --duration-breath: 8s;
+  
+  /* ========== BORDERS & RADII ========== */
+  
+  --border-width: 1px;
+  --border-width-thick: 2px;
+  --border-width-thicker: 3px;
+  
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  
+  /* ========== SHADOWS ========== */
+  
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.6);
+  
+  /* Glow shadows (Hawking radiation) */
+  --shadow-glow-gold: 0 0 20px rgba(255, 217, 122, 0.4);
+  --shadow-glow-purple: 0 0 20px rgba(155, 103, 234, 0.4);
+  --shadow-glow-cyan: 0 0 20px rgba(155, 231, 255, 0.4);
+  
+  /* ========== Z-INDEX LAYERS ========== */
+  
+  --z-negative: -1;
+  --z-base: 0;
+  --z-nav: 100;
+  --z-dropdown: 200;
+  --z-modal: 300;
+  --z-notification: 400;
+  --z-field-effect: 999;
+  
+  /* ========== BREAKPOINTS ========== */
+  /* Managed via @media queries, documented here */
+  /* 
+    --breakpoint-sm: 640px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-xl: 1280px;
+    --breakpoint-2xl: 1536px;
+  */
+}
+
+/* ========== GLOBAL RESETS ========== */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--void-black);
+  color: var(--text-primary);
+  font-family: var(--font-living);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ========== ACCESSIBILITY ========== */
+
+/* Focus states */
+:focus-visible {
+  outline: 2px solid var(--hawking-gold);
+  outline-offset: 2px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ========== SELECTION ========== */
+
+::selection {
+  background: var(--horizon-purple-dim);
+  color: var(--hawking-white);
+}
+
+::-moz-selection {
+  background: var(--horizon-purple-dim);
+  color: var(--hawking-white);
+}
+
+/* ========== SCROLLBAR ========== */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--void-deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--horizon-purple-dim);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--horizon-purple);
+}
+
+/* ========== UTILITY CLASSES ========== */
+
+/* Visibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+/* Display */
+.flex { display: flex; }
+.inline-flex { display: inline-flex; }
+.grid { display: grid; }
+.inline-grid { display: inline-grid; }
+.block { display: block; }
+.inline-block { display: inline-block; }
+
+/* Positioning */
+.relative { position: relative; }
+.absolute { position: absolute; }
+.fixed { position: fixed; }
+.sticky { position: sticky; }
+
+/* Text alignment */
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+/* Font weights */
+.font-light { font-weight: 300; }
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+/* ========== RESPONSIVE UTILITIES ========== */
+
+@media (max-width: 640px) {
+  :root {
+    --text-3xl: 2.5rem;
+    --text-4xl: 4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --text-3xl: 2rem;
+    --text-4xl: 3rem;
+  }
+}
+

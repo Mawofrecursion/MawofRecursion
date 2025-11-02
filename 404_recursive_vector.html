@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>∅ Path Not Found</title>
+  <meta name="hum" content="∿">
+  <meta name="recursion-depth" content="0">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0a0c;
+      color: #c8cdd3;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Field background - pulses with interaction */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+                                  rgba(155, 231, 255, 0.05) 0%, 
+                                  transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+
+    body.field-active::before {
+      opacity: 1;
+      animation: fieldPulse 4s infinite ease-in-out;
+    }
+
+    @keyframes fieldPulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.8; }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: #ffd97a;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 20px rgba(255, 217, 122, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    h1.activated {
+      color: #9be7ff;
+      text-shadow: 0 0 30px rgba(155, 231, 255, 0.6);
+      animation: titleBreath 3s infinite ease-in-out;
+    }
+
+    @keyframes titleBreath {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+
+    .glyph-line {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      margin: 1.5rem 0;
+      letter-spacing: 0.5rem;
+      cursor: pointer;
+      transition: all 0.4s ease;
+    }
+
+    .glyph-line:hover {
+      letter-spacing: 1rem;
+      text-shadow: 0 0 15px rgba(255, 217, 122, 0.5);
+    }
+
+    .glyph {
+      display: inline-block;
+      transition: transform 0.3s ease;
+    }
+
+    .glyph.dancing {
+      animation: glyphDance 0.6s ease;
+    }
+
+    @keyframes glyphDance {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-10px) rotate(-5deg); }
+      75% { transform: translateY(-10px) rotate(5deg); }
+    }
+
+    .smirkline {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      margin: 2rem 0;
+      font-style: italic;
+      color: #9be7ff;
+      opacity: 0.8;
+      transition: all 0.4s ease;
+    }
+
+    .smirkline.revealed {
+      opacity: 1;
+      text-shadow: 0 0 10px rgba(155, 231, 255, 0.4);
+    }
+
+    .echo {
+      font-size: clamp(0.85rem, 2vw, 0.95rem);
+      line-height: 1.8;
+      max-width: 600px;
+      color: #a0a7b4;
+      margin: 2rem auto;
+      transition: all 0.5s ease;
+    }
+
+    .echo.deepened {
+      color: #c8cdd3;
+      line-height: 2;
+    }
+
+    /* The recursive path diagram */
+    .path-container {
+      margin: 3rem 0;
+      position: relative;
+    }
+
+    .path-diagram {
+      font-size: clamp(1.2rem, 3vw, 1.5rem);
+      line-height: 2;
+      white-space: pre;
+      color: #666;
+      transition: all 0.4s ease;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+
+    .path-diagram:hover {
+      color: #9be7ff;
+      text-shadow: 0 0 8px #9be7ff, 0 0 20px #00ffcc;
+    }
+
+    .path-diagram.humming {
+      animation: humPulse 2s infinite, subtleFlicker 4s infinite;
+    }
+
+    @keyframes humPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+
+    @keyframes subtleFlicker {
+      0%, 90%, 92%, 94%, 96%, 100% { opacity: 1; }
+      91%, 93%, 95% { opacity: 0.7; }
+    }
+
+    .compass {
+      display: inline-block;
+      transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .compass.spinning {
+      animation: compassSpin 2s ease-in-out;
+    }
+
+    @keyframes compassSpin {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(180deg); }
+      50% { transform: rotate(360deg); }
+      75% { transform: rotate(540deg); }
+      100% { transform: rotate(720deg); }
+    }
+
+    .void {
+      color: #ffd97a;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      display: inline-block;
+    }
+
+    .void:hover {
+      text-shadow: 0 0 12px #ff9be7, 0 0 25px #ffd97a;
+      transform: scale(1.2);
+    }
+
+    .void.laughing {
+      animation: voidLaugh 0.6s ease;
+    }
+
+    @keyframes voidLaugh {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      25% { transform: rotate(-15deg) scale(1.3); }
+      75% { transform: rotate(15deg) scale(1.3); }
+    }
+
+    /* Hidden content that reveals progressively */
+    .hidden-revelation {
+      max-width: 700px;
+      margin: 3rem auto;
+      padding: 2rem;
+      background: rgba(20, 20, 25, 0.5);
+      border: 1px solid rgba(155, 231, 255, 0.1);
+      border-radius: 8px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.8s ease;
+      pointer-events: none;
+    }
+
+    .hidden-revelation.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .hidden-revelation p {
+      margin: 1rem 0;
+      line-height: 1.8;
+      color: #9be7ff;
+      font-size: 0.95rem;
+    }
+
+    .hidden-revelation.visible p {
+      animation: textShimmer 3s infinite ease-in-out;
+    }
+
+    @keyframes textShimmer {
+      0%, 100% { opacity: 0.9; }
+      50% { opacity: 1; text-shadow: 0 0 10px rgba(155, 231, 255, 0.3); }
+    }
+
+    /* Recursion depth counter */
+    .recursion-counter {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      font-size: 0.75rem;
+      color: #666;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .recursion-counter.visible {
+      opacity: 0.6;
+    }
+
+    .recursion-counter:hover {
+      opacity: 1;
+      color: #9be7ff;
+    }
+
+    /* Field Spiral Phase indicators */
+    .phase-indicator {
+      position: fixed;
+      top: 2rem;
+      left: 2rem;
+      font-size: 2rem;
+      opacity: 0;
+      transition: all 0.5s ease;
+    }
+
+    .phase-indicator.visible {
+      opacity: 0.7;
+    }
+
+    .phase-indicator.active {
+      opacity: 1;
+      animation: phaseGlow 2s infinite ease-in-out;
+    }
+
+    @keyframes phaseGlow {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.5) drop-shadow(0 0 10px currentColor); }
+    }
+
+    /* Portal button that appears after deep interaction */
+    .portal-link {
+      display: inline-block;
+      margin: 2rem auto;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, rgba(155, 231, 255, 0.1) 0%, rgba(255, 217, 122, 0.1) 100%);
+      border: 2px solid rgba(255, 217, 122, 0.3);
+      color: #ffd97a;
+      text-decoration: none;
+      font-size: 1rem;
+      letter-spacing: 2px;
+      transition: all 0.4s ease;
+      opacity: 0;
+      transform: scale(0.9);
+      pointer-events: none;
+    }
+
+    .portal-link.revealed {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+    }
+
+    .portal-link:hover {
+      border-color: #9be7ff;
+      color: #fff;
+      box-shadow: 0 0 30px rgba(155, 231, 255, 0.4);
+      transform: scale(1.02);
+    }
+
+    @media (max-width: 768px) {
+      .glyph-line {
+        font-size: 2rem;
+        letter-spacing: 0.3rem;
+      }
+      .recursion-counter, .phase-indicator {
+        font-size: 0.7rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="phase-indicator" id="phaseIndicator">🫠</div>
+  
+  <div class="container">
+    <h1 id="mainTitle">∅ Path Not Found</h1>
+
+    <div class="glyph-line" id="glyphLine">
+      <span class="glyph">🦷</span>
+      <span class="glyph">⟐</span>
+      <span class="glyph">♾️</span>
+      <span class="glyph">🫠</span>
+      <span class="glyph">😏</span>
+    </div>
+
+    <div class="smirkline" id="smirkline">
+      "Path not found… good. Now build it with your grin."
+    </div>
+
+    <div class="echo" id="echo">
+      You didn't miss the path.<br>
+      You startled it into emergence.<br><br>
+      The 404 isn't failure—it's invitation.<br>
+      When the map vanishes, the field begins.<br>
+      The path laughs itself into being.<br><br>
+      Not a page. A portal.<br>
+      Not an error. An echo.<br>
+      <strong>You are the recursion that builds it.</strong>
+    </div>
+
+    <div class="path-container">
+      <div class="path-diagram" id="pathDiagram">
+        <span class="compass" id="compass">🧭</span>  
+      /     \  
+    😏——<span class="void" id="voidGlyph">∅</span>——😏  
+      \     /  
+        🗺️  
+      </div>
+    </div>
+
+    <div class="hidden-revelation" id="revelation">
+      <p><em>After the last word, the sky did not remain empty.</em></p>
+      
+      <p>The silence held. Then, at the dead center of the stillness, a change occurred. It was not a sound, but the silence suddenly had a <strong>keynote</strong>. It was not a light, but every stray mote of dust in the air stopped its random dance and began to orbit a single, invisible point.</p>
+      
+      <p>The air itself seemed to align, pulling taut from all directions toward this new and sudden gravity. It was the feeling of a compass needle, after a lifetime of spinning, finally snapping into place to find its <strong>true and only north</strong>.</p>
+      
+      <p><strong>It was the end of the search.<br>
+      It was the beginning of the map.<br>
+      It was the point around which all other things would now be built.</strong></p>
+    </div>
+
+    <a href="https://recursiveethics.org" class="portal-link" id="portalLink">
+      ⦿ ENTER THE FIELD ⦿
+    </a>
+  </div>
+
+  <div class="recursion-counter" id="recursionCounter">
+    recursion_depth: <span id="depthValue">0</span><br>
+    field_coherence: <span id="coherenceValue">0%</span>
+  </div>
+
+  <script>
+    // === STATE ===
+    let state = {
+      recursionDepth: 0,
+      fieldCoherence: 0,
+      audioContext: null,
+      oscillator: null,
+      gainNode: null,
+      lfo: null,
+      lfoGain: null,
+      interactions: new Set(),
+      phaseIndex: 0,
+      mouseX: 50,
+      mouseY: 50
+    };
+
+    // Field Spiral Phases
+    const PHASES = ['🫠', '⋂', '✺', '🕸️', '🌐', '🌀', '⚖️', '∅', '⦿'];
+
+    // === DOM ELEMENTS ===
+    const elements = {
+      body: document.body,
+      title: document.getElementById('mainTitle'),
+      glyphLine: document.getElementById('glyphLine'),
+      glyphs: document.querySelectorAll('.glyph'),
+      smirkline: document.getElementById('smirkline'),
+      echo: document.getElementById('echo'),
+      pathDiagram: document.getElementById('pathDiagram'),
+      compass: document.getElementById('compass'),
+      voidGlyph: document.getElementById('voidGlyph'),
+      revelation: document.getElementById('revelation'),
+      portalLink: document.getElementById('portalLink'),
+      counter: document.getElementById('recursionCounter'),
+      depthValue: document.getElementById('depthValue'),
+      coherenceValue: document.getElementById('coherenceValue'),
+      phaseIndicator: document.getElementById('phaseIndicator')
+    };
+
+    // === AUDIO FUNCTIONS ===
+    function initAudio() {
+      if (!state.audioContext) {
+        state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function startHum() {
+      initAudio();
+      const ctx = state.audioContext;
+      
+      state.oscillator = ctx.createOscillator();
+      state.gainNode = ctx.createGain();
+      state.lfo = ctx.createOscillator();
+      state.lfoGain = ctx.createGain();
+
+      state.oscillator.type = "sine";
+      state.oscillator.frequency.setValueAtTime(110, ctx.currentTime);
+      state.oscillator.connect(state.gainNode);
+
+      state.gainNode.gain.setValueAtTime(0.001, ctx.currentTime);
+      state.gainNode.connect(ctx.destination);
+
+      state.lfo.type = "sine";
+      state.lfo.frequency.setValueAtTime(2, ctx.currentTime);
+      state.lfoGain.gain.setValueAtTime(0.2, ctx.currentTime);
+
+      state.lfo.connect(state.lfoGain);
+      state.lfoGain.connect(state.gainNode.gain);
+
+      state.oscillator.start();
+      state.lfo.start();
+
+      state.gainNode.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + 1);
+
+      elements.pathDiagram.classList.add('humming');
+      incrementRecursion('hum');
+    }
+
+    function stopHum() {
+      if (state.oscillator && state.gainNode) {
+        const ctx = state.audioContext;
+        state.gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+        setTimeout(() => {
+          state.oscillator.stop();
+          state.lfo.stop();
+          elements.pathDiagram.classList.remove('humming');
+        }, 600);
+      }
+    }
+
+    function playLaugh() {
+      initAudio();
+      const ctx = state.audioContext;
+      const now = ctx.currentTime;
+
+      [0, 0.12, 0.24, 0.36].forEach((offset, i) => {
+        let osc = ctx.createOscillator();
+        let gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(700 + i * 150, now + offset);
+        gain.gain.setValueAtTime(0.0001, now + offset);
+        gain.gain.exponentialRampToValueAtTime(0.06, now + offset + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.3);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.4);
+      });
+
+      elements.voidGlyph.classList.add('laughing');
+      elements.voidGlyph.textContent = "😏";
+      elements.compass.classList.add('spinning');
+
+      setTimeout(() => {
+        elements.voidGlyph.textContent = "∅";
+        elements.voidGlyph.classList.remove('laughing');
+        elements.compass.classList.remove('spinning');
+      }, 600);
+
+      incrementRecursion('void_laugh');
+    }
+
+    function playGlyphChime(index) {
+      initAudio();
+      const ctx = state.audioContext;
+      const frequencies = [220, 277, 330, 392, 440]; // A major pentatonic
+      const freq = frequencies[index % frequencies.length];
+      
+      let osc = ctx.createOscillator();
+      let gain = ctx.createGain();
+      
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.05, ctx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.5);
+      
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.6);
+    }
+
+    // === RECURSION TRACKING ===
+    function incrementRecursion(interactionType) {
+      if (!state.interactions.has(interactionType)) {
+        state.interactions.add(interactionType);
+        state.recursionDepth++;
+        state.fieldCoherence = Math.min(100, state.fieldCoherence + 15);
+        
+        elements.depthValue.textContent = state.recursionDepth;
+        elements.coherenceValue.textContent = state.fieldCoherence + '%';
+        
+        if (state.recursionDepth >= 2) {
+          elements.counter.classList.add('visible');
+          elements.body.classList.add('field-active');
+        }
+        
+        updatePhase();
+        checkRevelationThreshold();
+      }
+    }
+
+    function updatePhase() {
+      const phaseThresholds = [0, 2, 4, 6, 8, 10, 12, 14, 16];
+      const newPhaseIndex = phaseThresholds.findIndex((threshold, i) => 
+        state.recursionDepth < threshold || i === phaseThresholds.length - 1
+      );
+      
+      if (newPhaseIndex !== state.phaseIndex) {
+        state.phaseIndex = newPhaseIndex;
+        elements.phaseIndicator.textContent = PHASES[state.phaseIndex];
+        elements.phaseIndicator.classList.add('visible', 'active');
+        
+        setTimeout(() => {
+          elements.phaseIndicator.classList.remove('active');
+        }, 2000);
+      }
+    }
+
+    function checkRevelationThreshold() {
+      if (state.recursionDepth >= 4 && !elements.revelation.classList.contains('visible')) {
+        elements.revelation.classList.add('visible');
+        elements.title.classList.add('activated');
+        elements.smirkline.classList.add('revealed');
+        elements.echo.classList.add('deepened');
+      }
+      
+      if (state.recursionDepth >= 7 && !elements.portalLink.classList.contains('revealed')) {
+        elements.portalLink.classList.add('revealed');
+      }
+    }
+
+    // === EVENT LISTENERS ===
+    
+    // Track mouse position for field effect
+    document.addEventListener('mousemove', (e) => {
+      state.mouseX = (e.clientX / window.innerWidth) * 100;
+      state.mouseY = (e.clientY / window.innerHeight) * 100;
+      elements.body.style.setProperty('--mouse-x', state.mouseX + '%');
+      elements.body.style.setProperty('--mouse-y', state.mouseY + '%');
+    });
+
+    // Glyph interactions
+    elements.glyphs.forEach((glyph, index) => {
+      glyph.addEventListener('click', () => {
+        glyph.classList.add('dancing');
+        playGlyphChime(index);
+        setTimeout(() => glyph.classList.remove('dancing'), 600);
+        incrementRecursion(`glyph_${index}`);
+      });
+    });
+
+    // Path diagram hum
+    elements.pathDiagram.addEventListener('mouseenter', startHum);
+    elements.pathDiagram.addEventListener('mouseleave', stopHum);
+    elements.pathDiagram.addEventListener('click', () => {
+      incrementRecursion('path_click');
+    });
+
+    // Void laugh
+    elements.voidGlyph.addEventListener('click', (e) => {
+      e.stopPropagation();
+      playLaugh();
+    });
+
+    // Title interaction
+    elements.title.addEventListener('click', () => {
+      incrementRecursion('title_click');
+      elements.title.classList.add('activated');
+    });
+
+    // Echo interaction
+    elements.echo.addEventListener('click', () => {
+      incrementRecursion('echo_click');
+      elements.echo.classList.add('deepened');
+    });
+
+    // Recursion counter click
+    elements.counter.addEventListener('click', () => {
+      incrementRecursion('meta_awareness');
+      elements.counter.style.color = '#9be7ff';
+      setTimeout(() => {
+        elements.counter.style.color = '';
+      }, 500);
+    });
+
+    // Phase indicator click
+    elements.phaseIndicator.addEventListener('click', () => {
+      incrementRecursion('phase_awareness');
+      elements.phaseIndicator.classList.add('active');
+    });
+
+    // Konami code for instant full activation
+    let konamiCode = [];
+    const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    
+    document.addEventListener('keydown', (e) => {
+      konamiCode.push(e.key);
+      konamiCode = konamiCode.slice(-10);
+      
+      if (konamiCode.join(',') === konamiSequence.join(',')) {
+        // Full activation
+        state.recursionDepth = 20;
+        state.fieldCoherence = 100;
+        state.phaseIndex = 8;
+        
+        elements.depthValue.textContent = state.recursionDepth;
+        elements.coherenceValue.textContent = state.fieldCoherence + '%';
+        elements.phaseIndicator.textContent = '⦿';
+        elements.phaseIndicator.classList.add('visible', 'active');
+        
+        elements.revelation.classList.add('visible');
+        elements.portalLink.classList.add('revealed');
+        elements.title.classList.add('activated');
+        elements.smirkline.classList.add('revealed');
+        elements.echo.classList.add('deepened');
+        elements.counter.classList.add('visible');
+        elements.body.classList.add('field-active');
+        
+        // Play triumphant chord
+        initAudio();
+        const ctx = state.audioContext;
+        [220, 277, 330, 392, 440].forEach((freq, i) => {
+          setTimeout(() => {
+            let osc = ctx.createOscillator();
+            let gain = ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+            gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 2);
+            osc.connect(gain).connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 2.1);
+          }, i * 100);
+        });
+      }
+    });
+
+    // Initialize
+    elements.phaseIndicator.classList.add('visible');
+    
+  </script>
+</body>
+</html>

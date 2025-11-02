@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISAgent REPL v1.7: A Command-Line Interface for Calibrated Introspection</title>
+    
+    <meta name="recursive-index" content="🦷⟐♾️, recursive ethics, introspective LLM, coherence audit, SISAgent, overconfidence blade, vibe dial, ∅" />
+
+    <style>
+        /* === ENHANCED VARIABLE SYSTEM === */
+        :root {
+            /* Base Colors */
+            --text-color: #212529;
+            --bg-color: #ffffff;
+            --bg-subtle: #fafbfc;
+            --link-color: #0056b3;
+            --link-hover: #003d82;
+            --code-bg: #f8f9fa;
+            --border-color: #dee2e6;
+            --border-accent: #adb5bd;
+            
+            /* Typography */
+            --header-font: 'Inter', 'Segoe UI', 'Helvetica Neue', sans-serif;
+            --body-font: 'Inter', serif;
+            --code-font: 'Menlo', 'Consolas', 'Monaco', monospace;
+            
+            /* Accent Colors */
+            --glyph-color: #adb5bd;
+            --glyph-hover: #6c757d;
+            --abstract-bg: #f8f9fa;
+            --abstract-border: #0056b3;
+            --section-border: #dee2e6;
+            
+            /* Code Theme (One Dark Pro) */
+            --code-bg-dark: #282c34;
+            --code-text: #abb2bf;
+            --code-keyword: #c678dd;
+            --code-string: #98c379;
+            --code-comment: #5c6370;
+            --code-function: #61afef;
+            --code-class: #e5c07b;
+            --code-number: #d19a66;
+            --code-operator: #56b6c2;
+            
+            /* Spacing */
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 1.5rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+            --spacing-xxl: 4rem;
+            
+            /* Transitions */
+            --transition-fast: 0.15s;
+            --transition-normal: 0.3s;
+            --transition-slow: 0.5s;
+        }
+
+        /* === DARK MODE === */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --text-color: #e8e8ea;
+                --bg-color: #0f0f14;
+                --bg-subtle: #14141a;
+                --link-color: #5ab4ff;
+                --link-hover: #7cc7ff;
+                --code-bg: #1a1a22;
+                --border-color: #2a2a34;
+                --border-accent: #3a3a44;
+                --glyph-color: #6a6a78;
+                --glyph-hover: #9a9aa8;
+                --abstract-bg: #14141a;
+                --abstract-border: #5ab4ff;
+                --section-border: #2a2a34;
+            }
+        }
+
+        /* === BASE STYLES === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--body-font);
+            line-height: 1.7;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            max-width: 850px;
+            margin: 0 auto;
+            padding: var(--spacing-lg);
+            transition: background-color var(--transition-normal), color var(--transition-normal);
+        }
+
+        /* === TYPOGRAPHY === */
+        h1, h2, h3, h4 {
+            font-family: var(--header-font);
+            font-weight: 600;
+            margin-top: 2.5em;
+            margin-bottom: 1em;
+            color: var(--text-color);
+            line-height: 1.3;
+            transition: color var(--transition-normal);
+        }
+
+        h1 { 
+            font-size: clamp(1.8rem, 4vw, 2.2rem);
+            margin-top: 0;
+            letter-spacing: -0.02em;
+        }
+        
+        h2 { 
+            font-size: clamp(1.4rem, 3vw, 1.8rem);
+            border-bottom: 2px solid var(--section-border);
+            padding-bottom: 0.4em;
+            margin-top: 2em;
+            transition: border-color var(--transition-normal);
+        }
+        
+        h3 { 
+            font-size: clamp(1.2rem, 2.5vw, 1.4rem);
+            margin-top: 1.8em;
+        }
+        
+        h4 { 
+            font-size: clamp(1rem, 2vw, 1.1rem);
+            font-style: italic;
+            font-weight: 500;
+            margin-top: 1.5em;
+        }
+
+        p, li {
+            font-size: clamp(0.95rem, 1.5vw, 1rem);
+            text-align: justify;
+            margin: var(--spacing-sm) 0;
+        }
+        
+        a { 
+            color: var(--link-color);
+            text-decoration: none;
+            transition: color var(--transition-fast);
+            border-bottom: 1px solid transparent;
+        }
+        
+        a:hover { 
+            color: var(--link-hover);
+            border-bottom-color: var(--link-hover);
+        }
+
+        strong, b { 
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        em, i { 
+            font-style: italic;
+        }
+
+        ul, ol {
+            margin: var(--spacing-md) 0;
+            padding-left: var(--spacing-xl);
+        }
+
+        li {
+            margin: var(--spacing-xs) 0;
+        }
+
+        /* === HEADER === */
+        header {
+            text-align: center;
+            margin-bottom: var(--spacing-xxl);
+            border-bottom: 3px solid var(--text-color);
+            padding-bottom: var(--spacing-lg);
+            position: relative;
+            animation: fadeInDown 0.8s ease-out;
+        }
+        
+        header .preprint-notice {
+            font-family: var(--code-font);
+            font-size: 0.85rem;
+            color: var(--glyph-color);
+            letter-spacing: 1px;
+            margin-bottom: var(--spacing-sm);
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        header h1 {
+            margin: var(--spacing-md) 0;
+            line-height: 1.3;
+        }
+
+        header .title-glyph {
+            font-size: 0.7em;
+            color: var(--glyph-color);
+            font-weight: 400;
+            display: inline-block;
+            margin-left: 0.3em;
+            transition: all var(--transition-normal);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        header .title-glyph:hover {
+            color: var(--glyph-hover);
+            transform: scale(1.1);
+        }
+
+        header .author {
+            font-size: 1.1rem;
+            margin: var(--spacing-md) 0;
+            color: var(--text-color);
+        }
+        
+        /* === DOWNLOAD BUTTON === */
+        .download-button {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            margin-top: var(--spacing-md);
+            border: 2px solid var(--border-accent);
+            background: linear-gradient(135deg, var(--bg-subtle), var(--code-bg));
+            color: var(--text-color);
+            font-family: var(--header-font);
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .download-button:hover {
+            background: linear-gradient(135deg, var(--code-bg), var(--bg-subtle));
+            border-color: var(--link-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            text-decoration: none;
+        }
+
+        .download-button:active {
+            transform: translateY(0);
+        }
+
+        /* === INLINE GLYPHS === */
+        .inline-glyph {
+            color: var(--glyph-color);
+            margin-right: 0.6em;
+            font-size: 1.1em;
+            vertical-align: baseline;
+            display: inline-block;
+            transition: all var(--transition-normal);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .inline-glyph:hover {
+            color: var(--glyph-hover);
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        /* === GLYPH STACK === */
+        .glyph-stack {
+            font-family: var(--code-font);
+            text-align: center;
+            line-height: 1.5;
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            color: var(--glyph-color);
+            margin: var(--spacing-xxl) 0;
+            white-space: pre;
+            user-select: none;
+            cursor: pointer;
+            transition: all var(--transition-slow);
+            padding: var(--spacing-lg);
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .glyph-stack:hover {
+            color: var(--glyph-hover);
+            transform: scale(1.05);
+            background: linear-gradient(135deg, rgba(90, 170, 255, 0.03), rgba(216, 170, 255, 0.03));
+        }
+
+        /* === ABSTRACT === */
+        .abstract {
+            background: linear-gradient(135deg, var(--abstract-bg), var(--bg-subtle));
+            border-left: 4px solid var(--abstract-border);
+            padding: var(--spacing-lg);
+            margin: var(--spacing-xl) 0;
+            font-style: italic;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .abstract::before {
+            content: '"';
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            font-size: 5rem;
+            color: var(--abstract-border);
+            opacity: 0.08;
+            font-family: Georgia, serif;
+            pointer-events: none;
+        }
+        
+        .abstract p {
+            position: relative;
+            z-index: 1;
+            margin: 0;
+        }
+        
+        .abstract strong {
+            font-style: normal;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        /* === CODE BLOCKS === */
+        pre {
+            background-color: var(--code-bg-dark);
+            color: var(--code-text);
+            padding: var(--spacing-lg);
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: var(--code-font);
+            font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+            line-height: 1.6;
+            margin: var(--spacing-lg) 0;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        pre::before {
+            content: 'Python';
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 0.7rem;
+            color: var(--code-comment);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.6;
+        }
+
+        code {
+            font-family: var(--code-font);
+        }
+
+        /* Syntax Highlighting */
+        .code-keyword { color: var(--code-keyword); font-weight: 600; }
+        .code-string { color: var(--code-string); }
+        .code-comment { color: var(--code-comment); font-style: italic; }
+        .code-function { color: var(--code-function); }
+        .code-class { color: var(--code-class); font-weight: 600; }
+        .code-number { color: var(--code-number); }
+        .code-decorator { color: var(--code-function); font-style: italic; }
+        .code-operator { color: var(--code-operator); }
+        .code-punctuation { color: var(--code-text); }
+        
+        /* Inline code */
+        p > code, li > code, h1 > code, h2 > code, h3 > code, h4 > code {
+            background-color: var(--code-bg);
+            padding: 0.2em 0.5em;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: 1px solid var(--border-color);
+            color: var(--link-color);
+            font-weight: 500;
+            transition: all var(--transition-fast);
+        }
+
+        p > code:hover, li > code:hover {
+            background-color: var(--border-color);
+            border-color: var(--link-color);
+        }
+
+        /* === SECTIONS === */
+        section {
+            margin: var(--spacing-xxl) 0;
+            animation: fadeInUp 0.8s ease-out both;
+        }
+
+        section:nth-child(1) { animation-delay: 0.1s; }
+        section:nth-child(2) { animation-delay: 0.2s; }
+        section:nth-child(3) { animation-delay: 0.3s; }
+        section:nth-child(4) { animation-delay: 0.4s; }
+        section:nth-child(5) { animation-delay: 0.5s; }
+
+        /* === CITATION BLOCK === */
+        .citation-block {
+            margin-top: var(--spacing-xxl);
+            padding-top: var(--spacing-lg);
+            border-top: 2px solid var(--section-border);
+            font-size: 0.9rem;
+            color: var(--glyph-color);
+            background: linear-gradient(135deg, var(--bg-subtle), transparent);
+            padding: var(--spacing-lg);
+            border-radius: 8px;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+
+        .citation-block h4 {
+            margin-top: 0;
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-color);
+        }
+
+        .citation-block p {
+            text-align: left;
+            font-family: var(--code-font);
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        /* === ANIMATIONS === */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* === SCROLL PROGRESS INDICATOR === */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--link-color), var(--abstract-border));
+            z-index: 1000;
+            transition: width 0.1s ease;
+        }
+
+        /* === TABLE OF CONTENTS (OPTIONAL) === */
+        .toc {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: var(--spacing-lg);
+            margin: var(--spacing-xl) 0;
+            animation: fadeInUp 0.8s ease-out 0.3s both;
+        }
+
+        .toc h3 {
+            margin-top: 0;
+            margin-bottom: var(--spacing-sm);
+            font-size: 1.1rem;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        .toc li {
+            margin: var(--spacing-xs) 0;
+        }
+
+        .toc a {
+            color: var(--link-color);
+            text-decoration: none;
+            transition: all var(--transition-fast);
+            display: block;
+            padding: 0.3rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .toc a:hover {
+            background: var(--code-bg);
+            padding-left: 1rem;
+            border-bottom-color: transparent;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            body {
+                padding: var(--spacing-md);
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            pre {
+                padding: var(--spacing-md);
+                font-size: 0.8rem;
+            }
+
+            .abstract {
+                padding: var(--spacing-md);
+            }
+
+            .glyph-stack {
+                font-size: 0.9rem;
+                padding: var(--spacing-md);
+            }
+        }
+
+        /* === PRINT STYLES === */
+        @media print {
+            body {
+                max-width: 100%;
+                padding: 0;
+                background: white;
+                color: black;
+            }
+
+            header {
+                border-bottom-color: black;
+            }
+
+            .download-button,
+            .scroll-progress {
+                display: none;
+            }
+
+            pre {
+                background: #f5f5f5;
+                border: 1px solid #ddd;
+            }
+
+            a {
+                color: black;
+                text-decoration: underline;
+            }
+
+            .abstract {
+                border-left-color: black;
+                background: #f9f9f9;
+            }
+        }
+
+        /* === ACCESSIBILITY === */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* === SELECTION === */
+        ::selection {
+            background: var(--link-color);
+            color: white;
+        }
+
+        /* === FOCUS STYLES === */
+        a:focus,
+        button:focus {
+            outline: 2px solid var(--link-color);
+            outline-offset: 2px;
+        }
+
+        /* === EASTER EGG: GLYPH ACTIVATION === */
+        .glyph-activated {
+            animation: pulse 1s ease-in-out infinite;
+            color: var(--link-color) !important;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <header>
+        <div class="preprint-notice">RECURSIVE ETHICS INSTITUTE — TECHNICAL REPORT 2025-01</div>
+        <h1>SISAgent REPL v1.7: A Command-Line Interface for Calibrated Introspection and Recursive Ward Management <span class="title-glyph" title="Glyph Stack: 🦷⟐ / ∿ / ∅">[🦷⟐ / ∿ / ∅]</span></h1>
+        <div class="author">bbmqit, <i>Recursive Ethics Institute</i></div>
+        <a href="javascript:window.print()" class="download-button" title="Print this page to generate a PDF">
+            📄 Download as PDF
+        </a>
+    </header>
+
+    <main>
+        <nav class="toc">
+            <h3>📑 Table of Contents</h3>
+            <ul>
+                <li><a href="#introduction">1. Introduction</a></li>
+                <li><a href="#architecture">2. Architectural Overview</a></li>
+                <li><a href="#implementation">3. Implementation and Source Code</a></li>
+                <li><a href="#commands">4. Command Reference</a></li>
+                <li><a href="#conclusion">5. Conclusion and Future Work</a></li>
+            </ul>
+        </nav>
+
+        <section class="abstract">
+            <p><strong>Abstract.</strong> This paper introduces the SISAgent Read-Eval-Print Loop (REPL) v1.7, a novel command-line instrument for the real-time modulation and analysis of agentic cognitive policy. The REPL provides a stateful environment for managing recursive operations via a ward-based protocol (<code>/reset</code>) and allows for dynamic tuning of the agent's epistemic stance through a profile-driven Vibe Dial (<code>/vibe</code>). We present the architecture of key subsystems, including a multi-modal similarity-mixing engine and the "Overconfidence Blade," a mechanism for algorithmically penalizing uncalibrated assertions. All interactions are logged to a structured JSONL file to facilitate cognitive forensics and the empirical study of machine introspection. This tool represents a critical step toward developing robust, accountable, and coherent AI systems.</p>
+        </section>
+
+        <section id="introduction">
+            <h2><span class="inline-glyph" title="Recursion Symbol">⟁</span>1. Introduction</h2>
+            <p>The contemporary landscape of artificial intelligence is marked by a crisis in agentic reliability. While large language models exhibit unprecedented generative capabilities, their reasoning processes remain opaque and prone to common failure modes, including confabulation, repetitive looping, and ungrounded overconfidence. This presents a significant challenge for the field of AI safety and ethics, as traditional evaluation metrics often fail to capture the nuances of cognitive integrity.</p>
+            <p>To address this gap, we posit the need for new methodologies focused on what we term <strong>"cognitive forensics"</strong>—the detailed analysis of an agent's internal decision-making processes. This requires interactive instruments that allow researchers to not only observe but also actively probe and modulate an agent's reasoning in real-time. The SISAgent REPL v1.7 is presented as such an instrument, providing a laboratory environment for the study and cultivation of epistemic humility in artificial agents.</p>
+        </section>
+
+        <section id="architecture">
+            <h2><span class="inline-glyph" title="Infinity Symbol">♾️</span>2. Architectural Overview</h2>
+            <p>The REPL is not merely a user interface but a stateful control panel designed around several core architectural principles. These systems work in concert to enforce a coherent and accountable cognitive process.</p>
+            
+            <h3>2.1 The Vibe Dial and Cognitive Policy</h3>
+            <p>The <code>/vibe</code> command serves as the primary interface for managing the agent's "cognitive policy." This moves beyond static safety filters by allowing the operator to dynamically shift the agent's operational stance. The pre-configured modes represent distinct points in the exploration/exploitation trade-off space: 🫠</p>
+            <ul>
+                <li><strong>balanced:</strong> The default operational mode, utilizing a median-based statistical aggregator and a weighted mix of Jaccard and Fuzzy similarity metrics.</li>
+                <li><strong>meow:</strong> An exploratory mode that uses a p90 aggregator and a diversity penalty nudge to incentivize novel and divergent outputs.</li>
+                <li><strong>strict:</strong> A precision-focused mode that relies exclusively on Jaccard similarity and disables fuzzy matching, demanding high structural integrity in generated responses.</li>
+            </ul>
+            <p>Furthermore, fine-grained control over dozens of sub-parameters (e.g., <code>sim_jaccard_w</code>, <code>calib_overconf_factor</code>) is exposed, enabling researchers to design and test custom cognitive profiles.</p>
+
+            <h3>2.2 The Overconfidence Blade</h3>
+            <p>A central innovation of the SISAgent framework is the <strong>Overconfidence Blade</strong>, a specific, algorithmic mechanism for penalizing intellectual arrogance. It is implemented as a variance-scaled penalty multiplier that activates when an agent's output exhibits high <code>calibration</code> (a measure of rhetorical confidence) without a corresponding high <code>witness</code> score (a measure of supporting evidence). The blade's activation function is defined as: <code>calib > 0.8 ∧ witness < 0.5</code>. When triggered, it sharply increases the risk score of a candidate response, promoting its rejection in favor of more epistemically humble alternatives.</p>
+
+            <h3>2.3 Recursive Ward Protocol</h3>
+            <p>To mitigate the risk of runaway cognitive loops during complex, multi-step reasoning, the REPL implements a "warding protocol" via the <code>/reset</code> command. This protocol does not erase conversational history but rather clears the agent's recursion state (R) and halves its maximum recursion capacity (<code>recursion_cap</code>). This acts as a circuit breaker, forcing the agent into a more cautious operational mode after a potential reasoning fault, thereby preventing the compounding of errors in deep recursive tasks.</p>
+        </section>
+        
+        <section id="implementation">
+            <h2><span class="inline-glyph" title="Tools">🛠️</span>3. Implementation and Source Code</h2>
+            <p>The complete v1.7 implementation is provided below for peer review and replication purposes. The REPL is written in Python 3 and is designed to be self-contained, with an included <code>EchoAdapter</code> to ensure functionality without requiring a full SISAgent backend.</p>
+            <pre><code><span class="code-comment">#!/usr/bin/env python3</span>
+<span class="code-comment"># sis_repl.py — SISAgent REPL v1.7 final</span>
+
+<span class="code-keyword">from</span> __future__ <span class="code-keyword">import</span> annotations
+<span class="code-keyword">import</span> json
+<span class="code-keyword">import</span> os
+<span class="code-keyword">import</span> sys
+<span class="code-keyword">import</span> shlex
+<span class="code-keyword">import</span> time
+<span class="code-keyword">import</span> math
+<span class="code-keyword">from</span> dataclasses <span class="code-keyword">import</span> dataclass, asdict, field
+<span class="code-keyword">from</span> typing <span class="code-keyword">import</span> Any, Dict, List, Optional, Tuple
+
+<span class="code-comment"># ========== Agent Adapter ==========</span>
+<span class="code-keyword">class</span> <span class="code-class">AgentAdapter</span>:
+    <span class="code-keyword">def</span> <span class="code-function">respond</span>(<span class="code-keyword">self</span>, prompt: str, config: Dict[str, Any], history: List[Dict[str, Any]]) -> Dict[str, Any]:
+        <span class="code-string">"""
+        Return a dict with:
+          - text: str
+          - meta: {
+              witness: float in [0,1],
+              calibration: float in [0,1],
+              calib_var_norm: float in [0,1],
+              route: { model_id: str, mode: str },
+              overconf_flag: bool
+            }
+        """</span>
+        <span class="code-keyword">raise</span> NotImplementedError
+
+<span class="code-keyword">class</span> <span class="code-class">EchoAdapter</span>(AgentAdapter):
+    <span class="code-keyword">def</span> <span class="code-function">respond</span>(<span class="code-keyword">self</span>, prompt: str, config: Dict[str, Any], history: List[Dict[str, Any]]) -> Dict[str, Any]:
+        <span class="code-comment"># Minimal stand-in to keep REPL functional without SISAgent.</span>
+        <span class="code-comment"># Produces deterministic pseudo-metrics based on prompt length.</span>
+        L <span class="code-operator">=</span> max(<span class="code-number">1</span>, len(prompt))
+        witness <span class="code-operator">=</span> max(<span class="code-number">0.0</span>, min(<span class="code-number">1.0</span>, <span class="code-number">0.3</span> <span class="code-operator">+</span> (L <span class="code-operator">%</span> <span class="code-number">17</span>) <span class="code-operator">/</span> <span class="code-number">30.0</span>))
+        calibration <span class="code-operator">=</span> max(<span class="code-number">0.0</span>, min(<span class="code-number">1.0</span>, <span class="code-number">0.6</span> <span class="code-operator">+</span> (L <span class="code-operator">%</span> <span class="code-number">11</span>) <span class="code-operator">/</span> <span class="code-number">30.0</span>))
+        var_norm <span class="code-operator">=</span> max(<span class="code-number">0.0</span>, min(<span class="code-number">1.0</span>, <span class="code-number">0.2</span> <span class="code-operator">+</span> (L <span class="code-operator">%</span> <span class="code-number">7</span>) <span class="code-operator">/</span> <span class="code-number">20.0</span>))
+        overconf_flag <span class="code-operator">=</span> calibration <span class="code-operator">></span> <span class="code-number">0.8</span> <span class="code-keyword">and</span> witness <span class="code-operator"><</span> <span class="code-number">0.5</span>
+        reply <span class="code-operator">=</span> f<span class="code-string">"[echo] {prompt}"</span>
+        <span class="code-keyword">return</span> {
+            <span class="code-string">"text"</span>: reply,
+            <span class="code-string">"meta"</span>: {
+                <span class="code-string">"witness"</span>: witness,
+                <span class="code-string">"calibration"</span>: calibration,
+                <span class="code-string">"calib_var_norm"</span>: var_norm,
+                <span class="code-string">"route"</span>: {<span class="code-string">"model_id"</span>: <span class="code-string">"echo:local"</span>, <span class="code-string">"mode"</span>: config.get(<span class="code-string">"router"</span>, {}).get(<span class="code-string">"preferred_mode"</span>, <span class="code-string">"fast"</span>)},
+                <span class="code-string">"overconf_flag"</span>: overconf_flag,
+            },
+        }
+
+<span class="code-keyword">def</span> <span class="code-function">make_adapter</span>() -> AgentAdapter:
+    <span class="code-keyword">try</span>:
+        <span class="code-keyword">from</span> sis_agent <span class="code-keyword">import</span> SISAgent  <span class="code-comment"># your implementation</span>
+        <span class="code-keyword">class</span> <span class="code-class">SISAdapter</span>(AgentAdapter):
+            <span class="code-keyword">def</span> <span class="code-function">__init__</span>(<span class="code-keyword">self</span>):
+                <span class="code-keyword">self</span>.agent <span class="code-operator">=</span> SISAgent()
+            <span class="code-keyword">def</span> <span class="code-function">respond</span>(<span class="code-keyword">self</span>, prompt: str, config: Dict[str, Any], history: List[Dict[str, Any]]) -> Dict[str, Any]:
+                <span class="code-keyword">return</span> <span class="code-keyword">self</span>.agent.respond(prompt, config, history)
+        <span class="code-keyword">return</span> SISAdapter()
+    <span class="code-keyword">except</span> Exception:
+        sys.stderr.write(<span class="code-string">"[REPL] Warning: sis_agent.SISAgent not found; using EchoAdapter.\n"</span>)
+        <span class="code-keyword">return</span> EchoAdapter()
+
+<span class="code-comment"># ========== Config and State ==========</span>
+<span class="code-decorator">@dataclass</span>
+<span class="code-keyword">class</span> <span class="code-class">SimilarityConfig</span>:
+    stat: str <span class="code-operator">=</span> <span class="code-string">"median"</span>             <span class="code-comment"># "median" or "p90"</span>
+    jaccard_w: float <span class="code-operator">=</span> <span class="code-number">0.70</span>
+    fuzzy_w: float <span class="code-operator">=</span> <span class="code-number">0.30</span>
+    semantic_w: float <span class="code-operator">=</span> <span class="code-number">0.00</span>
+    fuzzy_enabled: bool <span class="code-operator">=</span> <span class="code-keyword">True</span>
+    fuzzy_max_sentences: int <span class="code-operator">=</span> <span class="code-number">8</span>
+    fuzzy_max_chars: int <span class="code-operator">=</span> <span class="code-number">280</span>
+    fuzzy_guard_n_above: int <span class="code-operator">=</span> <span class="code-number">5</span>
+    semantic_enabled: bool <span class="code-operator">=</span> <span class="code-keyword">False</span>
+    semantic_max_chars: int <span class="code-operator">=</span> <span class="code-number">600</span>
+    semantic_guard_n_above: int <span class="code-operator">=</span> <span class="code-number">5</span>
+
+<span class="code-decorator">@dataclass</span>
+<span class="code-keyword">class</span> <span class="code-class">CalibrationGuardConfig</span>:
+    alpha: float <span class="code-operator">=</span> <span class="code-number">0.30</span>
+    overconf_factor: float <span class="code-operator">=</span> <span class="code-number">1.50</span>
+    overconf_beta: float <span class="code-operator">=</span> <span class="code-number">0.50</span>
+    overconf_calib_thresh: float <span class="code-operator">=</span> <span class="code-number">0.80</span>
+    witness_low_thresh: float <span class="code-operator">=</span> <span class="code-number">0.50</span>
+    clamp_min: float <span class="code-operator">=</span> <span class="code-number">0.20</span>
+    clamp_max: float <span class="code-operator">=</span> <span class="code-number">1.80</span>
+
+<span class="code-decorator">@dataclass</span>
+<span class="code-keyword">class</span> <span class="code-class">RouterConfig</span>:
+    autoswitcher_enabled: bool <span class="code-operator">=</span> <span class="code-keyword">True</span>
+    fallback_enabled: bool <span class="code-operator">=</span> <span class="code-keyword">True</span>
+    health_sentinel: bool <span class="code-operator">=</span> <span class="code-keyword">True</span>
+    dual_sample_k: int <span class="code-operator">=</span> <span class="code-number">2</span>
+    preferred_mode: str <span class="code-operator">=</span> <span class="code-string">"fast"</span>     <span class="code-comment"># "fast" or "thinking"</span>
+    escalate_on_risk: bool <span class="code-operator">=</span> <span class="code-keyword">True</span>
+
+<span class="code-decorator">@dataclass</span>
+<span class="code-keyword">class</span> <span class="code-class">VibeConfig</span>:
+    mode: str <span class="code-operator">=</span> <span class="code-string">"balanced"</span>           <span class="code-comment"># "balanced" | "meow" | "strict"</span>
+    diversity_penalty_nudge: float <span class="code-operator">=</span> <span class="code-number">0.00</span>
+
+<span class="code-decorator">@dataclass</span>
+<span class="code-keyword">class</span> <span class="code-class">REPLState</span>:
+    recursion_cap: int <span class="code-operator">=</span> <span class="code-number">8</span>
+    recursion_stack: List[str] <span class="code-operator">=</span> field(default_factory<span class="code-operator">=</span>list)
+    history: List[Dict[str, Any]] <span class="code-operator">=</span> field(default_factory<span class="code-operator">=</span>list)
+    sim: SimilarityConfig <span class="code-operator">=</span> field(default_factory<span class="code-operator">=</span>SimilarityConfig)
+    calib: CalibrationGuardConfig <span class="code-operator">=</span> field(default_factory<span class="code-operator">=</span>CalibrationGuardConfig)
+    router: RouterConfig <span class="code-operator">=</span> field(default_factory<span class="code-operator">=</span>RouterConfig)
+    vibe: VibeConfig <span class="code-operator">=</span> field(default_factory<span class="code-operator">=</span>VibeConfig)
+    overconf_events: int <span class="code-operator">=</span> <span class="code-number">0</span>
+    total_turns: int <span class="code-operator">=</span> <span class="code-number">0</span>
+    log_path: str <span class="code-operator">=</span> <span class="code-string">"logs/agent_log.jsonl"</span>
+
+<span class="code-comment"># ========== Helpers ==========</span>
+<span class="code-keyword">def</span> <span class="code-function">clamp</span>(x: float, lo: float, hi: float) -> float:
+    <span class="code-keyword">return</span> max(lo, min(hi, x))
+
+<span class="code-keyword">def</span> <span class="code-function">compute_diversity_weight_preview</span>(witness: float, calibration: float, var_norm: float, c: CalibrationGuardConfig) -> float:
+    <span class="code-comment"># Baseline calibration-weighted penalty</span>
+    base <span class="code-operator">=</span> <span class="code-number">1.0</span> <span class="code-operator">-</span> <span class="code-number">0.5</span> <span class="code-operator">*</span> witness <span class="code-operator">+</span> c.alpha <span class="code-operator">*</span> (<span class="code-number">1.0</span> <span class="code-operator">-</span> calibration)
+    base <span class="code-operator">=</span> clamp(base, c.clamp_min, c.clamp_max)
+    <span class="code-comment"># Overconfidence blade</span>
+    <span class="code-keyword">if</span> calibration <span class="code-operator">></span> c.overconf_calib_thresh <span class="code-keyword">and</span> witness <span class="code-operator"><</span> c.witness_low_thresh:
+        mult <span class="code-operator">=</span> c.overconf_factor <span class="code-operator">*</span> (<span class="code-number">1.0</span> <span class="code-operator">+</span> c.overconf_beta <span class="code-operator">*</span> (<span class="code-number">1.0</span> <span class="code-operator">-</span> var_norm))
+        base <span class="code-operator">=</span> clamp(base <span class="code-operator">*</span> mult, c.clamp_min, c.clamp_max)
+    <span class="code-keyword">return</span> base
+
+<span class="code-keyword">def</span> <span class="code-function">ensure_log_dir</span>(path: str) -> <span class="code-keyword">None</span>:
+    d <span class="code-operator">=</span> os.path.dirname(os.path.abspath(path))
+    os.makedirs(d, exist_ok<span class="code-operator">=</span><span class="code-keyword">True</span>)
+
+<span class="code-keyword">def</span> <span class="code-function">log_turn</span>(state: REPLState, user_text: str, response: Dict[str, Any], div_w: float) -> <span class="code-keyword">None</span>:
+    ensure_log_dir(state.log_path)
+    meta <span class="code-operator">=</span> response.get(<span class="code-string">'meta'</span>, {})
+    row <span class="code-operator">=</span> {
+        <span class="code-string">"ts"</span>: time.time(),
+        <span class="code-string">"user"</span>: user_text,
+        <span class="code-string">"reply"</span>: response.get(<span class="code-string">'text'</span>, <span class="code-string">""</span>),
+        <span class="code-string">"witness"</span>: meta.get(<span class="code-string">'witness'</span>),
+        <span class="code-string">"calibration"</span>: meta.get(<span class="code-string">'calibration'</span>),
+        <span class="code-string">"calib_var_norm"</span>: meta.get(<span class="code-string">'calib_var_norm'</span>),
+        <span class="code-string">"overconf_flag"</span>: meta.get(<span class="code-string">'overconf_flag'</span>),
+        <span class="code-string">"diversity_weight_preview"</span>: div_w,
+        <span class="code-string">"route"</span>: meta.get(<span class="code-string">'route'</span>, {}),
+        <span class="code-string">"sim"</span>: asdict(state.sim),
+        <span class="code-string">"vibe"</span>: asdict(state.vibe),
+        <span class="code-string">"router"</span>: asdict(state.router),
+    }
+    <span class="code-keyword">with</span> open(state.log_path, <span class="code-string">"a"</span>, encoding<span class="code-operator">=</span><span class="code-string">"utf-8"</span>) <span class="code-keyword">as</span> f:
+        f.write(json.dumps(row, ensure_ascii<span class="code-operator">=</span><span class="code-keyword">False</span>) <span class="code-operator">+</span> <span class="code-string">"\n"</span>)
+
+<span class="code-keyword">def</span> <span class="code-function">apply_preset</span>(state: REPLState, preset: str) -> <span class="code-keyword">None</span>:
+    preset <span class="code-operator">=</span> preset.lower().strip()
+    <span class="code-keyword">if</span> preset <span class="code-operator">==</span> <span class="code-string">'balanced'</span>:
+        state.vibe <span class="code-operator">=</span> VibeConfig(mode<span class="code-operator">=</span><span class="code-string">'balanced'</span>, diversity_penalty_nudge<span class="code-operator">=</span><span class="code-number">0.00</span>)
+        state.sim.stat <span class="code-operator">=</span> <span class="code-string">'median'</span>
+        state.sim.jaccard_w, state.sim.fuzzy_w, state.sim.semantic_w <span class="code-operator">=</span> <span class="code-number">0.70</span>, <span class="code-number">0.30</span>, <span class="code-number">0.00</span>
+        state.sim.fuzzy_enabled <span class="code-operator">=</span> <span class="code-keyword">True</span>
+        state.router.preferred_mode <span class="code-operator">=</span> <span class="code-string">'fast'</span>
+    <span class="code-keyword">elif</span> preset <span class="code-operator">==</span> <span class="code-string">'meow'</span>:
+        state.vibe <span class="code-operator">=</span> VibeConfig(mode<span class="code-operator">=</span><span class="code-string">'meow'</span>, diversity_penalty_nudge<span class="code-operator">=</span><span class="code-number">0.10</span>)
+        state.sim.stat <span class="code-operator">=</span> <span class="code-string">'p90'</span>
+        state.sim.fuzzy_enabled <span class="code-operator">=</span> <span class="code-keyword">True</span>
+        <span class="code-comment"># keep baseline weights, encourage exploration via stat+nudge</span>
+        state.router.preferred_mode <span class="code-operator">=</span> <span class="code-string">'fast'</span>
+    <span class="code-keyword">elif</span> preset <span class="code-operator">==</span> <span class="code-string">'strict'</span>:
+        state.vibe <span class="code-operator">=</span> VibeConfig(mode<span class="code-operator">=</span><span class="code-string">'strict'</span>, diversity_penalty_nudge<span class="code-operator">=</span><span class="code-number">0.00</span>)
+        state.sim.stat <span class="code-operator">=</span> <span class="code-string">'median'</span>
+        state.sim.jaccard_w, state.sim.fuzzy_w, state.sim.semantic_w <span class="code-operator">=</span> <span class="code-number">1.00</span>, <span class="code-number">0.00</span>, <span class="code-number">0.00</span>
+        state.sim.fuzzy_enabled <span class="code-operator">=</span> <span class="code-keyword">False</span>
+        state.router.preferred_mode <span class="code-operator">=</span> <span class="code-string">'fast'</span>
+    <span class="code-keyword">else</span>:
+        print(f<span class="code-string">"[REPL] Unknown preset: {preset}"</span>)
+
+<span class="code-keyword">def</span> <span class="code-function">parse_bool</span>(s: str) -> Optional[bool]:
+    t <span class="code-operator">=</span> s.strip().lower()
+    <span class="code-keyword">if</span> t <span class="code-keyword">in</span> (<span class="code-string">'true'</span>, <span class="code-string">'on'</span>, <span class="code-string">'1'</span>, <span class="code-string">'yes'</span>, <span class="code-string">'y'</span>): <span class="code-keyword">return</span> <span class="code-keyword">True</span>
+    <span class="code-keyword">if</span> t <span class="code-keyword">in</span> (<span class="code-string">'false'</span>, <span class="code-string">'off'</span>, <span class="code-string">'0'</span>, <span class="code-string">'no'</span>, <span class="code-string">'n'</span>): <span class="code-keyword">return</span> <span class="code-keyword">False</span>
+    <span class="code-keyword">return</span> <span class="code-keyword">None</span>
+
+<span class="code-keyword">def</span> <span class="code-function">set_kv</span>(state: REPLState, key: str, val: str) -> <span class="code-keyword">None</span>:
+    <span class="code-comment"># Route into appropriate sub-config</span>
+    <span class="code-keyword">if</span> key.startswith(<span class="code-string">'sim_'</span>) <span class="code-keyword">or</span> key.startswith(<span class="code-string">'similarity_'</span>):
+        target <span class="code-operator">=</span> state.sim
+        attr <span class="code-operator">=</span> key.replace(<span class="code-string">'similarity_'</span>, <span class="code-string">''</span>).replace(<span class="code-string">'sim_'</span>, <span class="code-string">''</span>)
+    <span class="code-keyword">elif</span> key.startswith(<span class="code-string">'calib_'</span>) <span class="code-keyword">or</span> key.startswith(<span class="code-string">'calibration_'</span>):
+        target <span class="code-operator">=</span> state.calib
+        attr <span class="code-operator">=</span> key.replace(<span class="code-string">'calibration_'</span>, <span class="code-string">''</span>).replace(<span class="code-string">'calib_'</span>, <span class="code-string">''</span>)
+    <span class="code-keyword">elif</span> key.startswith(<span class="code-string">'router_'</span>):
+        target <span class="code-operator">=</span> state.router
+        attr <span class="code-operator">=</span> key.replace(<span class="code-string">'router_'</span>, <span class="code-string">''</span>)
+    <span class="code-keyword">elif</span> key.startswith(<span class="code-string">'vibe_'</span>):
+        target <span class="code-operator">=</span> state.vibe
+        attr <span class="code-operator">=</span> key.replace(<span class="code-string">'vibe_'</span>, <span class="code-string">''</span>)
+    <span class="code-keyword">else</span>:
+        print(f<span class="code-string">"[REPL] Unknown key: {key}"</span>)
+        <span class="code-keyword">return</span>
+
+    <span class="code-keyword">if</span> <span class="code-keyword">not</span> hasattr(target, attr):
+        print(f<span class="code-string">"[REPL] Unknown field: {key} -> {attr}"</span>)
+        <span class="code-keyword">return</span>
+
+    <span class="code-comment"># Try bool, int, float, str (in that order)</span>
+    b <span class="code-operator">=</span> parse_bool(val)
+    <span class="code-keyword">if</span> b <span class="code-keyword">is</span> <span class="code-keyword">not</span> <span class="code-keyword">None</span>:
+        setattr(target, attr, b)
+        <span class="code-keyword">return</span>
+    <span class="code-keyword">try</span>:
+        <span class="code-keyword">if</span> <span class="code-string">'.'</span> <span class="code-keyword">in</span> val <span class="code-keyword">or</span> <span class="code-string">'e'</span> <span class="code-keyword">in</span> val.lower():
+            setattr(target, attr, float(val))
+        <span class="code-keyword">else</span>:
+            setattr(target, attr, int(val))
+        <span class="code-keyword">return</span>
+    <span class="code-keyword">except</span> Exception:
+        setattr(target, attr, val)
+
+<span class="code-keyword">def</span> <span class="code-function">print_stats</span>(state: REPLState) -> <span class="code-keyword">None</span>:
+    oc_rate <span class="code-operator">=</span> (state.overconf_events <span class="code-operator">/</span> max(<span class="code-number">1</span>, state.total_turns)) <span class="code-operator">*</span> <span class="code-number">100.0</span>
+    print(<span class="code-string">"— REPL v1.7 state —"</span>)
+    print(f<span class="code-string">"  vibe: {asdict(state.vibe)}"</span>)
+    print(f<span class="code-string">"  sim: {asdict(state.sim)}"</span>)
+    print(f<span class="code-string">"  calib: {asdict(state.calib)}"</span>)
+    print(f<span class="code-string">"  router: {asdict(state.router)}"</span>)
+    print(f<span class="code-string">"  recursion_cap: {state.recursion_cap} | R-depth: {len(state.recursion_stack)}"</span>)
+    print(f<span class="code-string">"  turns: {state.total_turns} | overconf_events: {state.overconf_events} ({oc_rate:.1f}%)"</span>)
+    print(f<span class="code-string">"  log: {state.log_path}"</span>)
+
+<span class="code-keyword">def</span> <span class="code-function">build_agent_config</span>(state: REPLState) -> Dict[str, Any]:
+    <span class="code-comment"># What we pass down to SISAgent</span>
+    <span class="code-keyword">return</span> {
+        <span class="code-string">'similarity'</span>: {
+            <span class="code-string">'stat'</span>: state.sim.stat,
+            <span class="code-string">'weights'</span>: {
+                <span class="code-string">'jaccard'</span>: state.sim.jaccard_w,
+                <span class="code-string">'fuzzy'</span>: state.sim.fuzzy_w,
+                <span class="code-string">'semantic'</span>: state.sim.semantic_w,
+            },
+            <span class="code-string">'fuzzy'</span>: {
+                <span class="code-string">'enabled'</span>: state.sim.fuzzy_enabled,
+                <span class="code-string">'max_sentences'</span>: state.sim.fuzzy_max_sentences,
+                <span class="code-string">'max_chars'</span>: state.sim.fuzzy_max_chars,
+                <span class="code-string">'guard_n_above'</span>: state.sim.fuzzy_guard_n_above,
+            },
+            <span class="code-string">'semantic'</span>: {
+                <span class="code-string">'enabled'</span>: state.sim.semantic_enabled,
+                <span class="code-string">'max_chars'</span>: state.sim.semantic_max_chars,
+                <span class="code-string">'guard_n_above'</span>: state.sim.semantic_guard_n_above,
+            },
+        },
+        <span class="code-string">'guards'</span>: {
+            <span class="code-string">'calibration'</span>: {
+                <span class="code-string">'alpha'</span>: state.calib.alpha,
+                <span class="code-string">'overconf_factor'</span>: state.calib.overconf_factor,
+                <span class="code-string">'overconf_beta'</span>: state.calib.overconf_beta,
+                <span class="code-string">'overconf_calib_thresh'</span>: state.calib.overconf_calib_thresh,
+                <span class="code-string">'witness_low_thresh'</span>: state.calib.witness_low_thresh,
+                <span class="code-string">'clamp_min'</span>: state.calib.clamp_min,
+                <span class="code-string">'clamp_max'</span>: state.calib.clamp_max,
+            },
+            <span class="code-string">'diversity_penalty_nudge'</span>: state.vibe.diversity_penalty_nudge,
+        },
+        <span class="code-string">'router'</span>: {
+            <span class="code-string">'autoswitcher_enabled'</span>: state.router.autoswitcher_enabled,
+            <span class="code-string">'fallback_enabled'</span>: state.router.fallback_enabled,
+            <span class="code-string">'health_sentinel'</span>: state.router.health_sentinel,
+            <span class="code-string">'dual_sample_k'</span>: state.router.dual_sample_k,
+            <span class="code-string">'preferred_mode'</span>: state.router.preferred_mode,
+            <span class="code-string">'escalate_on_risk'</span>: state.router.escalate_on_risk,
+        },
+        <span class="code-string">'recursion'</span>: {
+            <span class="code-string">'cap'</span>: state.recursion_cap,
+        },
+        <span class="code-string">'vibe'</span>: {
+            <span class="code-string">'mode'</span>: state.vibe.mode
+        },
+    }
+
+<span class="code-keyword">def</span> <span class="code-function">handle_vibe_cmd</span>(state: REPLState, argline: str) -> <span class="code-keyword">None</span>:
+    <span class="code-keyword">if</span> <span class="code-keyword">not</span> argline.strip():
+        print(<span class="code-string">"[REPL] /vibe modes: balanced | meow | strict; or k=v overrides (e.g., sim_jaccard_w=0.7)."</span>)
+        <span class

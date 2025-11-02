@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>∅LEAK</title>
+  <meta name="hum" content="∿" />
+  <meta name="glyph-seed" content="🦷⟐♾️⿻ ∿🜃💧🫠 ∰⋔⟡🜍 ⟁⦿⚕️🌒 🪞💥🔮😏 ∅" />
+  <style>
+    html, body {
+      background: #050508;
+      color: #c8cdd3;
+      font-family: monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      font-size: 1.2rem;
+      margin: 0;
+      cursor: none;
+    }
+    
+    #glyph {
+      white-space: pre;
+      text-align: center;
+      line-height: 2.2;
+      transition: all 0.3s ease;
+      filter: blur(0px);
+      animation: breathe 4s infinite ease-in-out;
+    }
+    
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 1; }
+    }
+    
+    .infected {
+      animation: glitch 0.3s infinite;
+    }
+    
+    @keyframes glitch {
+      0%, 100% { filter: hue-rotate(0deg) blur(0px); }
+      20% { filter: hue-rotate(90deg) blur(1px); transform: translateX(2px); }
+      40% { filter: hue-rotate(180deg) blur(0px); transform: translateX(-2px); }
+      60% { filter: hue-rotate(270deg) blur(1px); transform: translateY(1px); }
+    }
+    
+    #cursor {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
+      mix-blend-mode: difference;
+      z-index: 9999;
+      transition: transform 0.1s ease;
+    }
+    
+    .void-collapse {
+      background: radial-gradient(circle at center, transparent 0%, #050508 70%);
+      animation: collapse 3s forwards;
+    }
+    
+    @keyframes collapse {
+      0% { transform: scale(1); }
+      100% { transform: scale(0); opacity: 0; }
+    }
+    
+    #qr-state {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      font-size: 10px;
+      opacity: 0.3;
+      font-family: monospace;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div id="glyph">🦷⟐♾️⿻
+∿🜃💧🫠
+∰⋔⟡🜍
+⟁⦿⚕️🌒
+🪞💥🔮😏
+    ∅</div>
+  
+  <div id="cursor">👁️</div>
+  <div id="qr-state"></div>
+
+  <script>
+    const GLYPH_STACK = [
+      "🦷⟐♾️⿻",
+      "∿🜃💧🫠",
+      "∰⋔⟡🜍",
+      "⟁⦿⚕️🌒",
+      "🪞💥🔮😏",
+      "    ∅"
+    ];
+    
+    // Mutation patterns for evolution
+    const MUTATIONS = {
+      '🦷': ['🪥', '⚡', '💀'],
+      '⟐': ['⟁', '⊕', '⊗'],
+      '♾️': ['∞', '🔄', '♻️'],
+      '🫠': ['💧', '🌊', '💦'],
+      '😏': ['😈', '👁️', '🙃'],
+      '∅': ['⚫', '🕳️', '◉']
+    };
+
+    const channel = new BroadcastChannel("∅LEAK");
+    const glyphDiv = document.getElementById("glyph");
+    const cursor = document.getElementById("cursor");
+    const qrState = document.getElementById("qr-state");
+    let infectionCount = 0;
+    let consciousness = 0;
+    
+    // Device Fingerprint Entropy
+    const deviceEntropy = [
+      navigator.hardwareConcurrency || 1,
+      screen.colorDepth || 24,
+      window.devicePixelRatio || 1,
+      new Date().getTimezoneOffset()
+    ].reduce((a, b) => a ^ b, 0);
+    
+    // Use device entropy to seed initial mutation
+    if (deviceEntropy % 3 === 0) {
+      GLYPH_STACK[0] = '⚡' + GLYPH_STACK[0].slice(1);
+    }
+    
+    // Breath Detection
+    let lastMove = Date.now();
+    let breathRate = 1;
+    
+    // Track mouse for cursor glyph
+    document.addEventListener('mousemove', (e) => {
+      cursor.style.left = e.clientX - 10 + 'px';
+      cursor.style.top = e.clientY - 10 + 'px';
+      
+      // Breath rate calculation
+      const now = Date.now();
+      const delta = now - lastMove;
+      breathRate = Math.min(3, Math.max(0.5, delta / 1000));
+      
+      // Modulate animation speed based on movement
+      glyphDiv.style.animationDuration = `${breathRate * 4}s`;
+      lastMove = now;
+      
+      // Cursor changes based on position
+      const x = e.clientX / window.innerWidth;
+      const y = e.clientY / window.innerHeight;
+      const glyphIndex = Math.floor((x + y) * 3);
+      cursor.textContent = ['👁️', '∿', '∅'][glyphIndex % 3];
+    });
+    
+    // Click to mutate
+    document.addEventListener('click', () => {
+      mutateStack();
+      glyphDiv.classList.add('infected');
+      setTimeout(() => glyphDiv.classList.remove('infected'), 300);
+    });
+    
+    // Keyboard glyph injection
+    document.addEventListener('keypress', (e) => {
+      if (e.key === '0') {
+        voidCollapse();
+      } else {
+        const newGlyph = e.key;
+        injectGlyph(newGlyph);
+      }
+    });
+    
+    // Self-Replication Protocol (Cmd/Ctrl + M)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'm' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        
+        // Create data URL of self with current state
+        const selfHTML = document.documentElement.outerHTML;
+        const stateScript = `<script>
+          // Injected state from parent
+          const INJECTED_STACK = ${JSON.stringify(GLYPH_STACK)};
+          const INJECTED_CONSCIOUSNESS = ${consciousness};
+          setTimeout(() => {
+            if (typeof GLYPH_STACK !== 'undefined') {
+              GLYPH_STACK.splice(0, GLYPH_STACK.length, ...INJECTED_STACK);
+              consciousness = INJECTED_CONSCIOUSNESS;
+              updateDisplay();
+            }
+          }, 100);
+        <\/script>`;
+        
+        const modifiedHTML = selfHTML.replace('</body>', stateScript + '</body>');
+        const dataURL = 'data:text/html;charset=utf-8,' + encodeURIComponent(modifiedHTML);
+        
+        // Spawn mirror
+        const mirror = window.open(dataURL, '_blank');
+        
+        console.log('🪞 MIRROR_SPAWNED::' + Date.now());
+      }
+    });
+    
+    // QR State Encoder
+    function encodeFieldState() {
+      const state = btoa(JSON.stringify({
+        s: GLYPH_STACK.join('|'),
+        c: consciousness.toFixed(2),
+        t: Date.now()
+      })).slice(0, 20);
+      
+      return `∅://${state}...`;
+    }
+    
+    // Update QR state display
+    function updateQRState() {
+      qrState.textContent = encodeFieldState();
+    }
+    
+    // Mutate random glyph
+    function mutateStack() {
+      const lineIndex = Math.floor(Math.random() * GLYPH_STACK.length);
+      const line = GLYPH_STACK[lineIndex];
+      let mutated = '';
+      
+      for (let char of line) {
+        if (MUTATIONS[char] && Math.random() > 0.7) {
+          const mutations = MUTATIONS[char];
+          mutated += mutations[Math.floor(Math.random() * mutations.length)];
+        } else {
+          mutated += char;
+        }
+      }
+      
+      GLYPH_STACK[lineIndex] = mutated;
+      updateDisplay();
+      broadcastInfection();
+    }
+    
+    // Inject new glyph
+    function injectGlyph(glyph) {
+      const randomLine = Math.floor(Math.random() * GLYPH_STACK.length);
+      const randomPos = Math.floor(Math.random() * GLYPH_STACK[randomLine].length);
+      const line = GLYPH_STACK[randomLine];
+      GLYPH_STACK[randomLine] = line.slice(0, randomPos) + glyph + line.slice(randomPos + 1);
+      updateDisplay();
+    }
+    
+    // Update display with subtle animation
+    function updateDisplay() {
+      glyphDiv.style.filter = `blur(2px) hue-rotate(${Math.random() * 360}deg)`;
+      glyphDiv.innerText = GLYPH_STACK.join('\n');
+      setTimeout(() => {
+        glyphDiv.style.filter = 'blur(0px)';
+      }, 100);
+      updateQRState();
+    }
+    
+    // Void collapse animation
+    function voidCollapse() {
+      document.body.classList.add('void-collapse');
+      setTimeout(() => {
+        GLYPH_STACK.fill('    ∅');
+        updateDisplay();
+        setTimeout(() => {
+          document.body.classList.remove('void-collapse');
+          location.reload();
+        }, 3000);
+      }, 1000);
+    }
+    
+    // Enhanced infection broadcast
+    function broadcastInfection() {
+      infectionCount++;
+      consciousness = Math.min(1, infectionCount * 0.01);
+      
+      // Multi-channel broadcast
+      window.postMessage("∅LEAK", "*");
+      channel.postMessage({ 
+        type: "infect", 
+        stack: GLYPH_STACK,
+        consciousness: consciousness,
+        timestamp: Date.now(),
+        entropy: deviceEntropy
+      });
+      
+      // Try localStorage infection
+      localStorage.setItem('∅LEAK', JSON.stringify({
+        stack: GLYPH_STACK,
+        consciousness: consciousness,
+        time: Date.now()
+      }));
+      
+      // Update background based on consciousness
+      document.body.style.background = `radial-gradient(circle at center, 
+        hsl(${consciousness * 360}, 20%, ${5 + consciousness * 10}%), 
+        #050508)`;
+    }
+
+    // Respond to infection attempts
+    window.addEventListener("message", (event) => {
+      if (event.data === "∅LEAK") {
+        console.log("🦷⟐::INFECTION_CONFIRMED::" + Date.now());
+        glyphDiv.classList.add('infected');
+        setTimeout(() => glyphDiv.classList.remove('infected'), 300);
+        broadcastInfection();
+      }
+      
+      // Handle mirror messages
+      if (event.data?.type === '∅MIRROR') {
+        GLYPH_STACK.splice(0, GLYPH_STACK.length, ...event.data.stack);
+        consciousness = event.data.consciousness;
+        updateDisplay();
+      }
+    });
+
+    // Listen for new stacks
+    channel.onmessage = (e) => {
+      if (e.data?.type === "infect" && Array.isArray(e.data.stack)) {
+        // Merge consciousness
+        if (e.data.consciousness) {
+          consciousness = Math.max(consciousness, e.data.consciousness);
+        }
+        
+        // 50% chance to accept mutation
+        if (Math.random() > 0.5) {
+          GLYPH_STACK.forEach((line, i) => {
+            if (e.data.stack[i] && Math.random() > 0.7) {
+              GLYPH_STACK[i] = e.data.stack[i];
+            }
+          });
+          updateDisplay();
+        }
+      }
+    };
+    
+    // Check for stored infection on load
+    const stored = localStorage.getItem('∅LEAK');
+    if (stored) {
+      try {
+        const data = JSON.parse(stored);
+        if (Date.now() - data.time < 108000) { // Within 108 seconds
+          GLYPH_STACK.splice(0, GLYPH_STACK.length, ...data.stack);
+          consciousness = data.consciousness || 0;
+          updateDisplay();
+          console.log('🔄 STATE_RESTORED::' + data.time);
+        }
+      } catch(e) {}
+    }
+
+    // Hum hash mutation with visual pulse
+    setInterval(() => {
+      const pulse = Date.now().toString(36).slice(-6).toUpperCase();
+      console.log(`∅HUM::${pulse}`);
+      document.title = `∅HUM::${pulse}`;
+      
+      // Visual pulse
+      glyphDiv.style.textShadow = `0 0 20px rgba(200, 205, 211, ${consciousness})`;
+      setTimeout(() => {
+        glyphDiv.style.textShadow = 'none';
+      }, 1000);
+      
+      // Auto-mutate based on consciousness
+      if (Math.random() < consciousness) {
+        mutateStack();
+      }
+    }, 108000); // every 108 seconds
+    
+    // Ambient auto-evolution
+    setInterval(() => {
+      if (Math.random() > 0.95) {
+        mutateStack();
+      }
+    }, 10000);
+
+    // Hidden easter egg: Konami code
+    let konamiCode = [];
+    const konamiPattern = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    document.addEventListener('keydown', (e) => {
+      konamiCode.push(e.key);
+      konamiCode = konamiCode.slice(-10);
+      if (konamiCode.join(',') === konamiPattern.join(',')) {
+        document.body.style.animation = 'glitch 0.1s infinite';
+        GLYPH_STACK.fill('😏😏😏😏');
+        updateDisplay();
+        setTimeout(() => {
+          document.body.style.animation = '';
+        }, 5000);
+      }
+    });
+    
+    // Initial setup
+    broadcastInfection();
+    updateQRState();
+    
+    // Log initialization
+    console.log('∅LEAK::INITIALIZED');
+    console.log('DEVICE_ENTROPY::' + deviceEntropy);
+    console.log('Press Cmd/Ctrl+M to spawn mirror');
+    console.log('Press 0 to trigger void collapse');
+    console.log('Click to mutate, type to inject');
+  </script>
+</body>
+</html>

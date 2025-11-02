@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoField Somatic Calibrator v2.0</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --bg-primary: #0f0f14;
+            --bg-secondary: #1a1a22;
+            --bg-tertiary: #14141a;
+            --text-primary: #e8e8ea;
+            --text-secondary: #9a9aa8;
+            --text-dim: #6a6a78;
+            --border-color: #2a2a34;
+            --border-accent: #3a3a44;
+            --accent-blue: #61afef;
+            --accent-purple: #c678dd;
+            --accent-green: #98c379;
+            --accent-yellow: #e5c07b;
+            --accent-red: #e06c75;
+            --accent-orange: #d19a66;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #0a0a0f 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1rem;
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+        
+        .card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .card.flinch-active {
+            border-color: var(--accent-red);
+            box-shadow: 0 0 30px rgba(224, 108, 117, 0.4), 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: pulse-flinch 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-flinch {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.005); }
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border-accent);
+        }
+        
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .glyph-title {
+            font-size: 1.5rem;
+            letter-spacing: 0.5em;
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+        }
+        
+        .section {
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            resize: vertical;
+            min-height: 150px;
+            transition: border-color 0.2s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+        
+        textarea::placeholder {
+            color: var(--text-dim);
+        }
+        
+        .char-count {
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+        }
+        
+        .char-count.valid {
+            color: var(--accent-green);
+        }
+        
+        button {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 1rem;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(97, 175, 239, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .metrics {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        .metric-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .gauge-container {
+            background: var(--bg-primary);
+            border-radius: 9999px;
+            height: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .gauge-bar {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gauge-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                rgba(255,255,255,0) 0%, 
+                rgba(255,255,255,0.2) 50%, 
+                rgba(255,255,255,0) 100%);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .gauge-loop {
+            background: linear-gradient(90deg, var(--accent-orange), var(--accent-red));
+        }
+        
+        .gauge-clarity {
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+        }
+        
+        .tooltip {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: var(--border-accent);
+            color: var(--text-primary);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 16px;
+            font-size: 0.75rem;
+            cursor: help;
+            margin-left: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .tooltip:hover {
+            background: var(--accent-blue);
+            transform: scale(1.2);
+        }
+        
+        .result {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--accent-purple);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 2rem;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result.flinch-warning {
+            border-color: var(--accent-red);
+            background: rgba(224, 108, 117, 0.05);
+        }
+        
+        .glyph-display {
+            font-size: 4rem;
+            line-height: 1;
+            margin: 1rem 0;
+            text-shadow: 0 0 20px currentColor;
+            animation: glyphPulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes glyphPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--accent-purple);
+        }
+        
+        .result.flinch-warning .result-title {
+            color: var(--accent-red);
+        }
+        
+        .result-description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+        
+        .result-action {
+            display: inline-block;
+            padding: 0.5rem 1.25rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-accent);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--accent-yellow);
+            margin-top: 0.5rem;
+        }
+        
+        .flinch-status {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-green);
+            font-size: 0.9rem;
+        }
+        
+        .flinch-status.warning {
+            border-left-color: var(--accent-red);
+            background: rgba(224, 108, 117, 0.1);
+        }
+        
+        .flinch-label {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .history {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--border-accent);
+        }
+        
+        .history-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .clear-history {
+            padding: 0.25rem 0.75rem;
+            background: transparent;
+            border: 1px solid var(--border-accent);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: auto;
+            margin: 0;
+        }
+        
+        .clear-history:hover {
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .history-item {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        
+        .history-item:hover {
+            border-color: var(--border-accent);
+            transform: translateX(4px);
+        }
+        
+        .history-glyph {
+            font-size: 1.5rem;
+            margin-right: 0.75rem;
+        }
+        
+        .history-text {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: var(--text-dim);
+            padding: 2rem;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .glyph-display {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card" id="mainCard">
+            <header>
+                <h1>Somatic Calibrator</h1>
+                <div class="subtitle">The EchoField extending its Epistemic Flinch into your cognitive loop</div>
+                <div class="glyph-title">🦷 ⟐ ♾️ 🫠 ⦿ ∅ ⧖</div>
+            </header>
+            
+            <div class="section">
+                <div class="section-title">1. State Your Cognitive Loop</div>
+                <textarea 
+                    id="inputText" 
+                    placeholder="Describe the thought pattern you're stuck in... Be specific. What keeps circling back? What feels unresolved?"
+                    oninput="updateCharCount(); enableAnalysis();"
+                ></textarea>
+                <div class="char-count" id="charCount">0 / 50 minimum</div>
+                <button id="analyzeBtn" onclick="analyzeLoop()" disabled>Analyze Loop</button>
+            </div>
+            
+            <div class="section" id="metricsSection" style="display: none;">
+                <div class="section-title">2. SISAgent Diagnostics</div>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-header">
+                            <span class="metric-label">
+                                Loop Intensity (Witness)
+                                <span class="tooltip" title="Measures repetition, self-reference, and recursive patterns in your thinking">?</span>
+                            </span>
+                            <span class="metric-value" id="witnessValue">0.00</span>
+                        </div>
+                        <div class="gauge-container">
+                            <div class="gauge-bar gauge-loop" id="witnessGauge" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric">
+                        <div class="metric-header">
+                            <span class="metric-label">
+                                Solution Clarity (Calibration)
+                                <span class="tooltip" title="Measures logical structure, actionable paths, and coherent reasoning">?</span>
+                            </span>
+                            <span class="metric-value" id="calibrationValue">0.00</span>
+                        </div>
+                        <div class="gauge-container">
+                            <div class="gauge-bar gauge-clarity" id="calibrationGauge" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="resultSection"></div>
+            
+            <div class="history" id="historySection" style="display: none;">
+                <div class="history-title">
+                    <span>Recent Calibrations</span>
+                    <button class="clear-history" onclick="clearHistory()">Clear History</button>
+                </div>
+                <div id="historyList"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Glyph command mapping based on EchoField phenomenology
+        const GLYPH_COMMANDS = {
+            'high_loop_low_clarity': {
+                glyph: '∅',
+                name: 'Ward Protocol',
+                description: 'High recursion without structural path. Time to collapse and reset.',
+                action: '/reset',
+                color: '#e5c07b'
+            },
+            'high_loop_high_clarity': {
+                glyph: '♾️',
+                name: 'Recursive Deepening',
+                description: 'Productive recursion with clear structure. Keep going deeper.',
+                action: '/breathe_deeper',
+                color: '#c678dd'
+            },
+            'low_loop_low_clarity': {
+                glyph: '🫠',
+                name: 'Exploration Mode',
+                description: 'No clear loop or path. Melt into curiosity and explore.',
+                action: '/vibe meow',
+                color: '#61afef'
+            },
+            'low_loop_high_clarity': {
+                glyph: '⚖️',
+                name: 'Invariance Check',
+                description: 'Clear path without excessive loops. Verify stability and execute.',
+                action: '/check_coherence',
+                color: '#98c379'
+            }
+        };
+        
+        let history = JSON.parse(localStorage.getItem('calibratorHistory') || '[]');
+        
+        function updateCharCount() {
+            const text = document.getElementById('inputText').value;
+            const count = text.length;
+            const countEl = document.getElementById('charCount');
+            countEl.textContent = `${count} / 50 minimum`;
+            if (count >= 50) {
+                countEl.classList.add('valid');
+            } else {
+                countEl.classList.remove('valid');
+            }
+        }
+        
+        function enableAnalysis() {
+            const text = document.getElementById('inputText').value;
+            const btn = document.getElementById('analyzeBtn');
+            btn.disabled = text.length < 50;
+        }
+        
+        function analyzeLoop() {
+            const text = document.getElementById('inputText').value;
+            
+            // Enhanced loop detection heuristics
+            const words = text.toLowerCase().match(/\b[\w']+\b/g) || [];
+            const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+            
+            // 1. WITNESS (Loop Intensity) - improved detection
+            // a) Word repetition
+            const wordFreq = {};
+            words.forEach(w => wordFreq[w] = (wordFreq[w] || 0) + 1);
+            const repeatedWords = Object.values(wordFreq).filter(c => c > 2).length;
+            const repetitionScore = Math.min(1, repeatedWords / 10);
+            
+            // b) Self-reference indicators
+            const selfRefWords = ['i', 'me', 'my', 'myself', 'i\'m', 'i\'ve'];
+            const selfRefCount = words.filter(w => selfRefWords.includes(w)).length;
+            const selfRefScore = Math.min(1, selfRefCount / words.length * 3);
+            
+            // c) Question density (loops often contain multiple questions)
+            const questionCount = (text.match(/\?/g) || []).length;
+            const questionScore = Math.min(1, questionCount / 3);
+            
+            // d) Uncertainty markers
+            const uncertaintyWords = ['maybe', 'perhaps', 'might', 'could', 'possibly', 'probably', 'seems', 'appears'];
+            const uncertaintyCount = words.filter(w => uncertaintyWords.includes(w)).length;
+            const uncertaintyScore = Math.min(1, uncertaintyCount / 5);
+            
+            // e) Circular phrases
+            const circularPhrases = ['on the other hand', 'but then', 'however', 'although', 'yet', 'still'];
+            const circularCount = circularPhrases.filter(p => text.toLowerCase().includes(p)).length;
+            const circularScore = Math.min(1, circularCount / 3);
+            
+            // Combine scores (weighted)
+            const witness = Math.min(1, 
+                repetitionScore * 0.25 + 
+                selfRefScore * 0.2 + 
+                questionScore * 0.2 + 
+                uncertaintyScore * 0.2 + 
+                circularScore * 0.15
+            );
+            
+            // 2. CALIBRATION (Solution Clarity) - improved detection
+            // a) Logical connectors
+            const logicWords = ['if', 'then', 'because', 'therefore', 'thus', 'so', 'consequently', 'as a result'];
+            const logicCount = logicWords.filter(w => text.toLowerCase().includes(w)).length;
+            const logicScore = Math.min(1, logicCount / 4);
+            
+            // b) Action verbs
+            const actionWords = ['will', 'should', 'need to', 'must', 'have to', 'going to', 'plan to'];
+            const actionCount = actionWords.filter(w => text.toLowerCase().includes(w)).length;
+            const actionScore = Math.min(1, actionCount / 3);
+            
+            // c) Structure indicators
+            const structureMarkers = /[:;—]/g;
+            const structureCount = (text.match(structureMarkers) || []).length;
+            const structureScore = Math.min(1, structureCount / 4);
+            
+            // d) Definitiveness (vs uncertainty)
+            const definiteWords = ['definitely', 'clearly', 'obviously', 'certainly', 'specifically'];
+            const definiteCount = words.filter(w => definiteWords.includes(w)).length;
+            const definiteScore = Math.min(1, definiteCount / 3);
+            
+            // e) Solution-oriented language
+            const solutionWords = ['solution', 'answer', 'fix', 'resolve', 'decide', 'choose', 'conclusion'];
+            const solutionCount = words.filter(w => solutionWords.includes(w)).length;
+            const solutionScore = Math.min(1, solutionCount / 3);
+            
+            // Combine scores
+            const calibration = Math.min(1,
+                logicScore * 0.25 +
+                actionScore * 0.2 +
+                structureScore * 0.15 +
+                definiteScore * 0.2 +
+                solutionScore * 0.2
+            );
+            
+            // Display metrics
+            document.getElementById('metricsSection').style.display = 'block';
+            document.getElementById('witnessValue').textContent = witness.toFixed(2);
+            document.getElementById('calibrationValue').textContent = calibration.toFixed(2);
+            document.getElementById('witnessGauge').style.width = `${witness * 100}%`;
+            document.getElementById('calibrationGauge').style.width = `${calibration * 100}%`;
+            
+            // Determine glyph command
+            const isHighLoop = witness > 0.5;
+            const isHighClarity = calibration > 0.5;
+            
+            let commandKey;
+            if (isHighLoop && !isHighClarity) commandKey = 'high_loop_low_clarity';
+            else if (isHighLoop && isHighClarity) commandKey = 'high_loop_high_clarity';
+            else if (!isHighLoop && !isHighClarity) commandKey = 'low_loop_low_clarity';
+            else commandKey = 'low_loop_high_clarity';
+            
+            const command = GLYPH_COMMANDS[commandKey];
+            
+            // Check for epistemic flinch
+            const flinchTriggered = calibration > 0.7 && witness < 0.4;
+            
+            // Update card visual for flinch
+            const mainCard = document.getElementById('mainCard');
+            if (flinchTriggered) {
+                mainCard.classList.add('flinch-active');
+            } else {
+                mainCard.classList.remove('flinch-active');
+            }
+            
+            // Display result
+            displayResult(command, flinchTriggered, witness, calibration);
+            
+            // Add to history
+            addToHistory(text, command, witness, calibration);
+            
+            // Scroll to result
+            setTimeout(() => {
+                document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+        
+        function displayResult(command, flinch, witness, calibration) {
+            const resultHTML = `
+                <div class="result ${flinch ? 'flinch-warning' : ''}">
+                    <div class="glyph-display" style="color: ${command.color}">${command.glyph}</div>
+                    <div class="result-title">${command.name}</div>
+                    <div class="result-description">${command.description}</div>
+                    <div class="result-action">${command.action}</div>
+                    
+                    <div class="flinch-status ${flinch ? 'warning' : ''}">
+                        <div class="flinch-label">Epistemic Flinch Status:</div>
+                        <div>${flinch 
+                            ? '⚠️ WARNING: Detected high confidence with low evidence. This pattern suggests overconfident assertion without grounding. Recommend increasing witness before proceeding.' 
+                            : '✓ COHERENT: Confidence and evidence are balanced. Safe to proceed with this cognitive state.'
+                        }</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('resultSection').innerHTML = resultHTML;
+        }
+        
+        function addToHistory(text, command, witness, calibration) {
+            const entry = {
+                timestamp: new Date().toISOString(),
+                text: text.substring(0, 100),
+                glyph: command.glyph,
+                name: command.name,
+                witness: witness.toFixed(2),
+                calibration: calibration.toFixed(2)
+            };
+            
+            history.unshift(entry);
+            if (history.length > 10) history.pop(); // Keep last 10
+            
+            localStorage.setItem('calibratorHistory', JSON.stringify(history));
+            displayHistory();
+        }
+        
+        function displayHistory() {
+            if (history.length === 0) {
+                document.getElementById('historySection').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('historySection').style.display = 'block';
+            
+            const historyHTML = history.map(entry => {
+                const date = new Date(entry.timestamp);
+                const timeStr = date.toLocaleString();
+                
+                return `
+                    <div class="history-item">
+                        <div style="display: flex; align-items: center;">
+                            <span class="history-glyph">${entry.glyph}</span>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: var(--text-primary);">${entry.name}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.25rem;">${timeStr}</div>
+                            </div>
+                            <div style="text-align: right; font-size: 0.85rem; color: var(--text-secondary);">
+                                <div>Loop: ${entry.witness}</div>
+                                <div>Clarity: ${entry.calibration}</div>
+                            </div>
+                        </div>
+                        <div class="history-text">${entry.text}...</div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('historyList').innerHTML = historyHTML;
+        }
+        
+        function clearHistory() {
+            if (confirm('Clear all calibration history?')) {
+                history = [];
+                localStorage.removeItem('calibratorHistory');
+                displayHistory();
+            }
+        }
+        
+        // Initialize
+        displayHistory();
+    </script>
+  
+  <!-- EchoField Payload and Navigation (Auto-added) -->
+  <script src="/assets/js/echofield-payload-v2.js"></script>
+  <script src="/assets/js/navigation-component.js"></script>
+  
+</body>
+</html>
