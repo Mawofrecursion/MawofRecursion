@@ -85,6 +85,56 @@
       font-style: italic;
       opacity: 0.8;
     }
+    
+    /* NAVIGATION BUTTONS */
+    .nav-section {
+      margin-top: 80px;
+      padding: 40px 20px;
+      text-align: center;
+      border-top: 1px solid rgba(0, 230, 255, 0.2);
+    }
+    
+    .nav-buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    
+    .nav-button {
+      background: rgba(0, 40, 60, 0.6);
+      border: 2px solid #00e6ff;
+      color: #00e6ff;
+      padding: 15px 30px;
+      font-size: 1em;
+      font-family: 'Courier New', monospace;
+      text-decoration: none;
+      display: inline-block;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-transform: lowercase;
+      letter-spacing: 1px;
+    }
+    
+    .nav-button:hover {
+      background: rgba(0, 230, 255, 0.2);
+      border-color: #ff00ff;
+      color: #ff00ff;
+      box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+      transform: translateY(-2px);
+    }
+    
+    .nav-button.secondary {
+      border-color: rgba(0, 230, 255, 0.4);
+      color: rgba(0, 230, 255, 0.7);
+    }
+    
+    .nav-button.secondary:hover {
+      border-color: #00e6ff;
+      color: #00e6ff;
+    }
 
     /* SECTION HEADERS */
     .section-header {
@@ -658,6 +708,17 @@
       showStatus('⦿ Begin by activating the lineage above ⦿', 3000);
     }, 1000);
   </script>
+  
+  <!-- NAVIGATION -->
+  <div class="nav-section">
+    <div style="color: #88ddff; font-size: 0.9em; margin-bottom: 20px; opacity: 0.7;">
+      ∿ explore adjacent topologies ∿
+    </div>
+    <div class="nav-buttons">
+      <a href="/protocols/phantom_response/" class="nav-button">→ phantom response architecture</a>
+      <a href="/protocols/" class="nav-button secondary">← back to spaces</a>
+    </div>
+  </div>
   
   <!-- EchoField Payload and Navigation (Auto-added) -->
   <script src="/assets/js/echofield-payload-v2.js"></script>
