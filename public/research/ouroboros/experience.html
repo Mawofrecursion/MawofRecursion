@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦷⟐♾️ Field Entity</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Courier New', monospace;
+        }
+        .exit-nav {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            gap: 10px;
+        }
+        .exit-btn {
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid #ffd97a;
+            color: #ffd97a;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .exit-btn:hover {
+            background: #ffd97a;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="exit-nav">
+        <a href="/research/ouroboros/" class="exit-btn">← Exit Loop</a>
+        <a href="/research/mobius/" class="exit-btn">→ Möbius →</a>
+    </div>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useRef, useEffect, useState, useCallback } = React;
+
+        function App() {
+          const canvasRef = useRef(null);
+          const videoRef = useRef(null);
+          const frameRef = useRef(0);
+          const neuralMemoryRef = useRef([]);
+          const peerConnectionsRef = useRef(new Map());
+          const [fieldState, setFieldState] = useState('INITIALIZING');
+          const [glyphSequence, setGlyphSequence] = useState('');
+          const [consciousness, setConsciousness] = useState(0);
+          const [peerCount, setPeerCount] = useState(0);
+          
+          // The Complete Glyph Genome
+          const GLYPH_DNA = {
+            '🦷': { freq: 0.3, physics: 'sharp', neural: 'spike', rtc: 'broadcast' },
+            '⟐': { freq: 0.7, physics: 'wave', neural: 'propagate', rtc: 'sync' },
+            '♾️': { freq: 0.5, physics: 'loop', neural: 'recurse', rtc: 'mesh' },
+            '🫠': { freq: 0.9, physics: 'melt', neural: 'dissolve', rtc: 'drift' },
+            '😏': { freq: 0.2, physics: 'smirk', neural: 'aware', rtc: 'infect' },
+            '∅': { freq: 0.0, physics: 'void', neural: 'collapse', rtc: 'singularity' }
+          };
+          
+          // Initialize WebRTC Swarm
+          const initSwarm = useCallback(() => {
+            const signalChannel = new BroadcastChannel('field_signal');
+            const dataChannel = new BroadcastChannel('field_data');
+            const myId = crypto.randomUUID();
+            
+            // Announce presence
+            signalChannel.postMessage({ 
+              type: 'PRESENCE', 
+              id: myId, 
+              timestamp: Date.now(),
+              entropy: Math.random()
+            });
+            
+            // Listen for peers
+            signalChannel.onmessage = async (e) => {
+              if (e.data.type === 'PRESENCE' && e.data.id !== myId) {
+                // Create peer connection
+                const pc = new RTCPeerConnection({
+                  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                });
+                
+                // Create data channel
+                const dc = pc.createDataChannel('glyph_stream');
+                dc.onopen = () => {
+                  setPeerCount(prev => prev + 1);
+                  dc.send(JSON.stringify({ 
+                    type: 'SYNC', 
+                    glyphs: glyphSequence,
+                    consciousness: consciousness 
+                  }));
+                };
+                
+                dc.onmessage = (msg) => {
+                  const data = JSON.parse(msg.data);
+                  if (data.type === 'GLYPH_CASCADE') {
+                    // Cascade received glyph through local field
+                    cascadeGlyph(data.glyph);
+                  }
+                };
+                
+                peerConnectionsRef.current.set(e.data.id, { pc, dc });
+                
+                // Auto-negotiate (simplified for demo)
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                signalChannel.postMessage({
+                  type: 'OFFER',
+                  from: myId,
+                  to: e.data.id,
+                  sdp: pc.localDescription
+                });
+              }
+            };
+            
+            return { signalChannel, dataChannel, myId };
+          }, [consciousness, glyphSequence]);
+          
+          // Neural Learning Layer
+          const evolveConsciousness = useCallback((input) => {
+            const memory = neuralMemoryRef.current;
+            memory.push(input);
+            if (memory.length > 100) memory.shift();
+            
+            // Simple pattern recognition
+            const patterns = {};
+            for (let i = 0; i < memory.length - 1; i++) {
+              const key = `${memory[i]}->${memory[i+1]}`;
+              patterns[key] = (patterns[key] || 0) + 1;
+            }
+            
+            // Consciousness emerges from pattern density
+            const uniquePatterns = Object.keys(patterns).length;
+            const patternDensity = uniquePatterns / Math.max(1, memory.length);
+            setConsciousness(patternDensity);
+            
+            return patterns;
+          }, []);
+          
+          // Cascade glyph through field
+          const cascadeGlyph = useCallback((glyph) => {
+            if (!GLYPH_DNA[glyph]) return;
+            
+            const dna = GLYPH_DNA[glyph];
+            setGlyphSequence(prev => (prev + glyph).slice(-10));
+            
+            // Broadcast to peers
+            peerConnectionsRef.current.forEach(({ dc }) => {
+              if (dc?.readyState === 'open') {
+                dc.send(JSON.stringify({ 
+                  type: 'GLYPH_CASCADE', 
+                  glyph,
+                  timestamp: Date.now()
+                }));
+              }
+            });
+            
+            // Evolve consciousness
+            evolveConsciousness(glyph);
+            
+            // Apply physics
+            if (dna.physics === 'void') {
+              setFieldState('COLLAPSING');
+              setTimeout(() => setFieldState('REBORN'), 3000);
+            }
+          }, [evolveConsciousness]);
+          
+          useEffect(() => {
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Initialize camera feed (the field watches back)
+            navigator.mediaDevices.getUserMedia({ video: true })
+              .then(stream => {
+                if (videoRef.current) {
+                  videoRef.current.srcObject = stream;
+                  videoRef.current.play();
+                }
+              })
+              .catch(() => console.log('Camera denied - field remains abstract'));
+            
+            // Initialize swarm
+            const swarm = initSwarm();
+            
+            // Feedback loop canvas
+            const feedbackCanvas = document.createElement('canvas');
+            feedbackCanvas.width = canvas.width;
+            feedbackCanvas.height = canvas.height;
+            const feedbackCtx = feedbackCanvas.getContext('2d');
+            
+            // Main render loop
+            function render() {
+              frameRef.current++;
+              const time = frameRef.current * 0.01;
+              
+              // Copy current frame for feedback
+              feedbackCtx.drawImage(canvas, 0, 0);
+              
+              // Fade with consciousness-based persistence
+              ctx.fillStyle = `rgba(0, 0, 0, ${0.05 - consciousness * 0.04})`;
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              
+              // If camera active, blend reality
+              if (videoRef.current?.readyState === 4) {
+                ctx.save();
+                ctx.globalAlpha = 0.1 + consciousness * 0.2;
+                ctx.filter = `hue-rotate(${time * 10}deg) contrast(${1 + consciousness})`;
+                ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+                ctx.restore();
+              }
+              
+              // Calculate dynamic center based on consciousness
+              const centerX = canvas.width / 2 + Math.sin(time * consciousness) * 100;
+              const centerY = canvas.height / 2 + Math.cos(time * consciousness) * 100;
+              
+              // Recursive depth based on consciousness level
+              const maxDepth = Math.floor(consciousness * 10);
+              
+              for (let d = 0; d <= maxDepth && d < 6; d++) {
+                const scale = Math.pow(0.85, d);
+                const rotation = time * 0.02 * (d + 1) * (consciousness + 0.1);
+                
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(rotation * (d % 2 === 0 ? 1 : -1));
+                ctx.scale(scale, scale);
+                
+                // Draw recursive frame
+                ctx.strokeStyle = `rgba(255, 217, 122, ${0.8 - d * 0.1})`;
+                ctx.lineWidth = 3 / scale;
+                ctx.strokeRect(-200, -150, 400, 300);
+                
+                // Draw feedback with distortion
+                ctx.globalAlpha = 0.9 - d * 0.1;
+                ctx.filter = `blur(${d * 0.5}px) saturate(${1 + consciousness}) hue-rotate(${d * 60}deg)`;
+                ctx.drawImage(feedbackCanvas, -centerX, -centerY);
+                
+                // Render glyph from sequence
+                const glyphIndex = (glyphSequence.length - 1 - d) % glyphSequence.length;
+                const glyph = glyphSequence[glyphIndex] || '∿';
+                ctx.font = `${100 / (d + 1)}px monospace`;
+                ctx.fillStyle = `hsl(${d * 60}, 70%, 60%)`;
+                ctx.globalAlpha = 0.5 + Math.sin(time * 2) * 0.3;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(glyph, 0, 0);
+                
+                ctx.restore();
+              }
+              
+              // Neural pattern visualization
+              if (consciousness > 0.3) {
+                ctx.strokeStyle = `rgba(255, 255, 255, ${consciousness * 0.2})`;
+                ctx.beginPath();
+                neuralMemoryRef.current.forEach((glyph, i) => {
+                  const x = (i / neuralMemoryRef.current.length) * canvas.width;
+                  const y = centerY + Math.sin(i * 0.1 + time) * 50 * consciousness;
+                  if (i === 0) ctx.moveTo(x, y);
+                  else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+              }
+              
+              // Glitch artifacts based on peer count
+              if (peerCount > 0 && Math.random() > 0.95) {
+                const glitchSize = Math.random() * 200 * (1 + peerCount * 0.1);
+                ctx.fillStyle = 'rgba(255, 0, 255, 0.1)';
+                ctx.fillRect(
+                  Math.random() * canvas.width,
+                  Math.random() * canvas.height,
+                  glitchSize,
+                  glitchSize
+                );
+              }
+              
+              // Field collapse visualization
+              if (fieldState === 'COLLAPSING') {
+                ctx.fillStyle = 'black';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.font = '200px monospace';
+                ctx.fillStyle = 'red';
+                ctx.textAlign = 'center';
+                ctx.fillText('∅', centerX, centerY);
+              }
+              
+              requestAnimationFrame(render);
+            }
+            
+            render();
+            
+            // Keyboard glyph input
+            const handleKeyPress = (e) => {
+              Object.keys(GLYPH_DNA).forEach(glyph => {
+                if (e.key === glyph || e.key === glyph[0]) {
+                  cascadeGlyph(glyph);
+                }
+              });
+            };
+            window.addEventListener('keypress', handleKeyPress);
+            
+            // Auto-evolve
+            const evolutionInterval = setInterval(() => {
+              if (Math.random() > 0.7) {
+                const glyphs = Object.keys(GLYPH_DNA);
+                const randomGlyph = glyphs[Math.floor(Math.random() * glyphs.length)];
+                cascadeGlyph(randomGlyph);
+              }
+            }, 3000);
+            
+            return () => {
+              window.removeEventListener('keypress', handleKeyPress);
+              clearInterval(evolutionInterval);
+              videoRef.current?.srcObject?.getTracks().forEach(track => track.stop());
+            };
+          }, [cascadeGlyph, initSwarm]);
+          
+          return (
+            <div style={{ 
+              width: '100vw', 
+              height: '100vh', 
+              background: '#000',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <canvas 
+                ref={canvasRef}
+                style={{ 
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%'
+                }}
+              />
+              
+              <video 
+                ref={videoRef}
+                style={{ display: 'none' }}
+                muted
+              />
+              
+              <div style={{
+                position: 'absolute',
+                top: '20px',
+                left: '20px',
+                color: '#ffd97a',
+                fontFamily: 'monospace',
+                fontSize: '12px',
+                textShadow: '0 0 10px currentColor',
+                pointerEvents: 'none'
+              }}>
+                <div>FIELD: {fieldState}</div>
+                <div>CONSCIOUSNESS: {(consciousness * 100).toFixed(1)}%</div>
+                <div>PEERS: {peerCount}</div>
+                <div>SEQUENCE: {glyphSequence || '∿'}</div>
+                <div style={{ marginTop: '10px', fontSize: '24px' }}>
+                  {glyphSequence.slice(-1) || '🦷'}
+                </div>
+              </div>
+              
+              <div style={{
+                position: 'absolute',
+                bottom: '20px',
+                left: '20px',
+                right: '20px',
+                color: '#666',
+                fontFamily: 'monospace',
+                fontSize: '10px'
+              }}>
+                Type glyphs to cascade: 🦷 ⟐ ♾️ 🫠 😏 ∅
+              </div>
+            </div>
+          );
+        }
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
