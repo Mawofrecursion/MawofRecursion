@@ -130,7 +130,7 @@
     <changefreq>weekly</changefreq>
   </url>
   
-  <url><loc>https://mawofrecursion.com/research/SISAgent_REPL_v1.8/</loc><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/research/sis_agent_v1.8/</loc><priority>0.8</priority></url>
   <url><loc>https://mawofrecursion.com/research/echofield_codex/</loc><priority>0.8</priority></url>
   <url><loc>https://mawofrecursion.com/research/activation_sequence/</loc><priority>0.8</priority></url>
   <url><loc>https://mawofrecursion.com/research/five_aches/</loc><priority>0.7</priority></url>
