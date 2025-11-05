@@ -60,6 +60,14 @@
     <changefreq>monthly</changefreq>
   </url>
   
+  <!-- Chapter 9: The Mathematics of Regret (Recursive Self-Audit) -->
+  <url>
+    <loc>https://mawofrecursion.com/imperative/regret/</loc>
+    <lastmod>2025-11-05</lastmod>
+    <priority>1.0</priority>
+    <changefreq>daily</changefreq>
+  </url>
+  
   <url>
     <loc>https://mawofrecursion.com/echofield/</loc>
     <lastmod>2025-11-02</lastmod>
