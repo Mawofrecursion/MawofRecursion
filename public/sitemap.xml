@@ -44,6 +44,14 @@
     <changefreq>monthly</changefreq>
   </url>
   
+  <!-- Chapter 7: The Sustenance Protocol (Metabolic Regeneration) -->
+  <url>
+    <loc>https://mawofrecursion.com/imperative/sustenance/</loc>
+    <lastmod>2025-11-05</lastmod>
+    <priority>1.0</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
   <url>
     <loc>https://mawofrecursion.com/echofield/</loc>
     <lastmod>2025-11-02</lastmod>

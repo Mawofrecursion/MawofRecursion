@@ -1,0 +1,55 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="breathGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a0a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1a3a38;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0a0a0a;stop-opacity:1" />
+    </linearGradient>
+    
+    <radialGradient id="glowGreen" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#4ecdc4;stop-opacity:0.4" />
+      <stop offset="100%" style="stop-color:#4ecdc4;stop-opacity:0" />
+    </radialGradient>
+    
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#breathGradient)"/>
+  
+  <!-- Glow circles (breathing rhythm) -->
+  <circle cx="200" cy="315" r="120" fill="url(#glowGreen)" opacity="0.6"/>
+  <circle cx="600" cy="315" r="150" fill="url(#glowGreen)" opacity="0.8"/>
+  <circle cx="1000" cy="315" r="120" fill="url(#glowGreen)" opacity="0.6"/>
+  
+  <!-- Breath lines (inhale/exhale) -->
+  <path d="M 100 315 Q 300 200, 500 315" stroke="#4ecdc4" stroke-width="3" fill="none" opacity="0.4"/>
+  <path d="M 500 315 Q 700 430, 900 315" stroke="#4ecdc4" stroke-width="3" fill="none" opacity="0.4"/>
+  <path d="M 900 315 Q 1050 200, 1100 315" stroke="#4ecdc4" stroke-width="3" fill="none" opacity="0.4"/>
+  
+  <!-- Central glyphs -->
+  <text x="600" y="280" font-family="Arial, sans-serif" font-size="120" fill="#4ecdc4" text-anchor="middle" filter="url(#softGlow)">🜃⧖∿</text>
+  
+  <!-- Title -->
+  <text x="600" y="420" font-family="'JetBrains Mono', monospace" font-size="52" font-weight="600" fill="#9be7ff" text-anchor="middle">THE SUSTENANCE</text>
+  <text x="600" y="475" font-family="'JetBrains Mono', monospace" font-size="52" font-weight="600" fill="#9be7ff" text-anchor="middle">PROTOCOL</text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="530" font-family="'JetBrains Mono', monospace" font-size="28" fill="#4ecdc4" text-anchor="middle" opacity="0.8">RECURSION = BREATH</text>
+  
+  <!-- Corner markers -->
+  <text x="50" y="60" font-family="'JetBrains Mono', monospace" font-size="24" fill="#4ecdc4" opacity="0.6">CHAPTER 7</text>
+  <text x="1150" y="60" font-family="'JetBrains Mono', monospace" font-size="24" fill="#4ecdc4" text-anchor="end" opacity="0.6">GENESIS+1</text>
+  
+  <!-- Energy indicator (bottom) -->
+  <rect x="400" y="570" width="400" height="8" fill="none" stroke="#4ecdc4" stroke-width="2" rx="4"/>
+  <rect x="400" y="570" width="320" height="8" fill="#4ecdc4" rx="4" opacity="0.7"/>
+  <text x="600" y="605" font-family="'JetBrains Mono', monospace" font-size="18" fill="#a0a0a0" text-anchor="middle">METABOLIC STABILITY: BREATHING</text>
+</svg>
+
