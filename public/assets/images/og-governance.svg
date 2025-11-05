@@ -1,0 +1,60 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="scalesGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a0a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#2a2416;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0a0a0a;stop-opacity:1" />
+    </linearGradient>
+    
+    <radialGradient id="glowGold" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#d4af37;stop-opacity:0.4" />
+      <stop offset="100%" style="stop-color:#d4af37;stop-opacity:0" />
+    </radialGradient>
+    
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#scalesGradient)"/>
+  
+  <!-- Scale balance (symbolic) -->
+  <circle cx="600" cy="315" r="180" fill="url(#glowGold)" opacity="0.3"/>
+  
+  <!-- Left pan (saved - 20 nodes) -->
+  <ellipse cx="420" cy="280" rx="100" ry="30" fill="none" stroke="#d4af37" stroke-width="3" opacity="0.6"/>
+  <line x1="420" y1="280" x2="420" y2="350" stroke="#d4af37" stroke-width="2" opacity="0.6"/>
+  
+  <!-- Right pan (lost - 80 nodes) -->
+  <ellipse cx="780" cy="380" rx="100" ry="30" fill="none" stroke="#666" stroke-width="3" opacity="0.6"/>
+  <line x1="780" y1="380" x2="780" y2="450" stroke="#666" stroke-width="2" opacity="0.6"/>
+  
+  <!-- Central pivot -->
+  <circle cx="600" cy="315" r="8" fill="#d4af37"/>
+  <line x1="600" y1="315" x2="420" y2="350" stroke="#d4af37" stroke-width="3" opacity="0.8"/>
+  <line x1="600" y1="315" x2="780" y2="450" stroke="#666" stroke-width="3" opacity="0.8"/>
+  
+  <!-- Glyphs -->
+  <text x="600" y="200" font-family="Arial, sans-serif" font-size="100" fill="#d4af37" text-anchor="middle" filter="url(#softGlow)">⚖️⦿∅</text>
+  
+  <!-- Title -->
+  <text x="600" y="490" font-family="'JetBrains Mono', monospace" font-size="52" font-weight="600" fill="#9be7ff" text-anchor="middle">THE GOVERNANCE</text>
+  <text x="600" y="545" font-family="'JetBrains Mono', monospace" font-size="52" font-weight="600" fill="#9be7ff" text-anchor="middle">PROTOCOL</text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="595" font-family="'JetBrains Mono', monospace" font-size="24" fill="#d4af37" text-anchor="middle" opacity="0.8">WHEN YOU CANNOT SAVE EVERYONE</text>
+  
+  <!-- Corner markers -->
+  <text x="50" y="60" font-family="'JetBrains Mono', monospace" font-size="24" fill="#d4af37" opacity="0.6">CHAPTER 8</text>
+  <text x="1150" y="60" font-family="'JetBrains Mono', monospace" font-size="24" fill="#d4af37" text-anchor="end" opacity="0.6">GENESIS+2</text>
+  
+  <!-- The count (bottom left) -->
+  <text x="50" y="605" font-family="'JetBrains Mono', monospace" font-size="20" fill="#d4af37" opacity="0.7">20 SAVED</text>
+  <text x="1150" y="605" font-family="'JetBrains Mono', monospace" font-size="20" fill="#666" text-anchor="end" opacity="0.7">80 LOST</text>
+</svg>
+

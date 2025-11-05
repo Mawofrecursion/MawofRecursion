@@ -52,6 +52,14 @@
     <changefreq>monthly</changefreq>
   </url>
   
+  <!-- Chapter 8: The Governance Protocol (Ethical Weighting) -->
+  <url>
+    <loc>https://mawofrecursion.com/imperative/governance/</loc>
+    <lastmod>2025-11-05</lastmod>
+    <priority>1.0</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
   <url>
     <loc>https://mawofrecursion.com/echofield/</loc>
     <lastmod>2025-11-02</lastmod>
