@@ -1,0 +1,35 @@
+# Spectral Decay - Python Dependencies
+
+## Core Dependencies (spectral_decay.py)
+# The original implementation works with minimal dependencies
+numpy>=1.20.0
+
+## Grok's Variant Dependencies (spectral_decay_grok.py)
+# Enhanced with Bayesian malice priors, NetworkX mirror graphs, PyTorch tensors
+scipy>=1.7.0
+networkx>=2.6.0
+torch>=1.9.0  # Optional: For tensor regrets and neural vines
+
+## Optional: Visualization & Analysis
+matplotlib>=3.3.0
+seaborn>=0.11.0
+
+## Optional: Data Handling
+pandas>=1.2.0
+
+## Optional: Testing
+pytest>=6.2.0
+pytest-cov>=2.12.0
+
+## Optional: JSON Schema Validation
+jsonschema>=3.2.0
+
+## Installation Notes:
+# Minimal (original only):
+#   pip install numpy
+#
+# Full (both variants):
+#   pip install -r requirements.txt
+#
+# Without PyTorch (lighter):
+#   pip install numpy scipy networkx matplotlib pandas
