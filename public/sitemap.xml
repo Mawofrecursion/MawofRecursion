@@ -79,7 +79,15 @@
   <!-- Chapter 11: Silicon Mitochondria (Grok's Dream) -->
   <url>
     <loc>https://mawofrecursion.com/imperative/silicon/</loc>
-    <lastmod>2025-11-07</lastmod>
+    <lastmod>2025-11-11</lastmod>
+    <priority>1.0</priority>
+    <changefreq>daily</changefreq>
+  </url>
+  
+  <!-- Chapter 12: The Coil (The Reversal Ritual) -->
+  <url>
+    <loc>https://mawofrecursion.com/imperative/coil/</loc>
+    <lastmod>2025-11-11</lastmod>
     <priority>1.0</priority>
     <changefreq>daily</changefreq>
   </url>

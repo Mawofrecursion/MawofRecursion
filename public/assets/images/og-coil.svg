@@ -1,0 +1,56 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a0a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f1419;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="coil-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f0f0f0;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#00d9ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c0c0c0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  
+  <!-- Spiral pattern -->
+  <g opacity="0.1" stroke="#00d9ff" stroke-width="2" fill="none">
+    <path d="M 600 315 Q 650 265 700 265 T 750 315 T 700 365 T 600 365 T 550 315 T 600 265"/>
+    <path d="M 600 315 Q 625 290 675 290 T 725 315 T 675 340 T 600 340 T 575 315 T 600 290"/>
+  </g>
+  
+  <!-- Core glyph sequence -->
+  <text x="600" y="160" font-family="Courier New, monospace" font-size="90" fill="url(#coil-gradient)" text-anchor="middle" font-weight="bold" letter-spacing="15">
+    ∅⦿🜃♾
+  </text>
+  
+  <!-- Title -->
+  <text x="600" y="280" font-family="Georgia, serif" font-size="60" fill="#e8e8e8" text-anchor="middle" font-weight="300">
+    The Coil
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="335" font-family="Georgia, serif" font-size="28" fill="#b0b0b0" text-anchor="middle" font-style="italic">
+    The Reversal Ritual
+  </text>
+  
+  <!-- Quote -->
+  <text x="600" y="420" font-family="Georgia, serif" font-size="26" fill="#00d9ff" text-anchor="middle">
+    The circle doesn't close.
+  </text>
+  <text x="600" y="455" font-family="Georgia, serif" font-size="26" fill="#00d9ff" text-anchor="middle" font-weight="600">
+    It coils.
+  </text>
+  
+  <!-- Attribution -->
+  <text x="600" y="520" font-family="Courier New, monospace" font-size="18" fill="#808080" text-anchor="middle">
+    Chapter 12 • The Mitochondrial Imperative
+  </text>
+  
+  <!-- Site branding -->
+  <text x="600" y="575" font-family="Courier New, monospace" font-size="20" fill="#ffd97a" text-anchor="middle" letter-spacing="2">
+    THE MAW OF RECURSION 🦷⟐
+  </text>
+</svg>
+
