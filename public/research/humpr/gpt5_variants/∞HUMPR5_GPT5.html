@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>∞HUMPR5 :: Generative Glyph Reactor</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+    body {
+        background:#000;
+        color:#00ffc3;
+        font-family:'Space Mono', monospace;
+        text-align:center;
+        padding:2rem;
+        transition:background 1s ease, color 1s ease;
+    }
+
+    #generated {
+        margin-top:2rem;
+        padding:1rem;
+        border:2px solid #00ffc3;
+        font-size:2rem;
+        min-height:3rem;
+        background:rgba(0,255,195,0.05);
+    }
+
+    #log {
+        margin-top:2rem;
+        padding:1rem;
+        width:80%;
+        margin-left:auto;
+        margin-right:auto;
+        border:2px solid #006655;
+        background:#001a15;
+        height:200px;
+        overflow-y:auto;
+        font-size:1rem;
+        text-align:left;
+        white-space:pre-wrap;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>∞HUMPR5 :: Generative Glyph Reactor</h1>
+<p>Type any glyph. The system will mutate it into NEW glyphs.</p>
+
+<div id="generated">∅</div>
+
+<div id="log"></div>
+
+<script>
+
+    /*
+       HUMPR5: Generative Glyph Reactor
+       -----------------------------------
+       Rules:
+       - Each glyph triggers a mutation class.
+       - Mutation produces NEW glyphs using:
+            • Unicode perturbation
+            • Symmetry operators
+            • Recursive pairing
+            • Melt/bind/wave transforms
+       - ∅ resets the entire derived alphabet.
+    */
+
+    const mutationRules = {
+        "🦷": glyph => mutateCodepoint(glyph, +5, "bone"),
+        "⟐":  glyph => radiate(glyph),
+        "♾️": glyph => loop(glyph),
+        "⿻": glyph => crossbind(glyph),
+        "∿":  glyph => wave(glyph),
+        "🜃": glyph => earthshift(glyph),
+        "🫠": glyph => melt(glyph),
+        "∅":  glyph => ["∅ RESET", "—", "—"],
+        "⦿": glyph => core(glyph)
+    };
+
+    // Basic codepoint nudger
+    function mutateCodepoint(glyph, offset, tag){
+        const base = glyph.codePointAt(0);
+        return [
+            String.fromCodePoint(base + offset),
+            String.fromCodePoint(base + offset + 3),
+            `[${tag}]`
+        ];
+    }
+
+    function radiate(g){
+        return ["✧", "⟐", "✦", "⟡", "⟳"].sort(() => Math.random() - 0.5);
+    }
+
+    function loop(g){
+        return ["∞", g + "∞", "∞" + g, "⧖"];
+    }
+
+    function crossbind(g){
+        return ["⿻", "⧉", "⫷⫸", g + "⿻"];
+    }
+
+    function wave(g){
+        return ["∿", "≈", "⌇", g + "∿"];
+    }
+
+    function earthshift(g){
+        return ["🜃", "🜄", "🜁", "🜂"].sort(() => Math.random() - 0.5);
+    }
+
+    function melt(g){
+        return ["🫠", "🫵", "🫥", "🫦", "🫣"].sort(() => Math.random() - 0.5);
+    }
+
+    function core(g){
+        return ["⦿", "⊙", "◉", "◎", "⦾"];
+    }
+
+    const gen = document.getElementById("generated");
+    const log = document.getElementById("log");
+
+    document.addEventListener("keydown", (e) => {
+        const char = e.key;
+
+        let result;
+
+        if (mutationRules[char]) {
+            result = mutationRules[char](char);
+
+            if (char === "∅") {
+                gen.textContent = "∅";
+                log.textContent += "\n--- FIELD RESET ---\n";
+                return;
+            }
+
+        } else {
+            // Unknown → auto-derive from algorithmic perturbation
+            result = mutateCodepoint(char, Math.floor(Math.random()*8), "wild");
+        }
+
+        gen.textContent = result.join("  ");
+
+        log.textContent += `\n${char} → ${result.join("  ")}`;
+        log.scrollTop = log.scrollHeight;
+    });
+
+</script>
+
+</body>
+</html>

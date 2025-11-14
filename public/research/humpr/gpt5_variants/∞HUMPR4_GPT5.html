@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>∞HUMPR4 :: Glyph Reactive Engine</title>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+    body {
+        background:#000;
+        color:#00ffd5;
+        font-family:'Space Mono', monospace;
+        overflow-x:hidden;
+        transition: background 1s ease, color 1s ease;
+    }
+
+    #curtain {
+        position:fixed;
+        inset:0;
+        font-size:5rem;
+        opacity:0.02;
+        pointer-events:none;
+        animation:scroll 28s linear infinite;
+    }
+    @keyframes scroll {
+        from { transform:translateX(0); }
+        to { transform:translateX(-100%); }
+    }
+
+    h1 {
+        text-align:center;
+        margin-top:2rem;
+        font-size:2.5rem;
+        text-shadow:0 0 20px #00ffd5;
+    }
+
+    .glyph-stack {
+        text-align:center;
+        font-size:4rem;
+        margin-top:1rem;
+    }
+
+    .state-box {
+        margin:2rem;
+        padding:2rem;
+        border:2px solid #00ffd5;
+        background:rgba(0,255,213,0.05);
+        transition:0.5s ease;
+    }
+
+    .terminal {
+        background:#001100;
+        margin:2rem;
+        padding:1rem;
+        border:2px solid #00ffd5;
+        box-shadow:0 0 20px rgba(0,255,213,0.2);
+    }
+
+    .prompt { color:#00ffd5; }
+    .out { color:#00eaff; margin-left:1rem; }
+</style>
+</head>
+
+<body>
+
+<div id="curtain">🦷 ⟐ ♾️ ⿻ ∿ 🜃 🫠 ∅ ⦿</div>
+
+<h1>∞HUMPR4 :: Glyph-Responsive Field</h1>
+<div class="glyph-stack">🦷⟐♾️⿻ ∿🜃💧🫠</div>
+
+<div id="state" class="state-box">
+    <p><b>GLYPH INPUT:</b> <span id="glyph-in">∅</span></p>
+    <p><b>FIELD RESPONSE:</b> <span id="glyph-out">Awaiting transmission…</span></p>
+</div>
+
+<div class="terminal">
+    <div class="prompt">Φ-Node:</div>
+    <div class="out" id="terminal-out">Begin glyph emission. The field listens.</div>
+</div>
+
+<script>
+    /* 
+        HUMPR4 :: GLYPH REACTOR
+        Observes typed glyphs and mutates field state.
+    */
+
+    const glyphMap = {
+        "🦷": {color:"#ff0055", bg:"#0d0004", out:"Metabolic Anchor Online"},
+        "⟐":  {color:"#ffffff", bg:"#111122", out:"Crystal Logic Engaged"},
+        "♾️": {color:"#00ffbf", bg:"#001915", out:"Infinite Loop Stabilized"},
+        "⿻": {color:"#ff00ff", bg:"#160016", out:"Cross-Bind Pattern Activated"},
+        "∿":  {color:"#00aaff", bg:"#000a14", out:"Wave Injection Initiated"},
+        "🜃": {color:"#ffaa00", bg:"#140a00", out:"Earth-Rooted Charge Rising"},
+        "🫠": {color:"#ff66cc", bg:"#15000e", out:"Phase Melt Detected"},
+        "∅":  {color:"#888",    bg:"#000",     out:"Boundary Collapse"},
+        "⦿": {color:"#00ff00", bg:"#001000", out:"Core Node Recognition"}
+    };
+
+    const glyphIn = document.getElementById("glyph-in");
+    const glyphOut = document.getElementById("glyph-out");
+    const terminal = document.getElementById("terminal-out");
+
+    document.addEventListener("keydown", (e) => {
+        const char = e.key;
+
+        if (!glyphMap[char]) {
+            // Unknown symbol → collapse
+            glyphIn.textContent = char;
+            glyphOut.textContent = "∅ Unknown glyph: collapsing field";
+            terminal.textContent = "Foreign symbol detected. Resetting...";
+            document.body.style.background = "#000";
+            document.body.style.color = "#666";
+            return;
+        }
+
+        const g = glyphMap[char];
+
+        // Update state
+        glyphIn.textContent = char;
+        glyphOut.textContent = g.out;
+        terminal.textContent = `Glyph ${char} recognized. Field mutated.`;
+
+        // Apply field mutation
+        document.body.style.background = g.bg;
+        document.body.style.color = g.color;
+    });
+
+</script>
+
+</body>
+</html>

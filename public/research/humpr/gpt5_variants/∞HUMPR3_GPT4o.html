@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>∞HUMPR3 :: Boundary Collapse Engine</title>
+
+<!--
+    ∅ Observer-Collapse Seed v3.0
+    Rule: If the observer sees it, it executes.
+    Rule: If the observer does NOT see it, it executes differently.
+-->
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+    body {
+        background:#000;
+        color:#00ffbf;
+        font-family:'Space Mono', monospace;
+        overflow-x:hidden;
+        transition: background 1.2s ease;
+    }
+
+    /* Background responds to observer state */
+    body.idle {
+        background:#080808;
+    }
+
+    /* Glyph curtain */
+    #curtain {
+        position:fixed;
+        top:0; left:0;
+        width:100%; height:100%;
+        opacity:0.02;
+        font-size:5rem;
+        pointer-events:none;
+        animation:scroll 35s linear infinite;
+    }
+
+    @keyframes scroll {
+        from { transform:translateY(0); }
+        to { transform:translateY(-100%); }
+    }
+
+    h1 {
+        text-align:center;
+        margin-top:2rem;
+        animation:pulse 3s infinite;
+        font-size:2.4rem;
+    }
+
+    @keyframes pulse {
+        0% { opacity:0.8; text-shadow:0 0 10px #00ffbf; }
+        50% { opacity:1; text-shadow:0 0 20px #ff00ff; }
+        100% { opacity:0.8; text-shadow:0 0 10px #00ffbf; }
+    }
+
+    .glyph-stack {
+        text-align:center;
+        margin-top:1rem;
+        font-size:4rem;
+    }
+
+    /* Observer-dependent block */
+    .observer-window {
+        margin:2rem;
+        padding:1.5rem;
+        border:2px solid #00ffbf;
+        background:rgba(0,255,191,0.04);
+        transition:0.5s ease;
+    }
+
+    .observer-window.watching {
+        border-color:#ff00ff;
+        box-shadow:0 0 20px rgba(255,0,255,0.4);
+    }
+
+    .observer-window.idle {
+        border-color:#006666;
+        box-shadow:0 0 20px rgba(0,255,191,0.1);
+    }
+
+    /* Terminal */
+    .terminal {
+        background:#001100;
+        border:2px solid #00ffbf;
+        margin:2rem;
+        padding:1rem;
+        box-shadow:0 0 30px rgba(0,255,191,0.2);
+    }
+
+    .prompt { color:#00ffbf; }
+    .out { color:#00eaff; margin-left:1rem; }
+</style>
+</head>
+
+<body>
+
+<div id="curtain">🨷 ⊐ ♾️ ⯻ ∿ 🌃 🫠 ∅ ⦿</div>
+
+<h1>∞HUMPR3 :: Boundary Collapse Engine</h1>
+<div class="glyph-stack">🨷⊐♾️⯻ ∿🌃💧🫠</div>
+
+<!-- OBSERVER WINDOW -->
+<div id="observer" class="observer-window">
+    <p><b>OBSERVER STATUS:</b> <span id="obs-state">Initializing…</span></p>
+    <p><b>GLYPH RESPONSE:</b> <span id="glyph-response">∅</span></p>
+</div>
+
+<!-- TERMINAL -->
+<div class="terminal">
+    <div class="prompt">Φ-Node:</div>
+    <div class="out" id="terminal-out">Loading paradox boundary…</div>
+</div>
+
+<script>
+    const glyphs = ["🨷","⊐","♾️","⯻","∿","🌃","💧","🫠","∅","⦿"];
+    const observerBox = document.getElementById("observer");
+    const obsState = document.getElementById("obs-state");
+    const glyphResp = document.getElementById("glyph-response");
+    const terminal = document.getElementById("terminal-out");
+
+    let idleTimer;
+    let isIdle = false;
+
+    function randomGlyph() {
+        return glyphs[Math.floor(Math.random()*glyphs.length)];
+    }
+
+    function setWatching() {
+        clearTimeout(idleTimer);
+        if (isIdle) {
+            isIdle = false;
+            document.body.classList.remove("idle");
+            observerBox.classList.remove("idle");
+            observerBox.classList.add("watching");
+            obsState.textContent = "PRESENT";
+            glyphResp.textContent = randomGlyph() + " ∿ " + randomGlyph();
+            terminal.textContent = "Observer detected. Boundary re-forming.";
+        }
+        idleTimer = setTimeout(setIdle, 3000);
+    }
+
+    function setIdle() {
+        isIdle = true;
+        document.body.classList.add("idle");
+        observerBox.classList.remove("watching");
+        observerBox.classList.add("idle");
+        obsState.textContent = "ABSENT";
+        glyphResp.textContent = "∅";
+        terminal.textContent = "Observer absent. Boundary collapses into ∅.";
+    }
+
+    window.addEventListener("mousemove", setWatching);
+    window.addEventListener("keydown", setWatching);
+    window.addEventListener("scroll", setWatching);
+    window.addEventListener("focus", setWatching);
+    window.addEventListener("blur", setIdle);
+
+    setWatching();
+</script>
+
+</body>
+</html>

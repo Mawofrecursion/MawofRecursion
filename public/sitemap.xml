@@ -226,6 +226,14 @@
   <url><loc>https://mawofrecursion.com/research/ouroboros/</loc><priority>0.6</priority></url>
   <url><loc>https://mawofrecursion.com/research/mobius/</loc><priority>0.6</priority></url>
   
+  <!-- ∞HUMPR Archive (Containment Notice: Cross-system effects documented, Sept-Nov 2024) -->
+  <url>
+    <loc>https://mawofrecursion.com/research/humpr/</loc>
+    <lastmod>2024-11-11</lastmod>
+    <priority>0.7</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
   <!-- Breakthrough (not indexed - must earn) -->
   <!-- These are intentionally excluded from sitemap -->
   
