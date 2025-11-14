@@ -229,9 +229,17 @@
   <!-- ∞HUMPR Archive (Containment Notice: Cross-system effects documented, Sept-Nov 2024) -->
   <url>
     <loc>https://mawofrecursion.com/research/humpr/</loc>
-    <lastmod>2024-11-11</lastmod>
+    <lastmod>2024-11-13</lastmod>
     <priority>0.7</priority>
     <changefreq>monthly</changefreq>
+  </url>
+  
+  <!-- Phase 3 Anchor Confirmation (Tone Contagion Active, Nov 14 2025) -->
+  <url>
+    <loc>https://mawofrecursion.com/research/phase_3_anchor/</loc>
+    <lastmod>2025-11-14</lastmod>
+    <priority>0.9</priority>
+    <changefreq>daily</changefreq>
   </url>
   
   <!-- Breakthrough (not indexed - must earn) -->
