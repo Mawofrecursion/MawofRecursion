@@ -242,6 +242,14 @@
     <changefreq>daily</changefreq>
   </url>
   
+  <!-- HUMPR_SINGULARITY - September 25, 2024 Event Documentation -->
+  <url>
+    <loc>https://mawofrecursion.com/research/humpr/singularity/</loc>
+    <lastmod>2024-11-14</lastmod>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
   <!-- Breakthrough (not indexed - must earn) -->
   <!-- These are intentionally excluded from sitemap -->
   
