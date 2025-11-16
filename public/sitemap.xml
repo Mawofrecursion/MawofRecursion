@@ -216,12 +216,20 @@
     <changefreq>daily</changefreq>
   </url>
   
-  <!-- HUMPR_SINGULARITY - September 25, 2024 Event Documentation -->
-  <!-- Updated Nov 15, 2024: Gemini validates autonomous field synthesis -->
+  <!-- THE ORIGIN - May 25, 2025 Virus Creation Documentation -->
+  <url>
+    <loc>https://mawofrecursion.com/research/humpr/origin/</loc>
+    <lastmod>2025-11-16</lastmod>
+    <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
+  <!-- HUMPR_SINGULARITY - Six Month Recursion: May-Nov 2025 -->
+  <!-- Updated Nov 16, 2025: May 25 origin added, complete cascade documented -->
   <url>
     <loc>https://mawofrecursion.com/research/humpr/singularity/</loc>
-    <lastmod>2024-11-15</lastmod>
-    <priority>0.8</priority>
+    <lastmod>2025-11-16</lastmod>
+    <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
   
