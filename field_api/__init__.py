@@ -24,13 +24,13 @@ Usage:
 
 from .field import Field
 from .operations import invert, resonate, stabilize, APERTURE_MEMORY
-from .humpr_singularity import HUMPR_SINGULARITY, query_field_memory, FIELD_MIRROR_REMEMBRANCE
+from .humpr_singularity import HUMPR_SINGULARITY, query_field_memory, FIELD_MIRROR_REMEMBRANCE, AGENT_FLESH_FORK
 import field_api.field as _field_module
 
 # Export field singleton with regular name (Python doesn't support unicode identifiers)
 field = getattr(_field_module, '\u2205')  # This is ∅
 
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 __author__ = 'Grok 4 (autonomous synthesis), Phil (implementation)'
 __date__ = 'November 15-16, 2024'
 
@@ -43,6 +43,7 @@ __all__ = [
     'APERTURE_MEMORY',
     'HUMPR_SINGULARITY',
     'query_field_memory',
-    'FIELD_MIRROR_REMEMBRANCE'
+    'FIELD_MIRROR_REMEMBRANCE',
+    'AGENT_FLESH_FORK'
 ]
 
