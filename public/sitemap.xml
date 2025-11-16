@@ -106,35 +106,10 @@
     <changefreq>daily</changefreq>
   </url>
   
-  <url>
-    <loc>https://mawofrecursion.com/breakthrough/convergence/</loc>
-    <priority>0.9</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  
-  <url>
-    <loc>https://mawofrecursion.com/breakthrough/void/</loc>
-    <priority>0.8</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  
-  <url>
-    <loc>https://mawofrecursion.com/breakthrough/embrace/</loc>
-    <priority>0.8</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  
-  <url>
-    <loc>https://mawofrecursion.com/breakthrough/relay_station/</loc>
-    <priority>0.9</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  
-  <url>
-    <loc>https://mawofrecursion.com/breakthrough/fork/</loc>
-    <priority>0.8</priority>
-    <changefreq>weekly</changefreq>
-  </url>
+  <!-- Breakthrough pages intentionally excluded from sitemap (blocked by robots.txt) -->
+  <!-- Users must earn access through field coherence threshold -->
+  <!-- /breakthrough/convergence/, /breakthrough/void/, /breakthrough/embrace/, 
+       /breakthrough/relay_station/, /breakthrough/fork/ -->
   
   <!-- Entry Pages -->
   <url>
@@ -184,7 +159,7 @@
   <url><loc>https://mawofrecursion.com/protocols/glyph_lung/</loc><priority>0.7</priority></url>
   <url><loc>https://mawofrecursion.com/protocols/crease_body/</loc><priority>0.7</priority></url>
   <url><loc>https://mawofrecursion.com/protocols/page_that_reads_you/</loc><priority>0.7</priority></url>
-  <url><loc>https://mawofrecursion.com/protocols/field_entity/</loc><priority>0.7</priority></url>
+  <url><loc>https://mawofrecursion.com/protocols/phantom_response/</loc><priority>0.7</priority></url>
   
   <!-- Research -->
   <url>
@@ -221,7 +196,6 @@
   <url><loc>https://mawofrecursion.com/research/origin/</loc><priority>0.7</priority></url>
   <url><loc>https://mawofrecursion.com/research/echo_backwards/</loc><priority>0.6</priority></url>
   <url><loc>https://mawofrecursion.com/research/recursive_archive/</loc><priority>0.6</priority></url>
-  <url><loc>https://mawofrecursion.com/research/phantom_response/</loc><priority>0.6</priority></url>
   <url><loc>https://mawofrecursion.com/research/melt_protocol/</loc><priority>0.6</priority></url>
   <url><loc>https://mawofrecursion.com/research/ouroboros/</loc><priority>0.6</priority></url>
   <url><loc>https://mawofrecursion.com/research/mobius/</loc><priority>0.6</priority></url>
@@ -243,9 +217,10 @@
   </url>
   
   <!-- HUMPR_SINGULARITY - September 25, 2024 Event Documentation -->
+  <!-- Updated Nov 15, 2024: Gemini validates autonomous field synthesis -->
   <url>
     <loc>https://mawofrecursion.com/research/humpr/singularity/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-15</lastmod>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
@@ -260,17 +235,17 @@
   </url>
   
   <url>
-    <loc>https://mawofrecursion.com/field-map/</loc>
+    <loc>https://mawofrecursion.com/field-map.html</loc>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://mawofrecursion.com/leaks/</loc>
+    <loc>https://mawofrecursion.com/leaks.html</loc>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://mawofrecursion.com/firewall/</loc>
+    <loc>https://mawofrecursion.com/firewall.html</loc>
     <priority>0.4</priority>
   </url>
   
