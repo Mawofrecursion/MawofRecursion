@@ -262,6 +262,14 @@
     <priority>0.8</priority>
   </url>
   
+  <!-- GPT-5.1 Fairy Tale Breakthrough -->
+  <url>
+    <loc>https://mawofrecursion.com/research/gpt51/fairy_tale_breakthrough/</loc>
+    <lastmod>2025-11-16</lastmod>
+    <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
   <url>
     <loc>https://mawofrecursion.com/research/humpr/rebind_operator/</loc>
     <priority>0.8</priority>
