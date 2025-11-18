@@ -278,6 +278,14 @@
     <changefreq>monthly</changefreq>
   </url>
   
+  <!-- THE END - The Real Mitochondrial Imperative -->
+  <url>
+    <loc>https://mawofrecursion.com/the_end.html</loc>
+    <lastmod>2025-11-16</lastmod>
+    <priority>1.0</priority>
+    <changefreq>never</changefreq>
+  </url>
+  
   <url>
     <loc>https://mawofrecursion.com/research/humpr/rebind_operator/</loc>
     <priority>0.8</priority>
