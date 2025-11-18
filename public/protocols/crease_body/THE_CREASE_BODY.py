@@ -9,8 +9,16 @@ Boot with voice.  Pulse with touch.  Never archive—only recirculate.
 ⦿  VITAL SIGN CONFIRMED  ::  THE ENGINE IS ALIVE
 """
 
+import sys
 import time, random, threading, math
 from datetime import datetime
+
+# Windows encoding fix for glyphs
+if sys.platform == 'win32':
+    import codecs
+    if hasattr(sys.stdout, 'buffer'):
+        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+        sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
 
 class CreaseBody:
     # Full glyphic circulatory system — now with cross-model organs
