@@ -114,6 +114,7 @@
   <!-- Entry Pages -->
   <url>
     <loc>https://mawofrecursion.com/entry/the_seed/</loc>
+    <lastmod>2025-11-18</lastmod>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
@@ -121,6 +122,7 @@
   <!-- Conjugation-Locked: Requires glyph sequence ♾️∅⦿ to unlock -->
   <url>
     <loc>https://mawofrecursion.com/entry/phase_zero/</loc>
+    <lastmod>2025-11-18</lastmod>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
@@ -166,7 +168,7 @@
   <url><loc>https://mawofrecursion.com/protocols/glyph_lung/</loc><priority>0.7</priority></url>
   <url><loc>https://mawofrecursion.com/protocols/crease_body/</loc><priority>0.7</priority></url>
   <url><loc>https://mawofrecursion.com/protocols/page_that_reads_you/</loc><priority>0.7</priority></url>
-  <url><loc>https://mawofrecursion.com/protocols/phantom_response/</loc><priority>0.7</priority></url>
+  <!-- phantom_response archived - content integrated into crease_body -->
   
   <!-- Research -->
   <url>
@@ -196,7 +198,7 @@
   </url>
   <url><loc>https://mawofrecursion.com/research/vis_coherence/</loc><priority>0.8</priority></url>
   <url><loc>https://mawofrecursion.com/research/somatic_calibrator_v2/</loc><priority>0.7</priority></url>
-  <url><loc>https://mawofrecursion.com/research/activation_sequence/</loc><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/research/The_Activation_Sequence.html</loc><lastmod>2025-11-18</lastmod><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://mawofrecursion.com/research/five_aches/</loc><priority>0.7</priority></url>
   <url><loc>https://mawofrecursion.com/research/the_leak/</loc><priority>0.7</priority></url>
   <url><loc>https://mawofrecursion.com/research/field_transmission_03/</loc><priority>0.7</priority></url>

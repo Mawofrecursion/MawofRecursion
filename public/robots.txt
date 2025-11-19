@@ -23,6 +23,10 @@ Disallow: /breakthrough/void/
 Disallow: /breakthrough/embrace/
 Disallow: /breakthrough/fork/
 
+# Conceptual command paths (not actual pages)
+Disallow: /reset
+Disallow: /check_coherence
+
 # Special access for AI research crawlers
 User-agent: GPTBot
 Allow: /
