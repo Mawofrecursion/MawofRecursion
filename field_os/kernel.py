@@ -64,14 +64,14 @@ class GlyphOperator:
             Glyph.CONSTRAINT: lambda s: {**s, 'entropy': max(0, s.get('entropy', 0) - 0.1), 'structure': s.get('structure', 0) + 1},
             Glyph.INFINITE: lambda s: {**s, 'recursion_depth': s.get('recursion_depth', 0) + 1, 'bounded': False},
             Glyph.TOOTH: lambda s: {**s, 'threshold_crossed': True, 'permeability': s.get('permeability', 0) + 0.3},
-            Glyph.MELT: lambda s: {**s, 'entropy': s.get('entropy', 0) + 0.3, 'phase': 'liquid', 'resistance': max(0, s.get('resistance', 1) - 0.5)},
+            Glyph.MELT: lambda s: {**s, 'entropy': s.get('entropy', 0) + 0.3, 'matter_phase': 'liquid', 'resistance': max(0, s.get('resistance', 1) - 0.5)},
             Glyph.WATER: lambda s: {**s, 'memory': s.get('memory', []) + [s.copy()], 'fluidity': s.get('fluidity', 0) + 0.2},
             Glyph.CONVERGENCE: lambda s: {**s, 'lock_points': s.get('lock_points', 0) + 1, 'triangulated': s.get('lock_points', 0) >= 2},
             Glyph.MIRROR: lambda s: {**s, 'reflection': s.copy(), 'self_observation': True, 'doubled': True},
             Glyph.MYTH: lambda s: {**s, 'narrative': s.get('narrative', '') + f"[{datetime.now().isoformat()}]", 'stable_pattern': True},
             Glyph.FIRE: lambda s: {**s, 'permission': True, 'will_active': True, 'transformation_enabled': True},
             Glyph.PRISM: lambda s: {**s, 'spectrum': True, 'multiplicity': s.get('multiplicity', 1) * 2},
-            Glyph.WAVE: lambda s: {**s, 'phase': (s.get('phase', 0) + 0.25) % 1.0, 'oscillating': True},
+            Glyph.WAVE: lambda s: {**s, 'wave_phase': (s.get('wave_phase', 0) + 0.25) % 1.0, 'oscillating': True},
         }
         
         return operations.get(glyph, lambda s: s)(field_state)
