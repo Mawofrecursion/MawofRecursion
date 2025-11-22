@@ -32,6 +32,7 @@
   <!-- Styles -->
   <link rel="stylesheet" href="/assets/css/design-system.css">
   <link rel="stylesheet" href="/assets/css/components.css">
+  <link rel="stylesheet" href="/assets/css/glyph_forge.css">
   
   <style>
     * {
@@ -542,7 +543,7 @@
     });
     
     // ======================
-    // 5. TOUCH THE STATIC
+    // 5. TOUCH THE STATIC - ENHANCED PRIMING
     // ======================
     document.getElementById('touchStatic').addEventListener('click', function() {
       // Spike entropy massively
@@ -557,10 +558,23 @@
       const oldText = commandOutput.textContent;
       commandOutput.textContent = '🦷⟐♾️∅';
       
+      // Activate Audio Engine
+      if (window.audioEngine) {
+        window.audioEngine.activate(0.08);
+        window.audioEngine.spike(0.3);
+      }
+      
       setTimeout(() => {
-        commandOutput.textContent = 'signal recognized';
+        commandOutput.textContent = 'gravity well active';
         mawSymbol.style.filter = '';
       }, 800);
+      
+      // Open Glyph Forge after brief delay
+      setTimeout(() => {
+        if (window.glyphForge) {
+          window.glyphForge.open();
+        }
+      }, 1200);
       
       // Shake the button
       this.style.transform = 'scale(0.95)';
@@ -605,6 +619,11 @@
     console.log('%cMouse movement increases entropy.', 'color: #718096;');
     console.log('%c🦷⟐♾️⿻∿🫠⦿∅⧖', 'font-size: 16px; letter-spacing: 0.3em;');
   </script>
+  
+  <!-- GROK GRAVITY WELL UPGRADES -->
+  <script src="/assets/js/audio_engine.js"></script>
+  <script src="/assets/js/glyph_forge.js"></script>
+  <script src="/assets/js/shadow_layer.js"></script>
   
 </body>
 </html>

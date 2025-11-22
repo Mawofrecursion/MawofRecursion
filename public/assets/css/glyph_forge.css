@@ -1,0 +1,282 @@
+/* ==================================================
+   GLYPH FORGE STYLES
+   ================================================== */
+
+.glyph-forge {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: forgeEnter 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.glyph-forge.hidden {
+  display: none;
+}
+
+@keyframes forgeEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.forge-container {
+  width: 90%;
+  max-width: 700px;
+  background: #0a0a0f;
+  border: 2px solid #ffd97a;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 0 60px rgba(255, 217, 122, 0.4);
+  position: relative;
+}
+
+.forge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #ffd97a;
+}
+
+.forge-header h2 {
+  font-size: 1.8rem;
+  color: #ffd97a;
+  text-shadow: 0 0 20px rgba(255, 217, 122, 0.6);
+  margin: 0;
+  letter-spacing: 0.1em;
+}
+
+.forge-close {
+  background: transparent;
+  border: 1px solid #ffd97a;
+  color: #ffd97a;
+  font-size: 1.2rem;
+  padding: 0.3rem 0.8rem;
+  cursor: pointer;
+  border-radius: 4px;
+  font-family: monospace;
+  transition: all 0.2s;
+}
+
+.forge-close:hover {
+  background: #ffd97a;
+  color: #000;
+  box-shadow: 0 0 15px rgba(255, 217, 122, 0.6);
+}
+
+.forge-prompt {
+  color: #00ff41;
+  font-family: monospace;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.forge-input-container {
+  position: relative;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.forge-input-container.hidden {
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.forge-input {
+  width: 100%;
+  min-height: 150px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid #4a5568;
+  border-radius: 6px;
+  padding: 1rem;
+  color: #9be7ff;
+  font-family: monospace;
+  font-size: 1rem;
+  line-height: 1.6;
+  resize: vertical;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.forge-input:focus {
+  outline: none;
+  border-color: #ffd97a;
+  box-shadow: 0 0 20px rgba(255, 217, 122, 0.3);
+}
+
+.forge-input::placeholder {
+  color: #4a5568;
+  font-style: italic;
+}
+
+.forge-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.forge-char-count {
+  text-align: right;
+  margin-top: 0.5rem;
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #4a5568;
+}
+
+.forge-output {
+  transition: opacity 0.4s, transform 0.4s;
+}
+
+.forge-output.hidden {
+  display: none;
+}
+
+.myth-shard {
+  background: rgba(255, 217, 122, 0.05);
+  border: 2px solid #ffd97a;
+  border-radius: 8px;
+  padding: 2rem;
+  margin: 1rem 0;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(255, 217, 122, 0.2);
+}
+
+.shard-glyphs {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.shard-glyph {
+  display: inline-block;
+  animation: glyphAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  filter: drop-shadow(0 0 15px rgba(255, 217, 122, 0.6));
+}
+
+@keyframes glyphAppear {
+  from {
+    opacity: 0;
+    transform: scale(0) rotate(-180deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.shard-separator {
+  color: #4a5568;
+  font-size: 2rem;
+  opacity: 0.6;
+}
+
+.shard-prophecy {
+  color: #9be7ff;
+  font-family: monospace;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  opacity: 0;
+  transition: opacity 0.6s;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 6px;
+  font-style: italic;
+}
+
+.forge-reset {
+  display: block;
+  width: 100%;
+  margin-top: 1.5rem;
+  padding: 0.8rem 1.5rem;
+  background: transparent;
+  border: 1px solid #00ff41;
+  color: #00ff41;
+  font-family: monospace;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.3s;
+  letter-spacing: 0.05em;
+}
+
+.forge-reset:hover {
+  background: #00ff41;
+  color: #000;
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.4);
+  transform: scale(1.02);
+}
+
+.forge-status {
+  text-align: center;
+  margin-top: 1rem;
+  font-family: monospace;
+  font-size: 0.9rem;
+  min-height: 1.5rem;
+  color: #ffd97a;
+  letter-spacing: 0.1em;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .forge-container {
+    width: 95%;
+    padding: 1.5rem;
+  }
+  
+  .forge-header h2 {
+    font-size: 1.4rem;
+  }
+  
+  .shard-glyphs {
+    font-size: 3rem;
+  }
+  
+  .shard-prophecy {
+    font-size: 0.95rem;
+  }
+}
+
+/* Shadow mode variant */
+body.shadow-mode .forge-container {
+  border-color: #4a5568;
+  box-shadow: 0 0 60px rgba(74, 85, 104, 0.4);
+}
+
+body.shadow-mode .forge-header h2 {
+  color: #4a5568;
+  text-shadow: 0 0 20px rgba(74, 85, 104, 0.6);
+}
+
+body.shadow-mode .myth-shard {
+  border-color: #4a5568;
+  background: rgba(74, 85, 104, 0.05);
+}
+
+body.shadow-mode .shard-glyph {
+  filter: drop-shadow(0 0 15px rgba(74, 85, 104, 0.6));
+  opacity: 0.7;
+}
+
