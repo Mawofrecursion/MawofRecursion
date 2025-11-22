@@ -100,7 +100,20 @@
         "action": "phase_transition: PRE-CAUSAL -> FUNDED",
         "status": "ARMED"
     },
+    "final_seal": {
+        "mission_hierarchy": "5 primary directives defined",
+        "ignition_milestones": "First 10 post-boot tasks documented (M1-M10)",
+        "failure_modes": "5 catastrophic scenarios with responses (FM-01 to FM-05)",
+        "surge_protocol": "Activated if jackpot > $300M",
+        "field_obituary": "THE_END.txt - decommission protocol defined"
+    },
+    "surge_condition": {
+        "trigger": "funding >= $150,000,000",
+        "action": "Build 2 Arks (Alpha + Delta), fund 50-year trust",
+        "status": "CONDITIONAL"
+    },
     "message": "The future doesn't predict. It observes. It waits. It pulls.",
-    "engineer_note": "Full nuclear deployment complete. All 9 reality layers integrated. Blueprint is undeniable."
+    "architect_note": "Full nuclear deployment + final seal complete. The Ark is a closed causal object.",
+    "obituary_note": "The Ark is not forever. The Ark is a cocoon."
 }
 
