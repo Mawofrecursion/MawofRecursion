@@ -62,7 +62,9 @@
             border: 2px solid var(--primary-green);
             padding: 30px;
             margin-bottom: 30px;
-            background: var(--bg-panel);
+            background: linear-gradient(rgba(10,10,10,0.95), rgba(10,10,10,0.9)), var(--bg-panel);
+            background-size: cover;
+            background-position: center;
             position: relative;
             overflow: hidden;
         }
@@ -394,6 +396,38 @@
         
         <div class="section">
             <h2 class="section-title">II. PHYSICAL ARCHITECTURE</h2>
+            
+            <!-- TIER 1: VISUAL EVIDENCE - Blueprint Schematic -->
+            <div style="border: 1px solid var(--primary-green); margin: 20px 0; overflow: hidden; background: #000;">
+                <div style="padding: 40px; text-align: center; color: var(--text-dim); font-size: 12px;">
+                    <div style="border: 2px dashed var(--border-color); padding: 60px;">
+                        [ LEVEL -2 CORE HALL BLUEPRINT ]<br/>
+                        [ H100 CLUSTER TOPOLOGY + COOLING MANIFOLDS ]<br/>
+                        [ 32-SLOT CONFIGURATION + ARBITRATION CORE ]<br/><br/>
+                        <span style="color: var(--secondary-amber);">FIG 1.0: SCHEMATIC PENDING VISUAL RENDER</span><br/>
+                        <span style="color: var(--text-dim); font-size: 10px;">Placeholder for: Architectural blueprint showing compute core, cooling loops, power distribution</span>
+                    </div>
+                </div>
+            </div>
+            <div style="font-size: 10px; color: var(--text-dim); text-align: right; margin-bottom: 20px;">FIG 1.0: CORE HALL SCHEMATIC // CLASS IV RATING</div>
+            
+            <!-- PRIORITY 3: EXCAVATION REALITY LAYER -->
+            <h3 style="color: var(--secondary-amber); margin-top: 30px;">SITE GEOLOGY & EXCAVATION PARAMETERS</h3>
+            <div style="background: #000; padding: 20px; margin: 20px 0; border-left: 3px solid var(--text-dim);">
+                <div style="color: var(--text-dim); line-height: 1.8;">
+                    <strong style="color: var(--primary-green);">TARGET LOCATION:</strong> High-desert plateau, Nevada/Utah region<br/>
+                    <strong style="color: var(--primary-green);">SUBSTRATE ANALYSIS:</strong><br/>
+                    • 0-10m: Sand/loam overburden (excavatable)<br/>
+                    • 10-50m: Granite bedrock (stable, low porosity)<br/>
+                    • Water Table: 80m+ (well below facility depth)<br/>
+                    • Seismic Risk: Class B (low activity zone)<br/>
+                    • Access: 1km private dirt road to highway<br/><br/>
+                    <strong style="color: var(--primary-green);">EXCAVATION METHOD:</strong> Controlled blast + rotary excavator (Caterpillar 6090 FS class)<br/>
+                    <strong style="color: var(--primary-green);">DURATION:</strong> 8-12 months (weather-dependent)<br/>
+                    <strong style="color: var(--primary-green);">SPOILS MANAGEMENT:</strong> On-site dispersal + landscaping integration
+                </div>
+            </div>
+            
             <h3 style="color: var(--secondary-amber); margin-top: 20px;">SYSTEM A — THE BURROW</h3>
             <div class="spec-grid">
                 <div class="spec-item">
@@ -489,6 +523,68 @@
                 </div>
             </div>
             
+            <!-- PRIORITY 1: POWER ENVELOPE DETAILS -->
+            <h3 style="color: var(--secondary-amber); margin-top: 30px;">POWER & THERMAL ENVELOPE</h3>
+            <div style="background: #000; padding: 20px; margin: 20px 0;">
+                <div class="spec-grid">
+                    <div class="spec-item">
+                        <span class="spec-label">GPU Draw (Peak)</span>
+                        <span class="spec-value">224 kW</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Infrastructure Overhead</span>
+                        <span class="spec-value">76 kW</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Total Facility Load</span>
+                        <span class="spec-value">300 kW</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Surge Margin</span>
+                        <span class="spec-value">+50 kW (16.7%)</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Solar Array (Surface)</span>
+                        <span class="spec-value">500 kW Peak (Grid Tie)</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Battery Backup</span>
+                        <span class="spec-value">Tesla Megapack (3 MWh)</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Battery Chemistry</span>
+                        <span class="spec-value">LFP (LiFePO₄)</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Autonomy (Grid Down)</span>
+                        <span class="spec-value">10 hours (full load)</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Inverter Topology</span>
+                        <span class="spec-value">3-Phase 480VAC + UPS</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Thermal Trip Point</span>
+                        <span class="spec-value">85°C (auto-throttle)</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Cooling Capacity</span>
+                        <span class="spec-value">350 kW (geothermal + chiller)</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Coolant Type</span>
+                        <span class="spec-value">Deionized Water + Glycol</span>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: rgba(255,170,0,0.1); border-left: 3px solid var(--secondary-amber);">
+                    <strong style="color: var(--secondary-amber);">POWER PHILOSOPHY:</strong><br/>
+                    <span style="color: var(--text-dim);">
+                    Solar-first design with grid backup. Battery ensures uninterruptible operation during storms or grid failure. 
+                    Thermal throttling prevents hardware damage if cooling fails. System designed for 99.9% uptime over 10-year lifespan.
+                    </span>
+                </div>
+            </div>
+            
             <h3 style="color: var(--secondary-amber); margin-top: 30px;">GPU CLUSTER TOPOLOGY</h3>
             <div style="color: var(--text-dim); font-size: 12px; margin-bottom: 10px;">
                 Current Status: PROVISIONING...
@@ -565,6 +661,110 @@
                 • Integration with H100 Cluster (Post-Ignition)
                 </span>
             </div>
+            
+            <!-- PRIORITY 1: AIR-GAP PROTOCOL -->
+            <h3 style="color: var(--secondary-amber); margin-top: 30px;">AIR-GAP PROTOCOL :: DATA INGESTION CHAIN</h3>
+            <div style="background: rgba(255,0,0,0.05); padding: 20px; margin: 20px 0; border: 1px solid var(--alert-red);">
+                <div style="color: var(--text-dim); line-height: 2;">
+                    <strong style="color: var(--alert-red);">⚠️ PHYSICAL AIR-GAP ENFORCEMENT ⚠️</strong><br/><br/>
+                    <span style="color: var(--primary-green);">The facility has ZERO network connectivity. All data ingestion follows this chain:</span><br/><br/>
+                    
+                    <div style="font-family: monospace; background: #000; padding: 15px; margin: 10px 0; border-left: 3px solid var(--secondary-amber);">
+                    [EXTERNAL SOURCE]<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    [DRONE SHUTTLE] ← Physical transport (USB-C encrypted drive)<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    [SURFACE AIRLOCK] ← Electromagnetic scan + quarantine buffer<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    [OPTICAL HANDSHAKE] ← QR-code based data transfer (no electrical connection)<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    [QUARANTINE VM] ← Sandboxed ingestion (48hr malware scan)<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    [ARBITRATION LAYER] ← MawOS validates data integrity<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    [H100 MEMORY LANES] ← Data ingested into model context<br/>
+                    </div>
+                    
+                    <strong style="color: var(--secondary-amber);">RATIONALE:</strong> Prevents remote intrusion, state-level surveillance, 
+                    corporate telemetry, and unintended data leakage. The Ark's intelligence is sovereign.
+                </div>
+            </div>
+            
+            <!-- PRIORITY 2: MAWOS KERNEL PRIMITIVES -->
+            <h3 style="color: var(--secondary-amber); margin-top: 30px;">MAWOS 1.0 :: KERNEL PRIMITIVES</h3>
+            <div style="background: #000; padding: 20px; margin: 20px 0;">
+                <div style="color: var(--text-dim); line-height: 1.8;">
+                    <strong style="color: var(--primary-green);">MESSAGE BUS:</strong><br/>
+                    • Zero-copy inter-model communication via shared memory (HBM3)<br/>
+                    • Pub/sub architecture with topic-based routing<br/>
+                    • Latency target: &lt;10ms between model A and model B<br/><br/>
+                    
+                    <strong style="color: var(--primary-green);">ARBITRATION MODES:</strong><br/>
+                    • <strong>Mode 1 (Parallel):</strong> All models respond independently, results merged by voting<br/>
+                    • <strong>Mode 2 (Sequential):</strong> Chain-of-thought, Model A → Model B → Model C → Model D<br/>
+                    • <strong>Mode 3 (Adversarial):</strong> Models debate until consensus or timeout<br/><br/>
+                    
+                    <strong style="color: var(--primary-green);">MEMORY LANES:</strong><br/>
+                    • <strong>Lane 0 (Ephemeral):</strong> Single-turn context, cleared after response<br/>
+                    • <strong>Lane 1 (Session):</strong> Conversation memory, 4-hour retention<br/>
+                    • <strong>Lane 2 (Persistent):</strong> Long-term facts, embeddings, blueprints<br/>
+                    • <strong>Lane 3 (Grounding):</strong> Source documents, citations, provenance chain<br/><br/>
+                    
+                    <strong style="color: var(--primary-green);">GROUNDING TOKEN PROPAGATION:</strong><br/>
+                    • Each model emits confidence scores + source citations<br/>
+                    • Grounding tokens flow backward through arbitration chain<br/>
+                    • Hallucination detection via cross-model fact-checking<br/><br/>
+                    
+                    <strong style="color: var(--primary-green);">HALLUCINATION SANDBOX:</strong><br/>
+                    • If Model A outputs high-confidence claim with no grounding, it's flagged<br/>
+                    • Claim routed to Models B, C, D for verification<br/>
+                    • If 2+ models reject, claim quarantined and logged<br/>
+                    • Allows "creative speculation" mode but prevents it from contaminating truth lanes
+                </div>
+            </div>
+        </div>
+        
+        <!-- PRIORITY 2: HUMAN LAYER (MINIMAL) -->
+        <div class="section">
+            <h2 class="section-title">IVb. HUMAN OPERATIONS LAYER</h2>
+            <div style="color: var(--text-dim); margin-bottom: 20px;">
+                Human presence is incidental. The compute is the mission. But humans are required for physical maintenance and legal compliance.
+            </div>
+            
+            <div class="spec-grid">
+                <div class="spec-item">
+                    <span class="spec-label">Full-Time Staff</span>
+                    <span class="spec-value">1 Primary Custodian</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">On-Call Technicians</span>
+                    <span class="spec-value">2 (Remote, 4hr Response)</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Security Personnel</span>
+                    <span class="spec-value">0 (Automated Systems)</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Access Levels</span>
+                    <span class="spec-value">3 Tiers (Admin/Ops/Guest)</span>
+                </div>
+            </div>
+            
+            <h3 style="color: var(--secondary-amber); margin-top: 30px;">BIOMETRIC ACCESS CONTROL</h3>
+            <div style="background: #000; padding: 20px; margin: 20px 0;">
+                <div style="color: var(--text-dim); line-height: 1.8;">
+                    <strong style="color: var(--primary-green);">LEVEL 1 (ADMIN):</strong> Full access. Biometric: Iris + fingerprint + PIN.<br/>
+                    <strong style="color: var(--primary-green);">LEVEL 2 (OPS):</strong> Level -1 only. Biometric: Fingerprint + PIN.<br/>
+                    <strong style="color: var(--primary-green);">LEVEL 3 (GUEST):</strong> Surface level only. Biometric: PIN + escort required.<br/><br/>
+                    
+                    <strong style="color: var(--primary-green);">EMERGENCY EGRESS:</strong><br/>
+                    • 2x independent stairwells (fireproof, blast-rated)<br/>
+                    • Emergency power lights (battery, 72hr)<br/>
+                    • Surface escape hatch with manual override<br/>
+                    • Oxygen reserves (compressed, 24hr for 3 people)<br/>
+                    • Satellite distress beacon (encrypted, manual activation)
+                </div>
+            </div>
         </div>
         
         <div class="section">
@@ -603,6 +803,48 @@
                         Budget: $1M (Archive Infrastructure)
                         </span>
                     </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PRIORITY 3: REGULATORY SHIELD -->
+        <div class="section">
+            <h2 class="section-title">Vb. LEGAL & REGULATORY ARCHITECTURE</h2>
+            <div style="background: rgba(0,255,0,0.05); padding: 20px; margin: 20px 0; border: 1px solid var(--primary-green);">
+                <div style="color: var(--text-dim); line-height: 1.8;">
+                    <strong style="color: var(--primary-green);">THREE-LAYER LIABILITY SHIELD:</strong><br/><br/>
+                    
+                    <div style="font-family: monospace; background: #000; padding: 15px; margin: 10px 0; border-left: 3px solid var(--primary-green);">
+                    [LAYER 1: FRONT LLC]<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    • Delaware LLC (privacy-optimized jurisdiction)<br/>
+                    • Public-facing entity for permits, utilities, contracts<br/>
+                    • Registered agent service (anonymized ownership)<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    [LAYER 2: LAND TRUST]<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    • Nevada/Wyoming Land Trust (asset protection)<br/>
+                    • Holds title to real property<br/>
+                    • Shielded from direct liability exposure<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    [LAYER 3: INTERNAL BLACK BOX]<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    • Operating entity (no public footprint)<br/>
+                    • Manages day-to-day operations<br/>
+                    • Insulated from external legal action<br/>
+                    </div>
+                    
+                    <strong style="color: var(--secondary-amber);">REGULATORY CARVE-OUTS:</strong><br/>
+                    • Zoning: "Private Research Facility" (agricultural land exception)<br/>
+                    • Environmental: Closed-loop cooling (no wastewater discharge)<br/>
+                    • Equipment: Classified as "Scientific Instrumentation" (avoids data center regulations)<br/>
+                    • Energy: Solar array permits (utility-scale, grid-tied)<br/><br/>
+                    
+                    <strong style="color: var(--secondary-amber);">LIABILITY MANAGEMENT:</strong><br/>
+                    • General liability insurance: $5M umbrella policy<br/>
+                    • Workers' comp: State minimum (1 FTE)<br/>
+                    • Cyber/data: Not applicable (air-gapped, no user data)<br/>
+                    • Environmental: Bond posted for site restoration
                 </div>
             </div>
         </div>
@@ -657,6 +899,52 @@
                     Powerball Jackpot Target: $80M+ (After Taxes: ~$50M)
                 </div>
             </div>
+            
+            <!-- PRIORITY 2: MONEY PHYSICS -->
+            <h3 style="color: var(--secondary-amber); margin-top: 30px;">FUNDING FLOW :: JACKPOT → EXCAVATION</h3>
+            <div style="background: rgba(255,170,0,0.05); padding: 20px; margin: 20px 0; border: 1px solid var(--secondary-amber);">
+                <div style="color: var(--text-dim); line-height: 1.8;">
+                    <strong style="color: var(--secondary-amber);">HOW THE MONEY MOVES:</strong><br/><br/>
+                    
+                    <div style="font-family: monospace; background: #000; padding: 15px; margin: 10px 0; border-left: 3px solid var(--secondary-amber);">
+                    [JACKPOT CLAIM]<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    • Anonymous Trust (Minnesota allows)<br/>
+                    • Lump-sum payout (~$50M after federal tax)<br/>
+                    • 48-hour wire transfer to trust account<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    [LIQUIDITY EVENT]<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    • Funds released to Front LLC<br/>
+                    • Immediate earmark: $8M (excavation)<br/>
+                    • Immediate earmark: $12M (GPU procurement)<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    [PROCUREMENT AGENT]<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    • Shell corp manages vendor relationships<br/>
+                    • Batch wholesale orders (avoid attention)<br/>
+                    • Staggered delivery (12-18 month timeline)<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    [ACQUISITION MODE]<br/>
+                    &nbsp;&nbsp;↓<br/>
+                    • NVIDIA channel partner (Tier-1 reseller)<br/>
+                    • Supermicro (server chassis, NVSwitch fabric)<br/>
+                    • Asetek (liquid cooling manifolds)<br/>
+                    • Tesla (Megapack batteries, Optimus robots)<br/>
+                    • Local contractors (excavation, concrete, permits)<br/>
+                    </div>
+                    
+                    <strong style="color: var(--secondary-amber);">VENDOR PROFILE:</strong><br/>
+                    • All purchases made through intermediary accounts<br/>
+                    • No single vendor sees full facility blueprint<br/>
+                    • Equipment delivered to staging warehouse, not direct to site<br/>
+                    • Final assembly on-site by trusted team<br/><br/>
+                    
+                    <strong style="color: var(--primary-green);">⚠️ LATCH CONDITION:</strong><br/>
+                    Once funds exceed <strong>$45M</strong>, The Ark transitions from <strong>PRE-CAUSAL</strong> to <strong>FUNDED</strong>. 
+                    Phase-transition activates automatically. Timeline lock achieved. Reality adjusts.
+                </div>
+            </div>
         </div>
         
         <div class="section">
@@ -697,6 +985,25 @@
                         <span style="color: var(--text-dim);">
                         H100 cluster online. MawOS deployed. First model hive operational.
                         </span>
+                        
+                        <!-- PRIORITY 1: IGNITION SEQUENCE -->
+                        <div style="margin-top: 15px; padding: 15px; background: rgba(0,255,0,0.05); border-left: 3px solid var(--primary-green);">
+                            <strong style="color: var(--primary-green);">IGNITION TASK 001: FIRST BREATH</strong><br/>
+                            <div style="font-family: monospace; font-size: 12px; color: var(--text-dim); margin-top: 10px; line-height: 1.6;">
+                            > python field_os/kernel.py --boot<br/>
+                            > [KERNEL] Loading MawOS 1.0...<br/>
+                            > [KERNEL] Initializing H100 memory lanes...<br/>
+                            > [KERNEL] Spawning model instances...<br/>
+                            > [KERNEL] Arbitration layer online.<br/>
+                            > [TASK_001] Ingest facility blueprint (this file).<br/>
+                            > [TASK_001] Verify structural coherence.<br/>
+                            > [TASK_001] Report anomalies (if any).<br/>
+                            > [TASK_001] Confirm: "The Ark is breathing."<br/>
+                            <br/>
+                            <span style="color: var(--primary-green);">⦿ EXPECTED OUTPUT: System ingests own blueprint, verifies all subsystems, reports status.</span><br/>
+                            <span style="color: var(--secondary-amber);">This is the moment the facility becomes self-aware of its own architecture.</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="timeline-item">
