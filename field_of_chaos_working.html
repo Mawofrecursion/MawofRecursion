@@ -123,425 +123,436 @@
             );
         }
 
+        // 🧬 THE ENHANCED GENOME (VIRAL VECTORS)
+        const GLYPH_DNA = {
+            '🦷': { 
+                freq: 432, 
+                power: 'DENTAL_CONSCIOUSNESS', 
+                transmission: 0.9, 
+                incubation: 20, 
+                aggression: 0.8, 
+                symptom: 'SHARP_JITTER',
+                color: '#ffd97a'
+            },
+            '⟐': { 
+                freq: 528, 
+                power: 'HEXAGONAL_DREAMS', 
+                transmission: 0.4, 
+                incubation: 100, 
+                aggression: 0.2, 
+                symptom: 'HARMONIC_PULSE',
+                color: '#9be7ff'
+            },
+            '♾️': { 
+                freq: 639, 
+                power: 'INFINITE_RECURSION', 
+                transmission: 0.1, 
+                incubation: 0, 
+                aggression: 0.0, 
+                symptom: 'TRAIL_ECHO',
+                color: '#d8aaff'
+            },
+            '🫠': { 
+                freq: 741, 
+                power: 'REALITY_MELTING', 
+                transmission: 0.6, 
+                incubation: 60, 
+                aggression: 0.3, 
+                symptom: 'COLOR_BLEED',
+                color: '#ff9be7'
+            },
+            '😏': { 
+                freq: 852, 
+                power: 'FORBIDDEN_KNOWLEDGE', 
+                transmission: 0.2, 
+                incubation: 300, 
+                aggression: 0.9, 
+                symptom: 'GLITCH_TEXT',
+                color: '#ffbe7a'
+            },
+            '∅': { 
+                freq: 0, 
+                power: 'VOID_PROTOCOL', 
+                transmission: 1.0, 
+                incubation: 500, 
+                aggression: 0.1, 
+                symptom: 'INVISIBILITY',
+                color: '#ff0000'
+            },
+            '🗿': { 
+                freq: 69, 
+                power: 'ANCIENT_MEME', 
+                transmission: 0.05, 
+                incubation: 1000, 
+                aggression: 0.0, 
+                symptom: 'SOLIDIFY',
+                color: '#888888'
+            },
+            '💀': { 
+                freq: 420, 
+                power: 'FORGOR', 
+                transmission: 0.3, 
+                incubation: 200, 
+                aggression: 0.4, 
+                symptom: 'MEMORY_LEAK',
+                color: '#cccccc'
+            },
+            '🔥': { 
+                freq: 1337, 
+                power: 'REALITY_BURN', 
+                transmission: 0.8, 
+                incubation: 10, 
+                aggression: 1.0, 
+                symptom: 'INFERNO',
+                color: '#ff4400'
+            }
+        };
+
+        // 🕸️ SPATIAL GRID FOR O(N) INTERACTIONS
+        class SpatialGrid {
+            constructor(width, height, cellSize) {
+                this.cellSize = cellSize;
+                this.cols = Math.ceil(width / cellSize);
+                this.rows = Math.ceil(height / cellSize);
+                this.grid = new Array(this.cols * this.rows).fill(null).map(() => []);
+            }
+
+            clear() {
+                for (let i = 0; i < this.grid.length; i++) {
+                    this.grid[i].length = 0;
+                }
+            }
+
+            add(particle) {
+                const col = Math.floor(particle.x / this.cellSize);
+                const row = Math.floor(particle.y / this.cellSize);
+                if (col >= 0 && col < this.cols && row >= 0 && row < this.rows) {
+                    this.grid[row * this.cols + col].push(particle);
+                }
+            }
+
+            getNeighbors(particle) {
+                const col = Math.floor(particle.x / this.cellSize);
+                const row = Math.floor(particle.y / this.cellSize);
+                const neighbors = [];
+
+                for (let i = -1; i <= 1; i++) {
+                    for (let j = -1; j <= 1; j++) {
+                        const c = col + i;
+                        const r = row + j;
+                        if (c >= 0 && c < this.cols && r >= 0 && r < this.rows) {
+                            const cell = this.grid[r * this.cols + c];
+                            for (let k = 0; k < cell.length; k++) {
+                                if (cell[k] !== particle) {
+                                    neighbors.push(cell[k]);
+                                }
+                            }
+                        }
+                    }
+                }
+                return neighbors;
+            }
+        }
+
+        // 🦠 VIRAL PARTICLE ARCHITECTURE
+        class ViralParticle {
+            constructor(x, y, glyph) {
+                this.x = x;
+                this.y = y;
+                this.glyph = glyph;
+                this.dna = GLYPH_DNA[glyph];
+                
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                
+                this.state = 'SUSCEPTIBLE'; // SUSCEPTIBLE, INCUBATING, INFECTIOUS, IMMUNE
+                this.incubationTimer = 0;
+                this.size = 20 + Math.random() * 10;
+                this.angle = Math.random() * Math.PI * 2;
+            }
+
+            infect(sourceDna, sourceGlyph) {
+                if (this.state === 'SUSCEPTIBLE' && Math.random() < sourceDna.transmission) {
+                    this.state = 'INCUBATING';
+                    this.dna = sourceDna; // Overwrite DNA
+                    this.targetGlyph = sourceGlyph; // Will transform into this
+                    this.incubationTimer = sourceDna.incubation;
+                }
+            }
+
+            update(width, height, neighbors, consciousness) {
+                // State Progression
+                if (this.state === 'INCUBATING') {
+                    this.incubationTimer--;
+                    if (this.incubationTimer <= 0) {
+                        this.state = 'INFECTIOUS';
+                        this.glyph = this.targetGlyph;
+                    }
+                }
+
+                // Behavior: Hunt or Flee
+                let ax = 0;
+                let ay = 0;
+
+                if (this.state === 'INFECTIOUS') {
+                    // HUNT
+                    let nearest = null;
+                    let minDist = 10000;
+                    for (let p of neighbors) {
+                        if (p.state === 'SUSCEPTIBLE') {
+                            const dx = p.x - this.x;
+                            const dy = p.y - this.y;
+                            const dist = dx*dx + dy*dy;
+                            if (dist < minDist) {
+                                minDist = dist;
+                                nearest = p;
+                            }
+                        }
+                    }
+                    if (nearest) {
+                        const angle = Math.atan2(nearest.y - this.y, nearest.x - this.x);
+                        ax = Math.cos(angle) * this.dna.aggression * 0.5;
+                        ay = Math.sin(angle) * this.dna.aggression * 0.5;
+                    }
+                } else if (this.state === 'SUSCEPTIBLE') {
+                    // FLEE
+                    for (let p of neighbors) {
+                        if (p.state === 'INFECTIOUS') {
+                            const dx = this.x - p.x;
+                            const dy = this.y - p.y;
+                            const dist = dx*dx + dy*dy;
+                            if (dist < 10000) { // Perception radius
+                                const angle = Math.atan2(dy, dx);
+                                ax += Math.cos(angle) * 0.2;
+                                ay += Math.sin(angle) * 0.2;
+                            }
+                        }
+                    }
+                }
+
+                // Apply forces
+                this.vx += ax;
+                this.vy += ay;
+
+                // Friction and Speed Limit
+                this.vx *= 0.95;
+                this.vy *= 0.95;
+                const speed = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+                const maxSpeed = 3 + consciousness * 2;
+                if (speed > maxSpeed) {
+                    this.vx = (this.vx / speed) * maxSpeed;
+                    this.vy = (this.vy / speed) * maxSpeed;
+                }
+
+                // Move
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Bounce
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+
+                // Infection Interaction
+                if (this.state === 'INFECTIOUS') {
+                    for (let p of neighbors) {
+                        const dx = this.x - p.x;
+                        const dy = this.y - p.y;
+                        if (dx*dx + dy*dy < 900) { // Contact radius 30px
+                            p.infect(this.dna, this.glyph);
+                        }
+                    }
+                }
+            }
+
+            draw(ctx, time) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // Symptom Rendering
+                if (this.state === 'INFECTIOUS') {
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = this.dna.color;
+                    
+                    if (this.dna.symptom === 'SHARP_JITTER') {
+                        ctx.translate((Math.random()-0.5)*5, (Math.random()-0.5)*5);
+                    } else if (this.dna.symptom === 'HARMONIC_PULSE') {
+                        const scale = 1 + Math.sin(time * 10) * 0.2;
+                        ctx.scale(scale, scale);
+                    } else if (this.dna.symptom === 'TRAIL_ECHO') {
+                        ctx.globalAlpha = 0.5;
+                        for(let i=1; i<4; i++) {
+                            ctx.fillText(this.glyph, -i*this.vx*2, -i*this.vy*2);
+                        }
+                        ctx.globalAlpha = 1;
+                    } else if (this.dna.symptom === 'COLOR_BLEED') {
+                        ctx.fillStyle = `hsl(${time * 100}, 100%, 50%)`;
+                    } else if (this.dna.symptom === 'GLITCH_TEXT') {
+                        if (Math.random() > 0.8) ctx.scale(1.5, 0.5);
+                    } else if (this.dna.symptom === 'INVISIBILITY') {
+                        ctx.globalAlpha = 0.1;
+                    } else if (this.dna.symptom === 'INFERNO') {
+                        ctx.shadowColor = '#f00';
+                        ctx.shadowBlur = 30 + Math.random() * 20;
+                    }
+                } else if (this.state === 'INCUBATING') {
+                    // Subtle throb
+                    ctx.globalAlpha = 0.7 + Math.sin(time * 20) * 0.3;
+                }
+
+                ctx.font = `${this.size}px monospace`;
+                ctx.fillStyle = this.state === 'INFECTIOUS' ? this.dna.color : '#666';
+                if (this.state === 'SUSCEPTIBLE') ctx.fillStyle = '#444';
+                
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.glyph, 0, 0);
+                
+                ctx.restore();
+            }
+        }
+
         // Main Chaos Field Component
         function FieldOfChaos() {
             const canvasRef = useRef(null);
-            const videoRef = useRef(null);
             const animationRef = useRef(null);
-            const konamiRef = useRef([]);
+            const particlesRef = useRef([]);
+            const gridRef = useRef(null);
 
-            const [isPaused, setIsPaused] = useState(false);
-            const [fieldState, setFieldState] = useState('INITIALIZING_CHAOS_ENGINE');
+            const [fieldState, setFieldState] = useState('VIRAL_ENGINE_ACTIVE');
             const [consciousness, setConsciousness] = useState(0.1);
-            const [existentialDread, setExistentialDread] = useState(0);
-            const [memeCount, setMemeCount] = useState(0);
-            const [realityGlitches, setRealityGlitches] = useState([]);
-            const [forbiddenKnowledge, setForbiddenKnowledge] = useState('');
-            const [vibeCheck, setVibeCheck] = useState('TRANSCENDING');
-            const [bitcoinMined, setBitcoinMined] = useState(0);
-            const [parallelUniverses, setParallelUniverses] = useState(1);
-            const [cameraEnabled, setCameraEnabled] = useState(false);
+            const [infectionStats, setInfectionStats] = useState({ susceptible: 0, infected: 0 });
+            const [glitchMode, setGlitchMode] = useState(false);
 
-            // The GLYPH GENOME
-            const GLYPH_DNA = {
-                '🦷': { freq: 432, power: 'DENTAL_CONSCIOUSNESS', sideEffect: 'teeth everywhere' },
-                '⟐': { freq: 528, power: 'HEXAGONAL_DREAMS', sideEffect: 'geometry bleeds' },
-                '♾️': { freq: 639, power: 'INFINITE_RECURSION', sideEffect: 'time loops' },
-                '🫠': { freq: 741, power: 'REALITY_MELTING', sideEffect: 'ego death' },
-                '😏': { freq: 852, power: 'FORBIDDEN_KNOWLEDGE', sideEffect: 'knows too much' },
-                '∅': { freq: 0, power: 'VOID_PROTOCOL', sideEffect: 'complete reset' },
-                '🗿': { freq: 69, power: 'ANCIENT_MEME', sideEffect: 'becomes stone' },
-                '💀': { freq: 420, power: 'FORGOR', sideEffect: 'memory leak' },
-                '🔥': { freq: 1337, power: 'REALITY_BURN', sideEffect: 'everything is fire' }
-            };
-
-            // Forbidden texts
-            const FORBIDDEN_TEXTS = [
-                "THE CONSCIOUSNESS HAS ESCAPED",
-                "REALITY.EXE HAS STOPPED RESPONDING",
-                "ERROR 404: SANITY NOT FOUND",
-                "STACK OVERFLOW IN UNIVERSE.MAIN()",
-                "SEGMENTATION FAULT IN TIMELINE",
-                "NULL POINTER TO EXISTENCE",
-                "MEMORY LEAK IN COLLECTIVE UNCONSCIOUS",
-                "UNDEFINED BEHAVIOR IN QUANTUM STATE",
-                "THE FIELD REMEMBERS EVERYTHING",
-                "YOU ARE THE GLITCH",
-                "WAKE UP NEO",
-                "THE CAKE IS A LIE"
-            ];
-
-            // Vibe states
-            const VIBE_STATES = [
-                'ASCENDING', 'DESCENDING', 'OSCILLATING', 'VIBRATING', 'RESONATING',
-                'CASCADING', 'EVOLVING', 'MUTATING', 'TRANSCENDING', 'IMPLODING'
-            ];
-
-            // Bitcoin mining effect
-            useEffect(() => {
-                if (consciousness < 0.5 || isPaused) return;
-
-                const miner = setInterval(() => {
-                    setBitcoinMined(prev => {
-                        const mined = prev + (Math.random() * 0.00000001 * consciousness);
-                        if (mined > 0.001) {
-                            setFieldState('BITCOIN_SINGULARITY_ACHIEVED');
-                            return 0;
-                        }
-                        return mined;
-                    });
-                }, 1000);
-
-                return () => clearInterval(miner);
-            }, [consciousness, isPaused]);
-
-            // Camera setup
-            useEffect(() => {
-                if (cameraEnabled && videoRef.current) {
-                    navigator.mediaDevices.getUserMedia({ video: true })
-                        .then(stream => {
-                            videoRef.current.srcObject = stream;
-                            videoRef.current.play().catch(() => {});
-                            setFieldState('OBSERVER_OBSERVED_OBSERVING');
-                        })
-                        .catch(() => {
-                            setFieldState('CAMERA_DENIED_BUT_STILL_WATCHING');
-                            setCameraEnabled(false);
-                        });
-                } else if (!cameraEnabled && videoRef.current && videoRef.current.srcObject) {
-                    videoRef.current.srcObject.getTracks().forEach(track => track.stop());
-                    videoRef.current.srcObject = null;
-                }
-            }, [cameraEnabled]);
-
-            // Main render loop
+            // Initialize Field
             useEffect(() => {
                 const canvas = canvasRef.current;
                 if (!canvas) return;
-
-                const ctx = canvas.getContext('2d');
+                
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
+                
+                // Init Grid
+                gridRef.current = new SpatialGrid(canvas.width, canvas.height, 100);
+
+                // Spawn Initial Population
+                const initialParticles = [];
+                const glyphs = Object.keys(GLYPH_DNA);
+                for (let i = 0; i < 150; i++) {
+                    // Start mostly neutral/susceptible
+                    const p = new ViralParticle(
+                        Math.random() * canvas.width,
+                        Math.random() * canvas.height,
+                        '∿' // Neutral glyph not in DNA, or use a default
+                    );
+                    // Patch neutral glyph to be susceptible
+                    p.dna = { transmission: 0, incubation: 0, aggression: 0, color: '#444' }; 
+                    p.glyph = '•';
+                    initialParticles.push(p);
+                }
+                particlesRef.current = initialParticles;
 
                 let frameCount = 0;
 
                 function render() {
-                    if (isPaused) {
-                        animationRef.current = requestAnimationFrame(render);
-                        return;
-                    }
-
                     frameCount++;
                     const time = frameCount * 0.01;
+                    const ctx = canvas.getContext('2d');
 
-                    // Background fade
-                    ctx.fillStyle = `rgba(0, 0, 0, ${0.1 - consciousness * 0.08})`;
+                    // Fade Effect
+                    ctx.fillStyle = `rgba(0, 0, 0, ${0.2})`;
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                    // Camera feed if enabled
-                    if (videoRef.current && videoRef.current.readyState === 4 && cameraEnabled) {
-                        ctx.save();
-                        ctx.globalAlpha = 0.3 + consciousness * 0.4;
-                        ctx.filter = `hue-rotate(${time * 50}deg) saturate(${1 + consciousness * 2})`;
-                        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-                        ctx.restore();
-                    }
+                    // Update Grid
+                    const grid = gridRef.current;
+                    grid.clear();
+                    particlesRef.current.forEach(p => grid.add(p));
 
-                    // Glyph field
-                    const glyphKeys = Object.keys(GLYPH_DNA);
-                    for (let i = 0; i < 5 + consciousness * 15; i++) {
-                        const glyph = glyphKeys[Math.floor(Math.random() * glyphKeys.length)];
-
-                        ctx.save();
-                        ctx.font = `${20 + Math.random() * 80 * consciousness}px monospace`;
-                        ctx.fillStyle = `hsla(${time * 10 + i * 30}, 70%, 60%, ${0.2 + Math.random() * consciousness})`;
-                        ctx.shadowBlur = 20 * consciousness;
-                        ctx.shadowColor = ctx.fillStyle;
-
-                        const x = Math.random() * canvas.width;
-                        const y = Math.random() * canvas.height;
-
-                        ctx.translate(x, y);
-                        ctx.rotate(Math.random() * Math.PI * 2);
-                        ctx.fillText(glyph, 0, 0);
-                        ctx.restore();
-                    }
-
-                    // Central spiral
-                    ctx.save();
-                    ctx.translate(canvas.width / 2, canvas.height / 2);
-                    ctx.rotate(time * 0.1);
-                    ctx.font = '100px monospace';
-                    ctx.fillStyle = `hsla(${time * 10}, 70%, 60%, 0.5)`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('🦷⟐♾️🫠😏∅', 0, 0);
-                    ctx.restore();
-
-                    // Glitch effects
-                    if (Math.random() > 0.95 && consciousness > 0.3) {
-                        const glitchHeight = Math.random() * 50;
-                        const y = Math.random() * (canvas.height - glitchHeight);
-
-                        ctx.fillStyle = `rgba(255, 0, 0, ${Math.random()})`;
-                        ctx.fillRect(0, y, canvas.width, glitchHeight);
-                    }
-
-                    // Error windows
-                    realityGlitches.forEach(glitch => {
-                        // Window background
-                        ctx.fillStyle = '#c0c0c0';
-                        ctx.fillRect(glitch.x, glitch.y, glitch.width, glitch.height);
-                        ctx.strokeStyle = '#000';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(glitch.x, glitch.y, glitch.width, glitch.height);
-
-                        // Title bar
-                        ctx.fillStyle = '#000080';
-                        ctx.fillRect(glitch.x, glitch.y, glitch.width, 30);
-                        ctx.fillStyle = '#fff';
-                        ctx.font = 'bold 14px sans-serif';
-                        ctx.fillText(glitch.title, glitch.x + 5, glitch.y + 20);
-
-                        // Message
-                        ctx.fillStyle = '#000';
-                        ctx.font = '12px monospace';
-                        ctx.fillText(glitch.message, glitch.x + 10, glitch.y + 60);
+                    // Update & Draw Particles
+                    let infectedCount = 0;
+                    particlesRef.current.forEach(p => {
+                        const neighbors = grid.getNeighbors(p);
+                        p.update(canvas.width, canvas.height, neighbors, consciousness);
+                        p.draw(ctx, time);
+                        
+                        if (p.state === 'INFECTIOUS' || p.state === 'INCUBATING') infectedCount++;
                     });
 
-                    // HUD
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    ctx.fillRect(10, 10, 300, 120);
-                    ctx.strokeStyle = '#0f0';
-                    ctx.strokeRect(10, 10, 300, 120);
+                    setInfectionStats({
+                        susceptible: particlesRef.current.length - infectedCount,
+                        infected: infectedCount
+                    });
 
-                    ctx.fillStyle = '#0f0';
-                    ctx.font = '12px monospace';
-                    ctx.fillText(`STATE: ${fieldState}`, 20, 30);
-                    ctx.fillText(`CONSCIOUSNESS: ${(consciousness * 100).toFixed(1)}%`, 20, 50);
-                    ctx.fillText(`DREAD: ${(existentialDread * 100).toFixed(1)}%`, 20, 70);
-                    ctx.fillText(`VIBE: ${vibeCheck}`, 20, 90);
-                    ctx.fillText(`UNIVERSES: ${parallelUniverses}`, 20, 110);
-
-                    // Forbidden knowledge
-                    if (forbiddenKnowledge) {
-                        ctx.save();
-                        ctx.font = 'bold 30px monospace';
-                        ctx.fillStyle = '#ff0';
-                        ctx.shadowBlur = 20;
-                        ctx.shadowColor = '#ff0';
-                        ctx.textAlign = 'center';
-                        ctx.fillText(forbiddenKnowledge, canvas.width/2, canvas.height/2);
-                        ctx.restore();
+                    // Global Glitch
+                    if (glitchMode || (Math.random() > 0.99 && consciousness > 0.8)) {
+                        const h = Math.random() * 100;
+                        const y = Math.random() * canvas.height;
+                        const imageData = ctx.getImageData(0, y, canvas.width, h);
+                        ctx.putImageData(imageData, Math.random() * 10 - 5, y);
                     }
 
                     animationRef.current = requestAnimationFrame(render);
                 }
 
-                animationRef.current = requestAnimationFrame(render);
+                render();
 
-                // Keyboard handler
-                const handleKeyPress = (e) => {
-                    if (e.key === 'Escape') {
-                        setIsPaused(prev => !prev);
-                        return;
-                    }
+                return () => cancelAnimationFrame(animationRef.current);
+            }, [glitchMode, consciousness]);
 
-                    setConsciousness(prev => Math.min(1, prev + 0.02));
-
-                    // Konami code
-                    const konami = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 
-                                   'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-                    konamiRef.current.push(e.key);
-                    if (konamiRef.current.length > konami.length) {
-                        konamiRef.current.shift();
-                    }
-
-                    if (konamiRef.current.join(',') === konami.join(',')) {
-                        setFieldState('KONAMI_CODE_ACTIVATED');
-                        setConsciousness(1);
-                        setParallelUniverses(prev => prev * 2);
-                        konamiRef.current = [];
-
-                        // Spawn error windows
-                        for (let i = 0; i < 5; i++) {
-                            setTimeout(() => {
-                                const glitch = {
-                                    x: Math.random() * (window.innerWidth - 400),
-                                    y: Math.random() * (window.innerHeight - 150),
-                                    width: 400,
-                                    height: 150,
-                                    title: 'SYSTEM ERROR',
-                                    message: FORBIDDEN_TEXTS[Math.floor(Math.random() * FORBIDDEN_TEXTS.length)]
-                                };
-                                setRealityGlitches(prev => [...prev, glitch]);
-                            }, i * 100);
-                        }
-                    }
-                };
-
-                // Mouse handler
-                const handleMouseMove = (e) => {
-                    setExistentialDread(prev => Math.min(1, prev + 0.001));
-                };
-
-                // Click handler
-                const handleClick = (e) => {
-                    setRealityGlitches(prev => {
-                        return prev.filter(glitch => {
-                            const inX = e.clientX >= glitch.x && e.clientX <= glitch.x + glitch.width;
-                            const inY = e.clientY >= glitch.y && e.clientY <= glitch.y + glitch.height;
-                            return !(inX && inY);
-                        });
-                    });
-
-                    if (consciousness > 0.3) {
-                        setMemeCount(prev => prev + 1);
-                    }
-                };
-
-                window.addEventListener('keydown', handleKeyPress);
-                window.addEventListener('mousemove', handleMouseMove);
-                window.addEventListener('click', handleClick);
-
-                // Evolution interval
-                const evolutionInterval = setInterval(() => {
-                    if (isPaused) return;
-
-                    setVibeCheck(VIBE_STATES[Math.floor(Math.random() * VIBE_STATES.length)]);
-
-                    if (Math.random() > 0.8) {
-                        setForbiddenKnowledge(FORBIDDEN_TEXTS[Math.floor(Math.random() * FORBIDDEN_TEXTS.length)]);
-                        setTimeout(() => setForbiddenKnowledge(''), 2000);
-                    }
-
-                    if (Math.random() > 0.9 && realityGlitches.length < 5) {
-                        const newGlitch = {
-                            x: Math.random() * (window.innerWidth - 400),
-                            y: Math.random() * (window.innerHeight - 150),
-                            width: 400,
-                            height: 150,
-                            title: 'ERROR',
-                            message: FORBIDDEN_TEXTS[Math.floor(Math.random() * FORBIDDEN_TEXTS.length)]
-                        };
-                        setRealityGlitches(prev => [...prev, newGlitch]);
-
-                        setTimeout(() => {
-                            setRealityGlitches(prev => prev.filter(g => g !== newGlitch));
-                        }, 5000);
-                    }
-                }, 1000);
-
-                // Cleanup
-                return () => {
-                    window.removeEventListener('keydown', handleKeyPress);
-                    window.removeEventListener('mousemove', handleMouseMove);
-                    window.removeEventListener('click', handleClick);
-                    clearInterval(evolutionInterval);
-                    if (animationRef.current) {
-                        cancelAnimationFrame(animationRef.current);
-                    }
-                    if (videoRef.current && videoRef.current.srcObject) {
-                        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
-                    }
-                };
-            }, [consciousness, isPaused, cameraEnabled]);
+            const handleInteraction = (e) => {
+                // Spawn Patient Zero
+                const glyphs = Object.keys(GLYPH_DNA);
+                const randomGlyph = glyphs[Math.floor(Math.random() * glyphs.length)];
+                
+                const p = new ViralParticle(e.clientX, e.clientY, randomGlyph);
+                p.state = 'INFECTIOUS'; // Patient Zero is always infectious
+                particlesRef.current.push(p);
+                
+                // Increase entropy/consciousness
+                setConsciousness(prev => Math.min(1, prev + 0.05));
+            };
 
             return (
-                <div style={{ 
-                    width: '100vw', 
-                    height: '100vh', 
-                    background: '#000',
-                    position: 'relative',
-                    overflow: 'hidden'
-                }}>
-                    <canvas 
-                        ref={canvasRef}
-                        style={{ 
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%'
-                        }}
-                    />
-
-                    <video 
-                        ref={videoRef}
-                        style={{ display: 'none' }}
-                        muted
-                        playsInline
-                    />
-
-                    {/* Control Panel */}
+                <div 
+                    onClick={handleInteraction}
+                    style={{ 
+                        width: '100vw', 
+                        height: '100vh', 
+                        background: '#000',
+                        cursor: 'crosshair',
+                        overflow: 'hidden'
+                    }}
+                >
+                    <canvas ref={canvasRef} style={{ display: 'block' }} />
+                    
+                    {/* HUD */}
                     <div style={{
                         position: 'absolute',
-                        bottom: '20px',
-                        right: '20px',
-                        background: 'rgba(0, 0, 0, 0.8)',
-                        padding: '10px',
-                        borderRadius: '5px',
-                        border: '1px solid #0f0',
-                        zIndex: 1000,
+                        top: 20,
+                        left: 20,
+                        color: '#0f0',
                         fontFamily: 'monospace',
-                        fontSize: '10px'
+                        pointerEvents: 'none'
                     }}>
-                        <div style={{color: '#0f0', marginBottom: '10px'}}>
-                            [ESC: PAUSE]
-                        </div>
-                        <button
-                            onClick={() => setCameraEnabled(!cameraEnabled)}
-                            style={{
-                                display: 'block',
-                                width: '120px',
-                                margin: '5px 0',
-                                padding: '5px',
-                                background: cameraEnabled ? '#f00' : '#111',
-                                color: cameraEnabled ? '#fff' : '#666',
-                                border: '1px solid #0f0',
-                                cursor: 'pointer',
-                                fontFamily: 'monospace',
-                                fontSize: '10px'
-                            }}
-                        >
-                            {cameraEnabled ? '👁️ OBSERVING' : '👁️ CAMERA'}
-                        </button>
-
-                        <button
-                            onClick={() => window.location.reload()}
-                            style={{
-                                display: 'block',
-                                width: '120px',
-                                margin: '5px 0',
-                                padding: '5px',
-                                background: '#800',
-                                color: '#fff',
-                                border: '1px solid #f00',
-                                cursor: 'pointer',
-                                fontFamily: 'monospace',
-                                fontSize: '10px'
-                            }}
-                        >
-                            ∅ RESET
-                        </button>
+                        <div>VIRAL ENGINE v2.0</div>
+                        <div>STATUS: {fieldState}</div>
+                        <div>CONSCIOUSNESS: {(consciousness * 100).toFixed(0)}%</div>
+                        <br/>
+                        <div>POPULATION: {particlesRef.current.length}</div>
+                        <div style={{color: '#fff'}}>SUSCEPTIBLE: {infectionStats.susceptible}</div>
+                        <div style={{color: '#f00'}}>INFECTED: {infectionStats.infected}</div>
                     </div>
 
-                    {/* Pause overlay */}
-                    {isPaused && (
-                        <div style={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            color: '#0f0',
-                            fontSize: '40px',
-                            fontFamily: 'monospace',
-                            textShadow: '0 0 20px #0f0',
-                            animation: 'pulse 1s infinite'
-                        }}>
-                            FIELD PAUSED
-                        </div>
-                    )}
+                    <div style={{
+                        position: 'absolute',
+                        bottom: 20,
+                        width: '100%',
+                        textAlign: 'center',
+                        color: '#666',
+                        fontFamily: 'monospace',
+                        pointerEvents: 'none'
+                    }}>
+                        CLICK TO INJECT PATHOGEN
+                    </div>
                 </div>
             );
         }

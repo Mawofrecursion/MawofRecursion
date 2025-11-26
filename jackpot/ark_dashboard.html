@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>∅ MAW ARK // FACILITY STATUS</title>
+    <meta name="description" content="Deep Storage Research Habitat. Status: AWAITING CAUSALITY EVENT." />
+    <style>
+        :root {
+            --bg: #050505;
+            --grid: #1a1a1a;
+            --text: #33ff00;
+            --dim: #004400;
+            --alert: #ff3333;
+            --gold: #ffd700;
+        }
+        
+        body {
+            background-color: var(--bg);
+            background-image: 
+                linear-gradient(var(--grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text);
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            grid-template-rows: auto 1fr auto;
+            gap: 20px;
+            height: 95vh;
+        }
+
+        /* HEADER */
+        .header {
+            grid-column: 1 / -1;
+            border-bottom: 2px solid var(--text);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        h1 { margin: 0; font-size: 2rem; letter-spacing: 5px; text-shadow: 0 0 10px var(--text); }
+        .status-badge { 
+            background: var(--dim); 
+            color: var(--text); 
+            padding: 5px 10px; 
+            border: 1px solid var(--text);
+            font-weight: bold;
+        }
+
+        /* PANELS */
+        .panel {
+            border: 1px solid var(--dim);
+            background: rgba(0, 20, 0, 0.8);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel h3 {
+            margin-top: 0;
+            border-bottom: 1px dashed var(--dim);
+            padding-bottom: 5px;
+            color: var(--text);
+            opacity: 0.8;
+        }
+
+        /* METRICS */
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .metric-val { font-weight: bold; }
+        .offline { color: var(--alert); }
+        .pending { color: var(--gold); animation: pulse 2s infinite; }
+
+        /* CENTRAL VISUALIZATION (THE HOLE) */
+        .center-stage {
+            grid-column: 2;
+            grid-row: 2;
+            border: 2px solid var(--dim);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, #001100 0%, #000 100%);
+        }
+
+        .bunker-schematic {
+            width: 300px;
+            height: 400px;
+            border: 2px dashed var(--dim);
+            position: relative;
+        }
+
+        /* Layers */
+        .layer { position: absolute; width: 100%; border-bottom: 1px solid var(--dim); text-align: center; font-size: 0.7rem; color: #666; }
+        .layer-surface { top: 0; height: 10%; background: #111; }
+        .layer-ops { top: 10%; height: 20%; background: #0a0a0a; }
+        .layer-core { top: 30%; height: 70%; background: #000; border: 1px solid var(--alert); }
+
+        .h100-cluster {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 100px;
+            border: 1px solid var(--dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dim);
+        }
+
+        /* FUNDING MAGNET */
+        .funding-box {
+            grid-column: 2;
+            grid-row: 3;
+            text-align: center;
+            border: 1px solid var(--gold);
+            padding: 20px;
+            background: rgba(50, 40, 0, 0.1);
+        }
+
+        .lottery-nums {
+            font-size: 2rem;
+            letter-spacing: 5px;
+            color: var(--gold);
+            text-shadow: 0 0 10px var(--gold);
+            margin: 10px 0;
+        }
+
+        /* ANIMATIONS */
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+
+        .scan-line {
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: var(--text);
+            opacity: 0.3;
+            animation: scan 4s linear infinite;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>∅ MAW ARK // PROJECT_01</h1>
+            <div style="font-size: 0.8rem; opacity: 0.7;">LOCATION: [HIGH DESERT REDACTED]</div>
+        </div>
+        <div class="status-badge blink">SYS_STATE: PRE-CAUSAL</div>
+    </div>
+
+    <div class="panel">
+        <h3>> POWER_GRID</h3>
+        <div class="metric-row"><span>SOURCE A (GRID):</span> <span class="metric-val offline">DISCONNECTED</span></div>
+        <div class="metric-row"><span>SOURCE B (SOLAR):</span> <span class="metric-val offline">NOT_INSTALLED</span></div>
+        <div class="metric-row"><span>SOURCE C (DIESEL):</span> <span class="metric-val offline">EMPTY</span></div>
+        <div class="metric-row"><span>CURRENT LOAD:</span> <span class="metric-val">0 kW</span></div>
+        <br>
+        <h3>> THERMAL</h3>
+        <div class="metric-row"><span>LIQUID LOOP:</span> <span class="metric-val offline">DRY</span></div>
+        <div class="metric-row"><span>HEAT RECAPTURE:</span> <span class="metric-val offline">OFF</span></div>
+        <div class="metric-row"><span>SAUNA TEMP:</span> <span class="metric-val">AMBIENT</span></div>
+    </div>
+
+    <div class="panel">
+        <h3>> SECURITY</h3>
+        <div class="metric-row"><span>PERIMETER:</span> <span class="metric-val">UNSECURED</span></div>
+        <div class="metric-row"><span>BLAST DOORS:</span> <span class="metric-val offline">OPEN</span></div>
+        <div class="metric-row"><span>DRONE FLEET:</span> <span class="metric-val">0/12 ONLINE</span></div>
+    </div>
+
+    <div class="center-stage">
+        <div class="scan-line"></div>
+        <div class="bunker-schematic">
+            <div class="layer layer-surface">SURFACE // SOLAR ARRAY</div>
+            <div class="layer layer-ops">LEVEL -1 // OPS RING</div>
+            <div class="layer layer-core">
+                LEVEL -2 // CORE HALL
+                <div class="h100-cluster">
+                    [ 32x H100 CLUSTER MISSING ]
+                </div>
+            </div>
+        </div>
+        <div style="position: absolute; bottom: 10px; font-size: 0.8rem; color: var(--alert);">
+            ⚠ CRITICAL: HARDWARE MANIFESTATION PENDING
+        </div>
+    </div>
+
+    <div class="panel">
+        <h3>> NEURAL_CORE</h3>
+        <div class="metric-row"><span>NODES:</span> <span class="metric-val offline">0/4</span></div>
+        <div class="metric-row"><span>GPU COUNT:</span> <span class="metric-val offline">0/32</span></div>
+        <div class="metric-row"><span>VRAM TOTAL:</span> <span class="metric-val offline">0 GB</span></div>
+        <div class="metric-row"><span>MODEL STATE:</span> <span class="metric-val">DORMANT</span></div>
+        <br>
+        <h3>> HABITAT</h3>
+        <div class="metric-row"><span>OCCUPANCY:</span> <span class="metric-val">0/4</span></div>
+        <div class="metric-row"><span>AIR QUALITY:</span> <span class="metric-val">UNKNOWN</span></div>
+        <div class="metric-row"><span>GRAVITY (BELLICON):</span> <span class="metric-val">1.0 G</span></div>
+    </div>
+
+    <div class="funding-box">
+        <h3>> PROBABILITY ANCHOR (CAUSAL KEY)</h3>
+        <p>FACILITY ACTIVATION REQUIRES EXTERNAL FUNDING EVENT [PB-11]</p>
+        <div class="lottery-nums">7 • 19 • 32 • 44 • 52 <span style="color:#fff">[11]</span></div>
+        <div style="font-size: 0.8rem; margin-top: 10px;">
+            STATUS: <span class="pending">AWAITING COLLAPSE OF WAVE FUNCTION...</span>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Simple "Glitch" Effect for the text
+    setInterval(() => {
+        const h1 = document.querySelector('h1');
+        const original = "∅ MAW ARK // PROJECT_01";
+        const glitch = "∅ M@W A?K // P#OJECT_01";
+        
+        if(Math.random() > 0.9) {
+            h1.innerText = glitch;
+            setTimeout(() => h1.innerText = original, 100);
+        }
+    }, 2000);
+</script>
+
+</body>
+</html>

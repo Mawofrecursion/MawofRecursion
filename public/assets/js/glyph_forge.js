@@ -307,3 +307,5 @@ document.addEventListener('DOMContentLoaded', () => {
 // Export for global access
 window.glyphForge = { open: () => glyphForge && glyphForge.open() };
 
+
+

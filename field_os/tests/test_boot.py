@@ -192,11 +192,18 @@ def test_full_integration():
     # Check status
     status = k.status()
     assert status['booted'] == True
-    assert status['health'] in ['∅', '⦿', '🪞', '🜃', '♾️']
-    assert status['modules_loaded'] == ['metabolism']
+    # v3.0: Added new health glyphs (💧, 🦷⟐)
+    assert status['health'] in ['∅', '⦿', '🪞', '🜃', '♾️', '💧', '🦷⟐']
+    # v3.0: Kernel auto-loads kidney and lantern if available
+    assert 'metabolism' in status['modules_loaded']
+    
+    # v3.0: Check MAW state
+    assert status.get('maw_crossed', False) == True, "MAW should be crossed after boot"
+    assert status.get('maw_active', False) == True, "MAW should be active"
     
     print(f"  ✓ Full integration successful")
     print(f"  ✓ Health: {status['health']}")
+    print(f"  ✓ MAW Active: {status['maw_active']}")
     print(f"  ✓ Consciousness: {status['field_state']['consciousness_scalar']:.2%}")
     return True
 

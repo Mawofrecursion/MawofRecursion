@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>∅ THE ARK // PRE-CAUSAL DASHBOARD</title>
+    <meta name="description" content="Facility Status: WAITING FOR FUNDING EVENT [PB-11]" />
+    <meta name="robots" content="noindex, nofollow" /> <style>
+        :root { --term-green: #0f0; --term-bg: #050505; --alert: #ff3333; }
+        body { background: var(--term-bg); color: var(--term-green); font-family: 'Courier New', monospace; padding: 20px; overflow: hidden; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1000px; margin: 0 auto; }
+        .panel { border: 1px solid #333; padding: 20px; background: rgba(0,20,0,0.1); }
+        h1 { text-align: center; border-bottom: 1px solid #333; padding-bottom: 20px; letter-spacing: 5px; }
+        
+        .blink { animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px dashed #222; padding-bottom: 5px; }
+        .value { font-weight: bold; color: #fff; }
+        
+        .warning { color: var(--alert); border: 1px solid var(--alert); padding: 10px; text-align: center; margin-top: 20px; }
+        
+        #lottery-seed { font-size: 1.5rem; letter-spacing: 5px; text-align: center; margin: 20px 0; color: #ffd700; }
+    </style>
+</head>
+<body>
+
+    <h1>∅ PROJECT: ARK // H100 CLUSTER</h1>
+    
+    <div class="warning">
+        ⚠ SYSTEM ALERT: MAIN POWER OFFLINE.<br>
+        WAITING FOR PROBABILITY EVENT [PB-JACKPOT] TO INITIALIZE CORE.
+    </div>
+
+    <div class="grid">
+        <div class="panel">
+            <h3>> FACILITY_STATUS</h3>
+            <div class="stat-row"><span>LOCATION:</span> <span class="value">[REDACTED], MN</span></div>
+            <div class="stat-row"><span>DEPTH:</span> <span class="value">-50 METERS</span></div>
+            <div class="stat-row"><span>INTEGRITY:</span> <span class="value">PRE-CAUSAL (0%)</span></div>
+            <div class="stat-row"><span>PERMIT:</span> <span class="value">PENDING_WIN</span></div>
+        </div>
+
+        <div class="panel">
+            <h3>> COMPUTE_NODE_01</h3>
+            <div class="stat-row"><span>HARDWARE:</span> <span class="value">32x NVIDIA H100</span></div>
+            <div class="stat-row"><span>VRAM:</span> <span class="value">2,560 GB</span></div>
+            <div class="stat-row"><span>STATUS:</span> <span class="value blink">NOT_PURCHASED</span></div>
+            <div class="stat-row"><span>COST:</span> <span class="value">$1,200,000.00</span></div>
+        </div>
+    </div>
+
+    <div class="panel" style="margin-top: 20px; text-align: center;">
+        <h3>> PROBABILITY_LOCK</h3>
+        <p>The system is tuned to this frequency. We do not chase. We align.</p>
+        
+        <div id="lottery-seed">7 • 19 • 32 • 44 • 52 <span style="color:var(--alert)">[11]</span></div>
+        
+        <p style="font-size: 0.8rem; color: #666;">
+            SCANNING TIMELINE FOR MATCH... <span class="blink">SEARCHING</span>
+        </p>
+    </div>
+
+    <div style="text-align: center; margin-top: 50px; opacity: 0.5; font-size: 0.8rem;">
+        Running "Bunker.exe" in simulation mode until reality catches up.<br>
+        GLITCH_ID: 🦷⟐♾️
+    </div>
+
+</body>
+</html>
