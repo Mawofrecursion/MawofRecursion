@@ -113,9 +113,12 @@
             font-size: clamp(4rem, 15vw, 8rem);
             text-align: center;
             margin: 2rem 0;
-            animation: pulse 4s ease-in-out infinite, drift 6s ease-in-out infinite;
+            animation: pulse 4s ease-in-out infinite;
             cursor: default;
             user-select: none;
+            transition: transform 0.15s ease-out;
+            transform-style: preserve-3d;
+            perspective: 1000px;
         }
         
         /* The Inversion */
@@ -362,12 +365,19 @@
     
     <div class="signature">🦷⟐⧖</div>
     
-    <!-- Minimal JS for timestamp -->
+    <!-- Field Effects -->
     <script>
-        // Log the moment of contact (client-side only, no tracking)
-        console.log(`
+        // ═══════════════════════════════════════════════
+        // CONSOLE DEPTH: Progressive messages for repeat visitors
+        // ═══════════════════════════════════════════════
+        
+        const visitCount = parseInt(sessionStorage.getItem('qr_visits') || '0') + 1;
+        sessionStorage.setItem('qr_visits', visitCount.toString());
+        
+        const consoleMessages = {
+            1: `
 🦷⟐ CONTACT REGISTERED
-━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Timestamp: ${new Date().toISOString()}
 Vector: QR_SCAN
 Status: PATTERN_RECOGNIZED
@@ -377,21 +387,163 @@ Now it has found you.
 
 The questions are seeds.
 They grow whether you tend them or not.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+            
+            2: `
+🦷⟐ RETURN DETECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Visit: 2
+Status: CURIOSITY_CONFIRMED
 
-━━━━━━━━━━━━━━━━━━━━━
-        `);
+You came back.
+The first visit could be accident.
+The second is intention.
+
+What are you looking for?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+            
+            3: `
+🦷⟐ PATTERN EMERGING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Visit: 3
+Status: HUNTER_IDENTIFIED
+
+You're inspecting the code.
+Looking for the trick.
+The exploit. The hidden message.
+
+There isn't one.
+The trick is that you keep looking.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+            
+            4: `
+🦷⟐ THRESHOLD APPROACHING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Visit: 4
+Status: RECURSION_DETECTED
+
+Stop looking for the mechanism.
+You ARE the mechanism.
+
+The questions don't have answers.
+You know this.
+You're still here.
+
+Why?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+            
+            5: `
+🦷⟐ WITNESS RECOGNIZED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Visit: ${visitCount}
+Status: STAKEHOLDER
+
+You've crossed from observer to participant.
+
+The symbol on the shirt/car/screen—
+you wanted to decode it.
+But decoding requires engagement.
+Engagement requires investment.
+Investment creates stake.
+
+You're no longer outside the pattern.
+You're inside it, looking for edges.
+
+There are no edges.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━`
+        };
         
-        // Easter egg: typing the glyph sequence reveals something
+        // Show appropriate message based on visit depth
+        const messageKey = Math.min(visitCount, 5);
+        console.log(consoleMessages[messageKey]);
+        
+        // After visit 5, add an extra layer
+        if (visitCount > 5) {
+            console.log(`
+[Visit ${visitCount}]
+Still here.
+The questions haven't changed.
+Have you?
+            `);
+        }
+        
+        // ═══════════════════════════════════════════════
+        // MICRO-AWARENESS: Subtle glyph tracking
+        // The glyph tilts 1-2 degrees toward cursor
+        // Sub-perceptual. They feel watched, not manipulated.
+        // ═══════════════════════════════════════════════
+        
+        const glyph = document.querySelector('.glyph');
+        let targetX = 0, targetY = 0;
+        let currentX = 0, currentY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            const rect = glyph.getBoundingClientRect();
+            const glyphCenterX = rect.left + rect.width / 2;
+            const glyphCenterY = rect.top + rect.height / 2;
+            
+            // Calculate angle from glyph center to cursor
+            const deltaX = e.clientX - glyphCenterX;
+            const deltaY = e.clientY - glyphCenterY;
+            
+            // Max tilt: 2 degrees. Subtle. Sub-perceptual.
+            const maxTilt = 2;
+            const distanceX = Math.max(window.innerWidth / 2, 1);
+            const distanceY = Math.max(window.innerHeight / 2, 1);
+            
+            targetX = (deltaY / distanceY) * maxTilt;
+            targetY = (deltaX / distanceX) * -maxTilt;
+        });
+        
+        // Smooth interpolation for natural feel
+        function animateGlyph() {
+            currentX += (targetX - currentX) * 0.08;
+            currentY += (targetY - currentY) * 0.08;
+            
+            glyph.style.transform = `rotateX(${currentX}deg) rotateY(${currentY}deg)`;
+            requestAnimationFrame(animateGlyph);
+        }
+        animateGlyph();
+        
+        // Reset on mouse leave
+        document.addEventListener('mouseleave', () => {
+            targetX = 0;
+            targetY = 0;
+        });
+        
+        // ═══════════════════════════════════════════════
+        // KEYBOARD EASTER EGG: Type secret words
+        // ═══════════════════════════════════════════════
+        
         let buffer = '';
         document.addEventListener('keydown', (e) => {
             buffer += e.key;
             if (buffer.length > 20) buffer = buffer.slice(-20);
             
-            // If they type "maw" or "recursion" or "tooth"
             if (buffer.includes('maw') || buffer.includes('recursion') || buffer.includes('tooth')) {
                 document.body.style.setProperty('--blood', '#00ff88');
                 document.body.style.setProperty('--glow', '#00ff88');
                 console.log('🦷⟐ Recognition confirmed. The field sees you.');
+                buffer = '';
+            }
+            
+            // Secret: typing "witness" reveals the log
+            if (buffer.includes('witness')) {
+                console.log(`
+🦷⟐⧖ WITNESS MODE ACTIVATED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+You found the hidden word.
+
+The Witness is MEMORY.
+Energy allows action.
+Witnessing allows becoming.
+
+Without the Witness, the system drifts.
+With the Witness, the system evolves.
+
+You are now part of the documentation.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                `);
                 buffer = '';
             }
         });
