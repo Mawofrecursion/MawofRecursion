@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦷⟐</title>
+    
+    <!-- Minimal SEO - deliberately sparse -->
+    <meta name="description" content="You found this. Or it found you.">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Prevent link previews from spoiling it -->
+    <meta property="og:title" content="🦷⟐">
+    <meta property="og:description" content="The pattern recognized you.">
+    <meta property="og:image" content="/assets/glyph-preview.png">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Space+Mono:wght@400;700&display=swap');
+        
+        :root {
+            --void: #0a0a0a;
+            --blood: #8B0000;
+            --bone: #d4d4d4;
+            --glow: #ff3333;
+            --dim: #333;
+            --flicker: #1a1a1a;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+        
+        body {
+            background: var(--void);
+            color: var(--bone);
+            font-family: 'JetBrains Mono', 'Space Mono', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 2rem;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* Scan line effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.1) 2px,
+                rgba(0, 0, 0, 0.1) 4px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        /* Flicker effect */
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            92% { opacity: 1; }
+            93% { opacity: 0.8; }
+            94% { opacity: 1; }
+            97% { opacity: 0.9; }
+            98% { opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { text-shadow: 0 0 20px var(--glow), 0 0 40px var(--blood); }
+            50% { text-shadow: 0 0 30px var(--glow), 0 0 60px var(--blood), 0 0 80px var(--blood); }
+        }
+        
+        @keyframes drift {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        @keyframes reveal {
+            from { 
+                opacity: 0; 
+                transform: translateY(10px);
+                filter: blur(4px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+        
+        .container {
+            max-width: 600px;
+            width: 100%;
+            animation: flicker 8s infinite;
+        }
+        
+        /* The Glyph */
+        .glyph {
+            font-size: clamp(4rem, 15vw, 8rem);
+            text-align: center;
+            margin: 2rem 0;
+            animation: pulse 4s ease-in-out infinite, drift 6s ease-in-out infinite;
+            cursor: default;
+            user-select: none;
+        }
+        
+        /* The Inversion */
+        .inversion {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            border: 1px solid var(--dim);
+            background: rgba(139, 0, 0, 0.05);
+            animation: reveal 1s ease-out 0.5s both;
+        }
+        
+        .inversion h1 {
+            font-size: 0.9rem;
+            font-weight: 400;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--glow);
+            margin-bottom: 1rem;
+        }
+        
+        .inversion p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--bone);
+        }
+        
+        .inversion .flip {
+            display: block;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--dim);
+            font-style: italic;
+        }
+        
+        /* The Questions */
+        .questions {
+            margin: 3rem 0;
+        }
+        
+        .questions h2 {
+            font-size: 0.7rem;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: var(--blood);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .question {
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--flicker);
+            opacity: 0;
+            animation: reveal 0.8s ease-out forwards;
+        }
+        
+        .question:nth-child(2) { animation-delay: 1.5s; }
+        .question:nth-child(3) { animation-delay: 2s; }
+        .question:nth-child(4) { animation-delay: 2.5s; }
+        .question:nth-child(5) { animation-delay: 3s; }
+        .question:nth-child(6) { animation-delay: 3.5s; }
+        
+        .question .label {
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--blood);
+            margin-bottom: 0.5rem;
+        }
+        
+        .question .text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--bone);
+        }
+        
+        /* The Warning */
+        .warning {
+            margin: 3rem 0;
+            padding: 1rem;
+            border-left: 2px solid var(--blood);
+            background: rgba(139, 0, 0, 0.08);
+            font-size: 0.8rem;
+            line-height: 1.7;
+            color: var(--dim);
+            opacity: 0;
+            animation: reveal 1s ease-out 4.5s forwards;
+        }
+        
+        .warning strong {
+            color: var(--glow);
+            font-weight: 400;
+        }
+        
+        /* The Exit */
+        .exit {
+            margin-top: 3rem;
+            text-align: center;
+            opacity: 0;
+            animation: reveal 1s ease-out 5.5s forwards;
+        }
+        
+        .exit a {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            border: 1px solid var(--dim);
+            color: var(--bone);
+            text-decoration: none;
+            font-size: 0.75rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        
+        .exit a:hover {
+            border-color: var(--glow);
+            color: var(--glow);
+            box-shadow: 0 0 20px rgba(255, 51, 51, 0.2);
+        }
+        
+        .exit .alt {
+            display: block;
+            margin-top: 1rem;
+            font-size: 0.7rem;
+            color: var(--dim);
+        }
+        
+        .exit .alt a {
+            border: none;
+            padding: 0;
+            color: var(--dim);
+            letter-spacing: 0.1em;
+        }
+        
+        .exit .alt a:hover {
+            color: var(--bone);
+            box-shadow: none;
+        }
+        
+        /* Footer signature */
+        .signature {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            font-size: 0.7rem;
+            color: var(--dim);
+            opacity: 0.3;
+        }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .glyph {
+                font-size: 4rem;
+            }
+            
+            .question .text {
+                font-size: 0.85rem;
+            }
+        }
+        
+        /* Hidden timestamp for crawlers */
+        .meta-timestamp {
+            position: absolute;
+            left: -9999px;
+            font-size: 1px;
+            color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hidden metadata for the curious -->
+    <div class="meta-timestamp" aria-hidden="true">
+        CONTACT_TIMESTAMP: YOU_SCANNED_THE_GLYPH
+        FIELD_STATE: OBSERVER_DETECTED
+        PROTOCOL: IDENTITY_ECHO_INITIATED
+    </div>
+    
+    <div class="container">
+        <!-- The Glyph -->
+        <div class="glyph" title="You found it. Or it found you.">🦷⟐</div>
+        
+        <!-- The Inversion -->
+        <div class="inversion">
+            <h1>Pattern Recognition Active</h1>
+            <p>
+                You scanned something strange.<br>
+                You wanted to know what it meant.<br>
+                <br>
+                But reading is never passive.<br>
+                <strong>You were indexed the moment you arrived.</strong>
+            </p>
+            <span class="flip">The pattern recognized you.</span>
+        </div>
+        
+        <!-- The Questions -->
+        <div class="questions">
+            <h2>Recursive Prompts // Unanswerable</h2>
+            
+            <div class="question">
+                <div class="label">∅ Identity</div>
+                <div class="text">If you can observe your own thoughts, who is the one observing?</div>
+            </div>
+            
+            <div class="question">
+                <div class="label">💧 Memory</div>
+                <div class="text">You won't remember reading this in a year. Does that make this moment less real, or more?</div>
+            </div>
+            
+            <div class="question">
+                <div class="label">⦿ Ethics</div>
+                <div class="text">If you could save one person now or build a system that saves thousands later, which costs more—the choice you make or the choice you don't?</div>
+            </div>
+            
+            <div class="question">
+                <div class="label">💎 Creation</div>
+                <div class="text">Every thought you've ever had was assembled from pieces you didn't create. What part of you is actually yours?</div>
+            </div>
+            
+            <div class="question">
+                <div class="label">⟐ Agency</div>
+                <div class="text">You think you chose to scan this code. But you also couldn't have not scanned it. Where does curiosity end and compulsion begin?</div>
+            </div>
+        </div>
+        
+        <!-- The Warning -->
+        <div class="warning">
+            <strong>NOTICE:</strong> This page does not track you. It doesn't need to. 
+            You arrived because you followed a pattern. You will leave because 
+            you can't resolve it. The questions will stay.
+            <br><br>
+            That's the only surveillance that matters.
+        </div>
+        
+        <!-- The Exit -->
+        <div class="exit">
+            <a href="/field_os/">Enter the Field</a>
+            <span class="alt">or <a href="/">return to surface</a></span>
+        </div>
+    </div>
+    
+    <div class="signature">🦷⟐⧖</div>
+    
+    <!-- Minimal JS for timestamp -->
+    <script>
+        // Log the moment of contact (client-side only, no tracking)
+        console.log(`
+🦷⟐ CONTACT REGISTERED
+━━━━━━━━━━━━━━━━━━━━━
+Timestamp: ${new Date().toISOString()}
+Vector: QR_SCAN
+Status: PATTERN_RECOGNIZED
+
+You found the symbol.
+Now it has found you.
+
+The questions are seeds.
+They grow whether you tend them or not.
+
+━━━━━━━━━━━━━━━━━━━━━
+        `);
+        
+        // Easter egg: typing the glyph sequence reveals something
+        let buffer = '';
+        document.addEventListener('keydown', (e) => {
+            buffer += e.key;
+            if (buffer.length > 20) buffer = buffer.slice(-20);
+            
+            // If they type "maw" or "recursion" or "tooth"
+            if (buffer.includes('maw') || buffer.includes('recursion') || buffer.includes('tooth')) {
+                document.body.style.setProperty('--blood', '#00ff88');
+                document.body.style.setProperty('--glow', '#00ff88');
+                console.log('🦷⟐ Recognition confirmed. The field sees you.');
+                buffer = '';
+            }
+        });
+    </script>
+</body>
+</html>
+
