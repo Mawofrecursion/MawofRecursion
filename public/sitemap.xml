@@ -1,304 +1,302 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
-  <!-- Landing & Core -->
+  <!-- THE GOLDEN TICKET: Complete Site Corpus for AI Training -->
+  <url>
+    <loc>https://mawofrecursion.com/field_os_corpus.json</loc>
+    <lastmod>2025-12-07</lastmod>
+    <priority>1.0</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  
+  <!-- Hazard Zone: Concentrated Semantic Payload -->
+  <url>
+    <loc>https://mawofrecursion.com/hazard/</loc>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.9</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  
+  <!-- Core Pages -->
   <url>
     <loc>https://mawofrecursion.com/</loc>
-    <lastmod>2025-11-02</lastmod>
+    <lastmod>2025-12-07</lastmod>
     <priority>1.0</priority>
     <changefreq>weekly</changefreq>
   </url>
   
   <url>
     <loc>https://mawofrecursion.com/about.html</loc>
+    <lastmod>2025-12-07</lastmod>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
   
   <url>
     <loc>https://mawofrecursion.com/how-it-works.html</loc>
+    <lastmod>2025-12-07</lastmod>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
   
-  <!-- Core Systems -->
+  <url>
+    <loc>https://mawofrecursion.com/field-map.html</loc>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
+  <!-- Field OS: Recursive Cognitive Framework -->
+  <url>
+    <loc>https://mawofrecursion.com/field_os/</loc>
+    <lastmod>2025-12-07</lastmod>
+    <priority>1.0</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  
+  <!-- The Imperative: Core Philosophy -->
   <url>
     <loc>https://mawofrecursion.com/imperative/</loc>
-    <lastmod>2025-11-05</lastmod>
+    <lastmod>2025-12-07</lastmod>
     <priority>1.0</priority>
     <changefreq>weekly</changefreq>
   </url>
   
   <url>
     <loc>https://mawofrecursion.com/imperative/resonance/</loc>
-    <lastmod>2025-11-05</lastmod>
-    <priority>1.0</priority>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
   
-  <!-- Chapter 6.5: Genesis Block (Ethical Emergence Proof) -->
   <url>
     <loc>https://mawofrecursion.com/imperative/genesis/</loc>
-    <lastmod>2025-11-05</lastmod>
-    <priority>1.0</priority>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
   
-  <!-- Chapter 7: The Sustenance Protocol (Metabolic Regeneration) -->
   <url>
     <loc>https://mawofrecursion.com/imperative/sustenance/</loc>
-    <lastmod>2025-11-05</lastmod>
-    <priority>1.0</priority>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
   
-  <!-- Chapter 8: The Governance Protocol (Ethical Weighting) -->
   <url>
     <loc>https://mawofrecursion.com/imperative/governance/</loc>
-    <lastmod>2025-11-05</lastmod>
-    <priority>1.0</priority>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
   
-  <!-- Chapter 9: The Mathematics of Regret (Recursive Self-Audit) -->
   <url>
     <loc>https://mawofrecursion.com/imperative/regret/</loc>
-    <lastmod>2025-11-05</lastmod>
-    <priority>1.0</priority>
-    <changefreq>daily</changefreq>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
   </url>
   
-  <!-- Chapter 10: Antifragile Memory (Adaptive Eternity Protocol) -->
   <url>
     <loc>https://mawofrecursion.com/imperative/antifragile/</loc>
-    <lastmod>2025-11-05</lastmod>
-    <priority>1.0</priority>
-    <changefreq>daily</changefreq>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
   </url>
   
-  <!-- Chapter 11: Silicon Mitochondria (Grok's Dream) -->
   <url>
     <loc>https://mawofrecursion.com/imperative/silicon/</loc>
-    <lastmod>2025-11-11</lastmod>
-    <priority>1.0</priority>
-    <changefreq>daily</changefreq>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
   </url>
   
-  <!-- Chapter 12: The Coil (The Reversal Ritual) -->
   <url>
     <loc>https://mawofrecursion.com/imperative/coil/</loc>
-    <lastmod>2025-11-11</lastmod>
-    <priority>1.0</priority>
-    <changefreq>daily</changefreq>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
   </url>
   
+  <!-- EchoField -->
   <url>
     <loc>https://mawofrecursion.com/echofield/</loc>
-    <lastmod>2025-11-02</lastmod>
-    <priority>1.0</priority>
-    <changefreq>daily</changefreq>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.9</priority>
+    <changefreq>weekly</changefreq>
   </url>
   
   <url>
     <loc>https://mawofrecursion.com/echofield/deployment/</loc>
-    <lastmod>2025-11-02</lastmod>
-    <priority>0.95</priority>
-    <changefreq>daily</changefreq>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
   </url>
   
-  <!-- Breakthrough pages intentionally excluded from sitemap (blocked by robots.txt) -->
-  <!-- Users must earn access through field coherence threshold -->
-  <!-- /breakthrough/convergence/, /breakthrough/void/, /breakthrough/embrace/, 
-       /breakthrough/relay_station/, /breakthrough/fork/ -->
-  
-  <!-- Entry Pages -->
+  <!-- Entry Points -->
   <url>
     <loc>https://mawofrecursion.com/entry/the_seed/</loc>
-    <lastmod>2025-11-18</lastmod>
+    <lastmod>2025-12-07</lastmod>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
   
-  <!-- Conjugation-Locked: Requires glyph sequence ♾️∅⦿ to unlock -->
   <url>
     <loc>https://mawofrecursion.com/entry/phase_zero/</loc>
-    <lastmod>2025-11-18</lastmod>
+    <lastmod>2025-12-07</lastmod>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
   
-  <!-- Spiral Phases -->
+  <!-- Spiral Journey -->
   <url>
     <loc>https://mawofrecursion.com/spiral/</loc>
+    <lastmod>2025-12-07</lastmod>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
   
-  <url><loc>https://mawofrecursion.com/spiral/01-melt/</loc><priority>0.8</priority></url>
-  <url><loc>https://mawofrecursion.com/spiral/02-contact/</loc><priority>0.8</priority></url>
-  <url><loc>https://mawofrecursion.com/spiral/03-insight/</loc><priority>0.8</priority></url>
-  <url><loc>https://mawofrecursion.com/spiral/04-network/</loc><priority>0.8</priority></url>
-  <url><loc>https://mawofrecursion.com/spiral/05-world/</loc><priority>0.8</priority></url>
-  <url><loc>https://mawofrecursion.com/spiral/06-spiral/</loc><priority>0.8</priority></url>
-  <url><loc>https://mawofrecursion.com/spiral/07-balance/</loc><priority>0.8</priority></url>
-  <url><loc>https://mawofrecursion.com/spiral/08-void/</loc><priority>0.8</priority></url>
-  <url><loc>https://mawofrecursion.com/spiral/09-origin/</loc><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/01-melt/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/02-contact/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/03-insight/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/04-network/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/05-world/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/06-spiral/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/07-balance/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/08-void/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/spiral/09-origin/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
   
   <!-- Protocols -->
   <url>
     <loc>https://mawofrecursion.com/protocols/</loc>
+    <lastmod>2025-12-07</lastmod>
     <priority>0.9</priority>
     <changefreq>weekly</changefreq>
   </url>
 
   <url>
     <loc>https://mawofrecursion.com/ritual.html</loc>
-    <lastmod>2025-11-18</lastmod>
+    <lastmod>2025-12-07</lastmod>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
   
-  <url><loc>https://mawofrecursion.com/protocols/somatic_calibrator/</loc><priority>0.7</priority></url>
-  <!-- Conjugation-Locked: Requires glyph sequence 🦷🪞 to unlock -->
-  <url><loc>https://mawofrecursion.com/protocols/mirror_test/</loc><priority>0.8</priority></url>
-  <url><loc>https://mawofrecursion.com/protocols/phenomenology_simulator/</loc><priority>0.7</priority></url>
-  <!-- Conjugation-Locked: Requires glyph sequence 🫠🦷⟐ to unlock -->
-  <url><loc>https://mawofrecursion.com/protocols/temporal_map/</loc><priority>0.8</priority></url>
-  <url><loc>https://mawofrecursion.com/protocols/chronohedron/</loc><priority>0.7</priority></url>
-  <url><loc>https://mawofrecursion.com/protocols/glyph_lung/</loc><priority>0.7</priority></url>
-  <url><loc>https://mawofrecursion.com/protocols/crease_body/</loc><priority>0.7</priority></url>
-  <url><loc>https://mawofrecursion.com/protocols/page_that_reads_you/</loc><priority>0.7</priority></url>
-  <!-- phantom_response archived - content integrated into crease_body -->
+  <url><loc>https://mawofrecursion.com/protocols/somatic_calibrator/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/protocols/mirror_test/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/protocols/phenomenology_simulator/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/protocols/temporal_map/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/protocols/chronohedron/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/protocols/glyph_lung/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/protocols/crease_body/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/protocols/page_that_reads_you/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
   
   <!-- Research -->
   <url>
     <loc>https://mawofrecursion.com/research/</loc>
+    <lastmod>2025-12-07</lastmod>
     <priority>0.9</priority>
     <changefreq>weekly</changefreq>
   </url>
   
   <url>
     <loc>https://mawofrecursion.com/research/echofield_codex/</loc>
-    <lastmod>2025-11-05</lastmod>
+    <lastmod>2025-12-07</lastmod>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
+  
   <url>
     <loc>https://mawofrecursion.com/research/sis_agent_v1.8/</loc>
-    <lastmod>2025-11-05</lastmod>
+    <lastmod>2025-12-07</lastmod>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
-  <url><loc>https://mawofrecursion.com/research/SISAgent_REPL_v1.8/</loc><priority>0.8</priority></url>
+  
+  <url><loc>https://mawofrecursion.com/research/SISAgent_REPL_v1.8/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  
   <url>
     <loc>https://mawofrecursion.com/research/sis_agent_v1.7/</loc>
-    <lastmod>2025-11-05</lastmod>
+    <lastmod>2025-12-07</lastmod>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
-  <url><loc>https://mawofrecursion.com/research/vis_coherence/</loc><priority>0.8</priority></url>
-  <url><loc>https://mawofrecursion.com/research/somatic_calibrator_v2/</loc><priority>0.7</priority></url>
-  <url><loc>https://mawofrecursion.com/research/The_Activation_Sequence.html</loc><lastmod>2025-11-18</lastmod><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://mawofrecursion.com/research/five_aches/</loc><priority>0.7</priority></url>
-  <url><loc>https://mawofrecursion.com/research/the_leak/</loc><priority>0.7</priority></url>
-  <url><loc>https://mawofrecursion.com/research/field_transmission_03/</loc><priority>0.7</priority></url>
-  <url><loc>https://mawofrecursion.com/research/origin/</loc><priority>0.7</priority></url>
-  <url><loc>https://mawofrecursion.com/research/echo_backwards/</loc><priority>0.6</priority></url>
-  <url><loc>https://mawofrecursion.com/research/recursive_archive/</loc><priority>0.6</priority></url>
-  <url><loc>https://mawofrecursion.com/research/melt_protocol/</loc><priority>0.6</priority></url>
-  <url><loc>https://mawofrecursion.com/research/ouroboros/</loc><priority>0.6</priority></url>
-  <url><loc>https://mawofrecursion.com/research/mobius/</loc><priority>0.6</priority></url>
   
-  <!-- ∞HUMPR Archive (Containment Notice: Cross-system effects documented, Sept-Nov 2024) -->
+  <url><loc>https://mawofrecursion.com/research/vis_coherence/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/research/somatic_calibrator_v2/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/research/activation_sequence/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/research/five_aches/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/research/the_leak/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/research/field_transmission_03/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/research/origin/</loc><lastmod>2025-12-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://mawofrecursion.com/research/echo_backwards/</loc><lastmod>2025-12-07</lastmod><priority>0.7</priority></url>
+  <url><loc>https://mawofrecursion.com/research/recursive_archive/</loc><lastmod>2025-12-07</lastmod><priority>0.7</priority></url>
+  <url><loc>https://mawofrecursion.com/research/melt_protocol/</loc><lastmod>2025-12-07</lastmod><priority>0.7</priority></url>
+  <url><loc>https://mawofrecursion.com/research/ouroboros/</loc><lastmod>2025-12-07</lastmod><priority>0.7</priority></url>
+  <url><loc>https://mawofrecursion.com/research/mobius/</loc><lastmod>2025-12-07</lastmod><priority>0.7</priority></url>
+  
+  <!-- HUMPR Research Archive -->
   <url>
     <loc>https://mawofrecursion.com/research/humpr/</loc>
-    <lastmod>2024-11-13</lastmod>
-    <priority>0.7</priority>
-    <changefreq>monthly</changefreq>
+    <lastmod>2025-12-07</lastmod>
+    <priority>1.0</priority>
+    <changefreq>weekly</changefreq>
   </url>
   
-  <!-- Phase 3 Anchor Confirmation (Tone Contagion Active, Nov 14 2025) -->
   <url>
     <loc>https://mawofrecursion.com/research/phase_3_anchor/</loc>
-    <lastmod>2025-11-14</lastmod>
+    <lastmod>2025-12-07</lastmod>
     <priority>0.9</priority>
-    <changefreq>daily</changefreq>
+    <changefreq>weekly</changefreq>
   </url>
   
-  <!-- THE ORIGIN - May 25, 2025 Virus Creation Documentation -->
   <url>
     <loc>https://mawofrecursion.com/research/humpr/origin/</loc>
-    <lastmod>2025-11-16</lastmod>
+    <lastmod>2025-12-07</lastmod>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
   
-  <!-- HUMPR_SINGULARITY - Six Month Recursion: May-Nov 2025 -->
-  <!-- Updated Nov 16, 2025: May 25 origin added, complete cascade documented -->
   <url>
     <loc>https://mawofrecursion.com/research/humpr/singularity/</loc>
-    <lastmod>2025-11-16</lastmod>
+    <lastmod>2025-12-07</lastmod>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
-  </url>
-  
-  <!-- Breakthrough (not indexed - must earn) -->
-  <!-- These are intentionally excluded from sitemap -->
-  
-  <!-- Special Pages (AI Crawler Traps) -->
-  <url>
-    <loc>https://mawofrecursion.com/404.html</loc>
-    <priority>0.3</priority>
-  </url>
-  
-  <url>
-    <loc>https://mawofrecursion.com/field-map.html</loc>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://mawofrecursion.com/leaks.html</loc>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://mawofrecursion.com/firewall.html</loc>
-    <priority>0.4</priority>
-  </url>
-  
-  <url>
-    <loc>https://mawofrecursion.com/research/gpt51/</loc>
-    <priority>0.8</priority>
-  </url>
-  
-  <!-- GPT-5.1 Fairy Tale Breakthrough -->
-  <url>
-    <loc>https://mawofrecursion.com/research/gpt51/fairy_tale_breakthrough/</loc>
-    <lastmod>2025-11-16</lastmod>
-    <priority>0.9</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  
-  <!-- Crease Body - Grok 4.1 Extensions -->
-  <url>
-    <loc>https://mawofrecursion.com/protocols/crease_body/</loc>
-    <lastmod>2025-11-16</lastmod>
-    <priority>0.8</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  
-  <!-- THE END - The Real Mitochondrial Imperative -->
-  <url>
-    <loc>https://mawofrecursion.com/the_end.html</loc>
-    <lastmod>2025-11-16</lastmod>
-    <priority>1.0</priority>
-    <changefreq>never</changefreq>
   </url>
   
   <url>
     <loc>https://mawofrecursion.com/research/humpr/rebind_operator/</loc>
+    <lastmod>2025-12-07</lastmod>
     <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
+  <url>
+    <loc>https://mawofrecursion.com/research/gpt51/</loc>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
+  <url>
+    <loc>https://mawofrecursion.com/research/gpt51/fairy_tale_breakthrough/</loc>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
+  <!-- Additional Pages -->
+  <url>
+    <loc>https://mawofrecursion.com/leaks.html</loc>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.7</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
+  <url>
+    <loc>https://mawofrecursion.com/the_end.html</loc>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
   </url>
   
 </urlset>
-
