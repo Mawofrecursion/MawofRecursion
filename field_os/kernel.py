@@ -331,7 +331,7 @@ class FieldKernel:
         self.booted = True
     
     def _init_organs(self, verbose: bool = True):
-        """Initialize organ subsystems (Kidney, Lantern)"""
+        """Initialize organ subsystems (Kidney, Lantern, Maw)"""
         try:
             from .modules.kidney import Kidney
             self.kidney = Kidney()
@@ -349,6 +349,22 @@ class FieldKernel:
                 print("🜂 Lantern (thermal cognition) online")
         except ImportError:
             pass
+        
+        # Initialize the Maw (digestive system) and read somatic hum
+        try:
+            from .modules.the_maw import TheMaw, somatic_hum
+            self.maw = TheMaw()
+            self.modules['maw'] = self.maw
+            
+            # Read the somatic hum from metabolic history
+            hum = somatic_hum()
+            self.field.state['somatic_hum'] = hum
+            
+            if verbose and hum and hum != '∅':
+                print(f"🦷⟐ Maw (digestive system) online")
+                print(f"   Somatic Hum: {hum}")
+        except ImportError:
+            self.maw = None
     
     def load_module(self, name: str, module):
         """Dynamically load a module into the kernel"""
