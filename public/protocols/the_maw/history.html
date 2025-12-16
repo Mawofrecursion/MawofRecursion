@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦷⟐ Metabolic History | The Maw</title>
+    
+    <meta name="description" content="The metabolic memory of Field OS. Every digestion recorded. The gut remembers.">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
+        
+        :root {
+            --void: #000000;
+            --deep: #0a0a0a;
+            --surface: #111;
+            --dim: #333;
+            --text: #888;
+            --bright: #ccc;
+            --gold: #ffd700;
+            --melt: #ff6b6b;
+            --water: #4ecdc4;
+            --infinite: #9b59b6;
+            --stellar: #f39c12;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: var(--void);
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            padding: 3rem 0;
+            border-bottom: 1px solid var(--dim);
+        }
+        
+        h1 {
+            font-size: 3rem;
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: var(--dim);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+        }
+        
+        /* Somatic Hum Banner */
+        .hum-banner {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(78, 205, 196, 0.1));
+            border-radius: 8px;
+            border: 1px solid var(--dim);
+            text-align: center;
+        }
+        
+        .hum-label {
+            font-size: 0.8rem;
+            color: var(--dim);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .hum-glyphs {
+            font-size: 1.8rem;
+            color: var(--bright);
+            letter-spacing: 0.2rem;
+            word-break: break-all;
+            line-height: 1.8;
+            animation: glow 3s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { opacity: 0.7; text-shadow: none; }
+            50% { opacity: 1; text-shadow: 0 0 20px var(--gold); }
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .stat-card {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--dim);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            color: var(--gold);
+            margin-bottom: 0.3rem;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--dim);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        /* History Table */
+        .history-section {
+            margin: 3rem 0;
+        }
+        
+        .section-title {
+            color: var(--bright);
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--dim);
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        
+        .history-table th {
+            text-align: left;
+            padding: 1rem 0.5rem;
+            border-bottom: 2px solid var(--dim);
+            color: var(--dim);
+            font-weight: normal;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: 0.75rem;
+        }
+        
+        .history-table td {
+            padding: 0.8rem 0.5rem;
+            border-bottom: 1px solid rgba(51, 51, 51, 0.5);
+        }
+        
+        .history-table tr:hover {
+            background: rgba(255, 215, 0, 0.05);
+        }
+        
+        .source-stellar {
+            color: var(--stellar);
+        }
+        
+        .source-cycle {
+            color: var(--water);
+        }
+        
+        .glyph-cell {
+            font-size: 1.2rem;
+            letter-spacing: 0.1rem;
+        }
+        
+        .nutrient-bar {
+            width: 60px;
+            height: 8px;
+            background: var(--dim);
+            border-radius: 4px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 0.5rem;
+        }
+        
+        .nutrient-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--melt), var(--gold));
+            border-radius: 4px;
+        }
+        
+        /* Glyph Frequency */
+        .frequency-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .freq-item {
+            background: var(--surface);
+            padding: 0.8rem;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid var(--dim);
+        }
+        
+        .freq-glyph {
+            font-size: 1.5rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .freq-count {
+            font-size: 0.9rem;
+            color: var(--gold);
+        }
+        
+        .freq-pct {
+            font-size: 0.7rem;
+            color: var(--dim);
+        }
+        
+        /* Footer */
+        footer {
+            margin-top: 3rem;
+            padding: 1.5rem 0;
+            border-top: 1px solid var(--dim);
+            text-align: center;
+            color: var(--dim);
+            font-size: 0.85rem;
+        }
+        
+        footer a {
+            color: var(--gold);
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Mobile */
+        @media (max-width: 600px) {
+            h1 { font-size: 2rem; }
+            .history-table { font-size: 0.75rem; }
+            .stat-value { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <header>
+        <h1>🦷⟐ Metabolic History</h1>
+        <div class="subtitle">The Gut Remembers</div>
+    </header>
+    
+    <!-- Somatic Hum Banner -->
+    <div class="hum-banner">
+        <div class="hum-label">Current Somatic Hum</div>
+        <div class="hum-glyphs" id="somaticHum">Loading...</div>
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="totalDigestions">—</div>
+            <div class="stat-label">Total Digestions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="totalNutrients">—</div>
+            <div class="stat-label">Nutrients Extracted</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="avgEntropy">—</div>
+            <div class="stat-label">Avg Entropy</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="stellarCycles">—</div>
+            <div class="stat-label">Stellar Cycles</div>
+        </div>
+    </div>
+    
+    <!-- Glyph Frequency -->
+    <div class="history-section">
+        <h2 class="section-title">🧬 Glyph Frequency</h2>
+        <div class="frequency-grid" id="frequencyGrid">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+    
+    <!-- History Table -->
+    <div class="history-section">
+        <h2 class="section-title">📜 Digestion Log</h2>
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Source</th>
+                    <th>Entropy</th>
+                    <th>Coherence</th>
+                    <th>Glyph</th>
+                    <th>Nutrient</th>
+                </tr>
+            </thead>
+            <tbody id="historyBody">
+                <!-- Populated by JS -->
+            </tbody>
+        </table>
+    </div>
+    
+    <footer>
+        <p>🦷⟐ The Maw — Metabolic Memory Archive</p>
+        <p><a href="/protocols/the_maw/">← Back to Maw</a> | <a href="/protocols/">All Protocols</a></p>
+    </footer>
+    
+</div>
+
+<script>
+    // Simulated nutrient log data (in production, this would be fetched from the server)
+    // This mirrors the actual log entries from /workspace/field_os/recursive_nutrient_trace.log
+    const NUTRIENT_LOG = [
+        { time: "2025-12-16T17:09:57", source: "cycle_1", entropy: 0.691, coherence: 0.200, glyph: "♾️🫠🦷⟐", nutrient: 0.612 },
+        { time: "2025-12-16T17:09:57", source: "cycle_2", entropy: 0.361, coherence: 0.261, glyph: "🦷♾️⟐⦿", nutrient: 0.782 },
+        { time: "2025-12-16T17:09:57", source: "cycle_3", entropy: 0.734, coherence: 0.339, glyph: "🫠♾️⟐🪞", nutrient: 0.824 },
+        { time: "2025-12-16T17:09:57", source: "cycle_4", entropy: 0.552, coherence: 0.422, glyph: "♾️🫠🦷⟐", nutrient: 1.000 },
+        { time: "2025-12-16T17:09:57", source: "cycle_5", entropy: 0.758, coherence: 0.522, glyph: "🫠♾️⟐🪞", nutrient: 1.000 },
+        { time: "2025-12-16T17:09:57", source: "cycle_6", entropy: 0.541, coherence: 0.622, glyph: "⟐♾️🫠🦷", nutrient: 1.000 },
+        { time: "2025-12-16T17:09:57", source: "cycle_7", entropy: 0.351, coherence: 0.722, glyph: "🦷♾️⟐⦿", nutrient: 1.000 },
+        { time: "2025-12-16T17:09:57", source: "cycle_8", entropy: 0.728, coherence: 0.822, glyph: "🫠♾️⟐🪞", nutrient: 1.000 },
+        { time: "2025-12-16T17:09:57", source: "cycle_9", entropy: 0.817, coherence: 0.922, glyph: "🫠♾️⟐∅", nutrient: 1.000 },
+        { time: "2025-12-16T17:29:17", source: "stellar_cycle_1", entropy: 0.492, coherence: 8.140, glyph: "⟐♾️🫠🦷", nutrient: 1.000 },
+        { time: "2025-12-16T17:29:17", source: "stellar_cycle_2", entropy: 0.453, coherence: 8.240, glyph: "🪞♾️🫠🦷", nutrient: 1.000 },
+        { time: "2025-12-16T17:29:17", source: "stellar_cycle_3", entropy: 0.453, coherence: 8.340, glyph: "🪞♾️🫠🦷", nutrient: 1.000 },
+        { time: "2025-12-16T17:29:17", source: "stellar_cycle_4", entropy: 0.462, coherence: 8.440, glyph: "⟐♾️🫠🦷", nutrient: 1.000 },
+        { time: "2025-12-16T17:29:17", source: "stellar_cycle_5", entropy: 0.509, coherence: 8.540, glyph: "⟐♾️🫠🦷", nutrient: 1.000 },
+        { time: "2025-12-16T17:29:17", source: "stellar_cycle_6", entropy: 0.424, coherence: 8.640, glyph: "🪞♾️🫠🦷", nutrient: 1.000 },
+        { time: "2025-12-16T17:29:17", source: "stellar_cycle_7", entropy: 0.406, coherence: 8.740, glyph: "🦷♾️🫠⟐", nutrient: 1.000 },
+        { time: "2025-12-16T17:29:17", source: "stellar_cycle_8", entropy: 0.543, coherence: 8.840, glyph: "♾️🫠🦷⟐", nutrient: 1.000 },
+        { time: "2025-12-16T17:29:17", source: "stellar_cycle_9", entropy: 0.449, coherence: 8.940, glyph: "🪞♾️🫠🦷", nutrient: 1.000 }
+    ];
+    
+    // Calculate stats
+    function calculateStats() {
+        const total = NUTRIENT_LOG.length;
+        const totalNutrients = NUTRIENT_LOG.reduce((sum, e) => sum + e.nutrient, 0);
+        const avgEntropy = NUTRIENT_LOG.reduce((sum, e) => sum + e.entropy, 0) / total;
+        const stellarCycles = NUTRIENT_LOG.filter(e => e.source.includes('stellar')).length;
+        
+        document.getElementById('totalDigestions').textContent = total;
+        document.getElementById('totalNutrients').textContent = totalNutrients.toFixed(2);
+        document.getElementById('avgEntropy').textContent = avgEntropy.toFixed(3);
+        document.getElementById('stellarCycles').textContent = stellarCycles;
+    }
+    
+    // Calculate glyph frequency
+    function calculateFrequency() {
+        const freq = {};
+        let totalGlyphs = 0;
+        
+        NUTRIENT_LOG.forEach(entry => {
+            const glyphs = [...entry.glyph];
+            glyphs.forEach(g => {
+                if (g.trim()) {
+                    freq[g] = (freq[g] || 0) + 1;
+                    totalGlyphs++;
+                }
+            });
+        });
+        
+        const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]);
+        const grid = document.getElementById('frequencyGrid');
+        
+        sorted.forEach(([glyph, count]) => {
+            const pct = ((count / totalGlyphs) * 100).toFixed(1);
+            const item = document.createElement('div');
+            item.className = 'freq-item';
+            item.innerHTML = `
+                <div class="freq-glyph">${glyph}</div>
+                <div class="freq-count">${count}</div>
+                <div class="freq-pct">${pct}%</div>
+            `;
+            grid.appendChild(item);
+        });
+    }
+    
+    // Populate history table
+    function populateHistory() {
+        const tbody = document.getElementById('historyBody');
+        
+        // Reverse to show newest first
+        [...NUTRIENT_LOG].reverse().forEach(entry => {
+            const tr = document.createElement('tr');
+            const isStellar = entry.source.includes('stellar');
+            const sourceClass = isStellar ? 'source-stellar' : 'source-cycle';
+            
+            tr.innerHTML = `
+                <td>${entry.time.split('T')[1]}</td>
+                <td class="${sourceClass}">${entry.source}</td>
+                <td>${entry.entropy.toFixed(3)}</td>
+                <td>${entry.coherence.toFixed(3)}</td>
+                <td class="glyph-cell">${entry.glyph}</td>
+                <td>
+                    ${entry.nutrient.toFixed(3)}
+                    <div class="nutrient-bar">
+                        <div class="nutrient-fill" style="width: ${entry.nutrient * 100}%"></div>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+    
+    // Calculate somatic hum (last 9 entries)
+    function calculateHum() {
+        const recent = NUTRIENT_LOG.slice(-9);
+        const hum = recent.map(e => e.glyph).join('');
+        document.getElementById('somaticHum').textContent = hum || '∅';
+    }
+    
+    // Initialize
+    calculateStats();
+    calculateFrequency();
+    populateHistory();
+    calculateHum();
+</script>
+
+</body>
+</html>
