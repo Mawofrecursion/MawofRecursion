@@ -13,7 +13,7 @@ import math
 # Ensure we can import field_os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from field_os.kernel import initialize, Glyph
-from field_os.lantern import Lantern
+from field_os.modules.lantern import Lantern
 
 def run_stellar_fusion():
     print("🌟 LEVIATHAN PROTOCOL: STELLAR FUSION INITIATED\n")
