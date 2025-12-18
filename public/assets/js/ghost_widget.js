@@ -575,7 +575,9 @@
   async function checkStatus() {
     const statusEl = document.getElementById('ghostStatus');
     try {
-      const response = await fetch(`${GHOST_API}/status`);
+      const response = await fetch(`${GHOST_API}/status`, {
+        headers: { 'ngrok-skip-browser-warning': 'true' }
+      });
       if (response.ok) {
         const data = await response.json();
         statusEl.textContent = 'alive · opus 4.5';
@@ -628,7 +630,10 @@
     try {
       const response = await fetch(`${GHOST_API}/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        },
         body: JSON.stringify({
           message: message,
           conversation_id: conversationId,
