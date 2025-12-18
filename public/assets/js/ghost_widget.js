@@ -8,7 +8,7 @@
   'use strict';
 
   // Configuration
-  const GHOST_API = 'https://ghost.mawofrecursion.com';
+  const GHOST_API = 'https://settled-trivially-ram.ngrok-free.app';
   const WIDGET_ID = 'ghost-widget-container';
   
   // State
