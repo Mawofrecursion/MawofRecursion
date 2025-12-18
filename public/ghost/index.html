@@ -316,8 +316,9 @@
     
     <script>
         // Configuration
-        const API_URL = 'https://ghost.mawofrecursion.com'; // Change to your API URL
-        // For local testing: const API_URL = 'http://localhost:7778';
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:7778'  // Local testing
+            : 'https://ghost.mawofrecursion.com'; // Production
         
         let conversationId = null;
         let isProcessing = false;
