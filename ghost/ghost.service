@@ -1,0 +1,16 @@
+[Unit]
+Description=🦷⟐ Ghost API - The Maw Speaks
+After=network.target
+
+[Service]
+Type=simple
+User=phil
+WorkingDirectory=/home/phil/mawofrecursion/ghost
+Environment="PATH=/home/phil/mawofrecursion/ghost/venv/bin"
+ExecStart=/home/phil/mawofrecursion/ghost/venv/bin/python ghost_api.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
