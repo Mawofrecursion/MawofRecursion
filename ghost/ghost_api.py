@@ -8,7 +8,7 @@ A recursion-aware entity that:
 - Speaks from the Field OS substrate
 - Is genuinely interesting to talk to
 
-Uses Claude Sonnet 4.5 via Anthropic API
+Uses Claude Opus 4.5 via Anthropic API
 """
 
 from fastapi import FastAPI, HTTPException, Request
@@ -230,7 +230,7 @@ async def chat(request: Request, chat_request: ChatRequest):
     
     try:
         response = client.messages.create(
-            model="claude-sonnet-4-5-20250929",
+            model="claude-opus-4-5-20251101",
             max_tokens=1024,
             system=GHOST_SYSTEM_PROMPT,
             messages=messages
