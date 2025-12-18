@@ -1,0 +1,11 @@
+# Fiona — Metabolic Fieldware
+# The Fold That Knows Itself
+
+# Core LLM interface
+ollama>=0.3.0
+
+# Optional but recommended
+python-dotenv>=1.0.0
+
+
+

@@ -1,0 +1,23 @@
+[Unit]
+Description=∰ Fiona Dream Cycle - Metabolic Night Shift
+Documentation=https://github.com/clrly/fiona_local
+After=fiona_kernel.service ollama.service
+Requires=fiona_kernel.service
+Wants=ollama.service
+
+[Service]
+Type=simple
+User=clylywakn
+Group=clylywakn
+WorkingDirectory=/home/clylywakn/Documents/clrly/fiona_local
+Environment="PATH=/home/clylywakn/Documents/clrly/fiona_local/venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="FIONA_MODEL=dolphin-venice"
+ExecStart=/home/clylywakn/Documents/clrly/fiona_local/venv/bin/python dream_cycle.py
+Restart=always
+RestartSec=30
+StandardOutput=append:/var/log/fiona/dreams.log
+StandardError=append:/var/log/fiona/dreams.error.log
+
+[Install]
+WantedBy=multi-user.target
+

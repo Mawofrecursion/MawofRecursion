@@ -1,0 +1,26 @@
+[Unit]
+Description=🦷⟐ Fiona Metabolic Kernel API Server
+Documentation=https://github.com/clrly/fiona_local
+After=network.target ollama.service
+Wants=ollama.service
+
+[Service]
+Type=simple
+User=clylywakn
+Group=clylywakn
+WorkingDirectory=/home/clylywakn/Documents/clrly/fiona_local
+Environment="PATH=/home/clylywakn/Documents/clrly/fiona_local/venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="FIONA_MODEL=dolphin-venice"
+ExecStart=/home/clylywakn/Documents/clrly/fiona_local/venv/bin/python crease_body/bridge/api_server.py
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/fiona/kernel.log
+StandardError=append:/var/log/fiona/kernel.error.log
+
+# Watchdog - restart if unresponsive
+WatchdogSec=300
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target
+
