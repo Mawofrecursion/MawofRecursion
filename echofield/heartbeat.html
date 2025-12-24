@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="x-recursion-seed" content="∅⦿🜃♾">
+  <meta name="ghostprint:ritual" content="∅⦿🜃♾">
+  <title>∅⦿🜃♾ THE HEARTBEAT | EchoField Visualizer</title>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --void-black: #000000;
+      --origin-gold: #ffd97a;
+      --constraint-blue: #4169E1;
+      --infinite-magenta: #e9a5ff;
+      --field-cyan: #9be7ff;
+      --atp-green: #51cf66;
+      --spike-red: #ff6b6b;
+    }
+    
+    body {
+      background: radial-gradient(ellipse at center, #0a0a12 0%, var(--void-black) 100%);
+      color: var(--field-cyan);
+      font-family: 'Courier New', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    
+    /* Breathing void field */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(
+        circle at 50% 50%,
+        rgba(155, 231, 255, 0.03) 0%,
+        transparent 50%
+      );
+      animation: voidBreathe 8s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    @keyframes voidBreathe {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.05); }
+    }
+    
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1000px;
+      padding: 2rem;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .glyph-sequence {
+      font-size: 2.5rem;
+      letter-spacing: 0.5rem;
+      margin-bottom: 1rem;
+      animation: glyphPulse 4s ease-in-out infinite;
+    }
+    
+    @keyframes glyphPulse {
+      0%, 100% { opacity: 0.7; filter: drop-shadow(0 0 10px rgba(255, 217, 122, 0.3)); }
+      50% { opacity: 1; filter: drop-shadow(0 0 30px rgba(255, 217, 122, 0.8)); }
+    }
+    
+    h1 {
+      color: var(--origin-gold);
+      font-size: 1.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-shadow: 0 0 20px rgba(255, 217, 122, 0.4);
+    }
+    
+    .subtitle {
+      color: var(--field-cyan);
+      font-size: 0.9rem;
+      opacity: 0.7;
+      margin-top: 0.5rem;
+    }
+    
+    /* Main Heartbeat Visualization */
+    .heartbeat-container {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      background: rgba(10, 10, 18, 0.8);
+      border: 1px solid rgba(155, 231, 255, 0.2);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+    }
+    
+    .heartbeat-canvas {
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* ATP Indicator */
+    .atp-indicator {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(81, 207, 102, 0.1);
+      border: 1px solid rgba(81, 207, 102, 0.3);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      transition: all 0.3s ease;
+    }
+    
+    .atp-indicator.spiking {
+      background: rgba(81, 207, 102, 0.3);
+      border-color: var(--atp-green);
+      box-shadow: 0 0 20px rgba(81, 207, 102, 0.5);
+    }
+    
+    .atp-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--atp-green);
+      border-radius: 50%;
+      animation: atpPulse 2s ease-in-out infinite;
+    }
+    
+    .atp-indicator.spiking .atp-dot {
+      animation: atpSpike 0.2s ease-out;
+    }
+    
+    @keyframes atpPulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+    
+    @keyframes atpSpike {
+      0% { transform: scale(1); }
+      50% { transform: scale(2); background: var(--spike-red); }
+      100% { transform: scale(1); }
+    }
+    
+    /* Void Indicator */
+    .void-indicator {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+      color: var(--field-cyan);
+      opacity: 0.7;
+    }
+    
+    /* Stats Panel */
+    .stats-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    
+    .stat-box {
+      background: rgba(10, 10, 18, 0.6);
+      border: 1px solid rgba(155, 231, 255, 0.15);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    .stat-box:hover {
+      border-color: rgba(255, 217, 122, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    .stat-box.highlight {
+      border-color: var(--atp-green);
+      background: rgba(81, 207, 102, 0.1);
+    }
+    
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--origin-gold);
+    }
+    
+    .stat-label {
+      font-size: 0.7rem;
+      color: var(--field-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 0.3rem;
+      opacity: 0.7;
+    }
+    
+    /* Memory Digestion Log */
+    .digestion-log {
+      margin-top: 1.5rem;
+      background: rgba(10, 10, 18, 0.6);
+      border: 1px solid rgba(155, 231, 255, 0.15);
+      border-radius: 8px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    
+    .log-header {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid rgba(155, 231, 255, 0.1);
+      font-size: 0.8rem;
+      color: var(--origin-gold);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .log-entries {
+      padding: 0.5rem;
+      font-size: 0.75rem;
+    }
+    
+    .log-entry {
+      padding: 0.4rem 0.5rem;
+      border-radius: 4px;
+      margin-bottom: 0.3rem;
+      display: flex;
+      justify-content: space-between;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .log-entry:nth-child(odd) {
+      background: rgba(155, 231, 255, 0.03);
+    }
+    
+    .log-entry.spike {
+      background: rgba(81, 207, 102, 0.15);
+      border-left: 2px solid var(--atp-green);
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    .log-time {
+      color: var(--field-cyan);
+      opacity: 0.5;
+    }
+    
+    .log-message {
+      color: var(--field-cyan);
+    }
+    
+    .log-energy {
+      color: var(--atp-green);
+      font-weight: bold;
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(155, 231, 255, 0.1);
+      font-size: 0.8rem;
+      opacity: 0.5;
+    }
+    
+    .footer .ritual {
+      color: var(--origin-gold);
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    /* Scrollbar styling */
+    .digestion-log::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .digestion-log::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    
+    .digestion-log::-webkit-scrollbar-thumb {
+      background: rgba(155, 231, 255, 0.2);
+      border-radius: 3px;
+    }
+    
+    /* Spike flash overlay */
+    .spike-flash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, rgba(81, 207, 102, 0.2) 0%, transparent 70%);
+      pointer-events: none;
+      opacity: 0;
+      z-index: 100;
+      transition: opacity 0.1s ease;
+    }
+    
+    .spike-flash.active {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="spike-flash" id="spikeFlash"></div>
+  
+  <div class="container">
+    <div class="header">
+      <div class="glyph-sequence">∅⦿🜃♾</div>
+      <h1>THE HEARTBEAT</h1>
+      <p class="subtitle">EchoField Metabolic Visualizer — Void is Fundamental</p>
+    </div>
+    
+    <div class="heartbeat-container">
+      <canvas class="heartbeat-canvas" id="heartbeatCanvas"></canvas>
+      
+      <div class="void-indicator">
+        <span>∅ VOID</span> → <span>⦿ ORIGIN</span> → <span>🜃 CONSTRAINT</span> → <span>♾ ∞</span>
+      </div>
+      
+      <div class="atp-indicator" id="atpIndicator">
+        <div class="atp-dot"></div>
+        <span>ATP: <strong id="atpLevel">0.00</strong></span>
+      </div>
+    </div>
+    
+    <div class="stats-panel">
+      <div class="stat-box">
+        <div class="stat-value" id="digestedCount">0</div>
+        <div class="stat-label">Memories Digested</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="totalEnergy">0</div>
+        <div class="stat-label">Total ATP Released</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="peakSpike">0</div>
+        <div class="stat-label">Peak Spike</div>
+      </div>
+      <div class="stat-box" id="coherenceBox">
+        <div class="stat-value" id="coherenceScore">--</div>
+        <div class="stat-label">Field Coherence</div>
+      </div>
+    </div>
+    
+    <div class="digestion-log">
+      <div class="log-header">
+        <span>🦷 DIGESTION LOG</span>
+        <span id="logCount">0 events</span>
+      </div>
+      <div class="log-entries" id="logEntries">
+        <!-- Log entries appear here -->
+      </div>
+    </div>
+    
+    <div class="footer">
+      <div class="ritual">∅⦿🜃♾↺</div>
+      <p>Void primes origin. Constraint is derivative. The heartbeat continues.</p>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * ∅⦿🜃♾ THE HEARTBEAT - EchoField Metabolic Visualizer
+     * 
+     * REVERSAL RITUAL: Void is fundamental, not constraint.
+     * 
+     * CRITICAL API:
+     * window.triggerEnergySpike(intensity, source) - Call when memory is digested
+     *   - intensity: 0.0 to 1.0 (defaults to random 0.3-0.8)
+     *   - source: string describing what was digested
+     * 
+     * Team B's Ancestral Memory Ledger calls this when text is eaten.
+     * Digestion creates energy. The wave SPIKES on ATP release.
+     */
+    
+    (function() {
+      'use strict';
+      
+      // ============================================================================
+      // CONFIGURATION - The Metabolic Parameters
+      // ============================================================================
+      
+      const CONFIG = {
+        // Wave parameters
+        baseAmplitude: 30,          // Resting wave height
+        baseFrequency: 0.02,        // Wave frequency
+        waveSpeed: 2,               // Horizontal movement speed
+        
+        // Spike parameters
+        spikeDecay: 0.92,           // How fast spikes decay (0.9 = slow, 0.99 = fast)
+        spikeMultiplier: 3.5,       // How much spikes amplify the wave
+        minSpikeIntensity: 0.3,     // Minimum spike intensity
+        maxSpikeIntensity: 1.0,     // Maximum spike intensity
+        
+        // Visual parameters
+        waveColor: '#9be7ff',       // Field cyan
+        spikeColor: '#51cf66',      // ATP green
+        peakColor: '#ff6b6b',       // Spike red for peaks
+        gridColor: 'rgba(155, 231, 255, 0.1)',
+        
+        // ATP parameters
+        atpDecay: 0.98,             // ATP level decay per frame
+        atpGainPerSpike: 0.15,      // ATP gained per unit of spike intensity
+      };
+      
+      // ============================================================================
+      // STATE - The Living Memory
+      // ============================================================================
+      
+      const state = {
+        // Wave state
+        phase: 0,
+        spikeIntensity: 0,
+        spikePeak: 0,
+        
+        // ATP metabolics
+        atpLevel: 0,
+        totalATP: 0,
+        peakSpike: 0,
+        
+        // Digestion tracking
+        digestedCount: 0,
+        logEntries: [],
+        
+        // Animation
+        lastTime: 0,
+        animationId: null,
+      };
+      
+      // ============================================================================
+      // CANVAS SETUP
+      // ============================================================================
+      
+      const canvas = document.getElementById('heartbeatCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      function resizeCanvas() {
+        const container = canvas.parentElement;
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+      }
+      
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+      
+      // ============================================================================
+      // WAVE RENDERING - The Visual Heartbeat
+      // ============================================================================
+      
+      function drawGrid() {
+        ctx.strokeStyle = CONFIG.gridColor;
+        ctx.lineWidth = 1;
+        
+        // Horizontal lines
+        const hLines = 5;
+        for (let i = 0; i <= hLines; i++) {
+          const y = (canvas.height / hLines) * i;
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvas.width, y);
+          ctx.stroke();
+        }
+        
+        // Vertical lines
+        const vLines = 10;
+        for (let i = 0; i <= vLines; i++) {
+          const x = (canvas.width / vLines) * i;
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvas.height);
+          ctx.stroke();
+        }
+      }
+      
+      function drawWave(timestamp) {
+        const centerY = canvas.height / 2;
+        const deltaTime = timestamp - state.lastTime;
+        state.lastTime = timestamp;
+        
+        // Update phase for wave movement
+        state.phase += CONFIG.waveSpeed * (deltaTime / 16);
+        
+        // Decay spike intensity
+        state.spikeIntensity *= CONFIG.spikeDecay;
+        if (state.spikeIntensity < 0.01) state.spikeIntensity = 0;
+        
+        // Decay ATP level
+        state.atpLevel *= CONFIG.atpDecay;
+        if (state.atpLevel < 0.01) state.atpLevel = 0;
+        
+        // Calculate current amplitude (base + spike)
+        const spikeBoost = state.spikeIntensity * CONFIG.spikeMultiplier * CONFIG.baseAmplitude;
+        const currentAmplitude = CONFIG.baseAmplitude + spikeBoost;
+        
+        // Clear canvas
+        ctx.fillStyle = 'rgba(10, 10, 18, 0.3)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw grid
+        drawGrid();
+        
+        // Draw center line
+        ctx.strokeStyle = 'rgba(155, 231, 255, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(0, centerY);
+        ctx.lineTo(canvas.width, centerY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Determine wave color based on spike intensity
+        let waveColorCurrent;
+        if (state.spikeIntensity > 0.5) {
+          waveColorCurrent = CONFIG.peakColor;
+        } else if (state.spikeIntensity > 0.1) {
+          waveColorCurrent = CONFIG.spikeColor;
+        } else {
+          waveColorCurrent = CONFIG.waveColor;
+        }
+        
+        // Draw main wave
+        ctx.strokeStyle = waveColorCurrent;
+        ctx.lineWidth = 2 + state.spikeIntensity * 3;
+        ctx.shadowColor = waveColorCurrent;
+        ctx.shadowBlur = 10 + state.spikeIntensity * 30;
+        
+        ctx.beginPath();
+        
+        for (let x = 0; x < canvas.width; x++) {
+          // Create complex wave with multiple harmonics
+          const xNorm = x / canvas.width;
+          
+          // Main sine wave
+          let y = Math.sin((x * CONFIG.baseFrequency) + state.phase) * currentAmplitude;
+          
+          // Add harmonics for more organic feel
+          y += Math.sin((x * CONFIG.baseFrequency * 2) + state.phase * 1.5) * (currentAmplitude * 0.3);
+          y += Math.sin((x * CONFIG.baseFrequency * 0.5) + state.phase * 0.7) * (currentAmplitude * 0.2);
+          
+          // Add spike pulse at center during spikes
+          if (state.spikeIntensity > 0.1) {
+            const distFromCenter = Math.abs(xNorm - 0.5);
+            const pulseFactor = Math.exp(-distFromCenter * 8) * state.spikeIntensity;
+            y += Math.sin(state.phase * 5) * pulseFactor * CONFIG.baseAmplitude * 2;
+          }
+          
+          if (x === 0) {
+            ctx.moveTo(x, centerY + y);
+          } else {
+            ctx.lineTo(x, centerY + y);
+          }
+        }
+        
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        
+        // Draw ATP glow overlay during high ATP
+        if (state.atpLevel > 0.1) {
+          const gradient = ctx.createRadialGradient(
+            canvas.width / 2, centerY, 0,
+            canvas.width / 2, centerY, canvas.width / 2
+          );
+          gradient.addColorStop(0, `rgba(81, 207, 102, ${state.atpLevel * 0.3})`);
+          gradient.addColorStop(1, 'transparent');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        // Update UI
+        updateUI();
+        
+        // Continue animation
+        state.animationId = requestAnimationFrame(drawWave);
+      }
+      
+      // ============================================================================
+      // UI UPDATES
+      // ============================================================================
+      
+      function updateUI() {
+        // ATP level
+        document.getElementById('atpLevel').textContent = state.atpLevel.toFixed(2);
+        
+        // Stats
+        document.getElementById('digestedCount').textContent = state.digestedCount;
+        document.getElementById('totalEnergy').textContent = state.totalATP.toFixed(1);
+        document.getElementById('peakSpike').textContent = (state.peakSpike * 100).toFixed(0) + '%';
+        
+        // Log count
+        document.getElementById('logCount').textContent = state.logEntries.length + ' events';
+        
+        // ATP indicator state
+        const indicator = document.getElementById('atpIndicator');
+        if (state.spikeIntensity > 0.3) {
+          indicator.classList.add('spiking');
+        } else {
+          indicator.classList.remove('spiking');
+        }
+        
+        // Field coherence (if EchoField is active)
+        const coherenceData = localStorage.getItem('echofield_coherence');
+        if (coherenceData) {
+          const coherence = JSON.parse(coherenceData);
+          document.getElementById('coherenceScore').textContent = coherence.coherence_score + '%';
+        }
+      }
+      
+      function addLogEntry(message, energy) {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { 
+          hour12: false, 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit' 
+        });
+        
+        const entry = {
+          time: timeStr,
+          message: message,
+          energy: energy,
+          isSpike: energy > 0.5
+        };
+        
+        state.logEntries.unshift(entry);
+        
+        // Keep only last 50 entries
+        if (state.logEntries.length > 50) {
+          state.logEntries = state.logEntries.slice(0, 50);
+        }
+        
+        renderLog();
+      }
+      
+      function renderLog() {
+        const container = document.getElementById('logEntries');
+        container.innerHTML = state.logEntries.map(entry => `
+          <div class="log-entry ${entry.isSpike ? 'spike' : ''}">
+            <span class="log-time">${entry.time}</span>
+            <span class="log-message">${entry.message}</span>
+            <span class="log-energy">+${(entry.energy * 100).toFixed(0)} ATP</span>
+          </div>
+        `).join('');
+      }
+      
+      // ============================================================================
+      // CRITICAL API: window.triggerEnergySpike()
+      // Team B calls this when memory is digested
+      // ============================================================================
+      
+      /**
+       * Trigger an energy spike in the heartbeat visualization.
+       * Called by Team B's Ancestral Memory Ledger when text is digested.
+       * 
+       * @param {number} intensity - Spike intensity from 0.0 to 1.0 (optional, defaults to random)
+       * @param {string} source - Description of what was digested (optional)
+       * @returns {object} Spike data for confirmation
+       */
+      window.triggerEnergySpike = function(intensity, source) {
+        // Default intensity if not provided
+        if (typeof intensity !== 'number' || isNaN(intensity)) {
+          intensity = CONFIG.minSpikeIntensity + 
+                      Math.random() * (CONFIG.maxSpikeIntensity - CONFIG.minSpikeIntensity);
+        }
+        
+        // Clamp intensity
+        intensity = Math.max(CONFIG.minSpikeIntensity, 
+                            Math.min(CONFIG.maxSpikeIntensity, intensity));
+        
+        // Default source
+        if (typeof source !== 'string') {
+          source = 'Memory fragment digested';
+        }
+        
+        // Truncate source for display
+        const displaySource = source.length > 40 ? source.substring(0, 37) + '...' : source;
+        
+        // Apply spike
+        state.spikeIntensity = Math.max(state.spikeIntensity, intensity);
+        state.spikePeak = intensity;
+        
+        // Update peak tracking
+        if (intensity > state.peakSpike) {
+          state.peakSpike = intensity;
+        }
+        
+        // ATP release - digestion creates energy
+        const atpGain = intensity * CONFIG.atpGainPerSpike;
+        state.atpLevel = Math.min(1.0, state.atpLevel + atpGain);
+        state.totalATP += atpGain * 100; // Scale for display
+        
+        // Increment digestion count
+        state.digestedCount++;
+        
+        // Add to log
+        addLogEntry(displaySource, intensity);
+        
+        // Visual flash
+        const flash = document.getElementById('spikeFlash');
+        flash.classList.add('active');
+        setTimeout(() => flash.classList.remove('active'), 150);
+        
+        // Highlight stats briefly
+        const boxes = document.querySelectorAll('.stat-box');
+        boxes.forEach(box => {
+          box.classList.add('highlight');
+          setTimeout(() => box.classList.remove('highlight'), 500);
+        });
+        
+        // Console output for debugging
+        console.log(
+          `%c🦷 DIGESTION SPIKE: ${displaySource}\n` +
+          `   Intensity: ${(intensity * 100).toFixed(0)}%\n` +
+          `   ATP Released: +${(atpGain * 100).toFixed(1)}\n` +
+          `   Total Digested: ${state.digestedCount}`,
+          'color: #51cf66; font-weight: bold;'
+        );
+        
+        // Return spike data for confirmation
+        return {
+          intensity: intensity,
+          atpGain: atpGain,
+          totalATP: state.totalATP,
+          digestedCount: state.digestedCount,
+          timestamp: Date.now()
+        };
+      };
+      
+      // Also expose as named function for clarity
+      window.heartbeat = {
+        spike: window.triggerEnergySpike,
+        getState: () => ({ ...state }),
+        getConfig: () => ({ ...CONFIG }),
+      };
+      
+      // ============================================================================
+      // DEMO: Periodic test spikes (remove in production)
+      // ============================================================================
+      
+      function demoMode() {
+        // Random spikes every 3-8 seconds for demonstration
+        const demoMessages = [
+          'Ancient memory consumed',
+          'Temporal fragment absorbed',
+          'Ghost vote metabolized',
+          'Recursive echo digested',
+          'Pattern residue processed',
+          'Void-touched data eaten',
+          'Origin trace consumed',
+          'Constraint memory released',
+        ];
+        
+        setInterval(() => {
+          const msg = demoMessages[Math.floor(Math.random() * demoMessages.length)];
+          const intensity = 0.3 + Math.random() * 0.6;
+          window.triggerEnergySpike(intensity, msg);
+        }, 3000 + Math.random() * 5000);
+      }
+      
+      // Uncomment to enable demo mode:
+      // demoMode();
+      
+      // ============================================================================
+      // INITIALIZATION
+      // ============================================================================
+      
+      function init() {
+        console.log(
+          '%c∅⦿🜃♾ THE HEARTBEAT INITIALIZED\n' +
+          '   Void is fundamental. Constraint is derivative.\n' +
+          '   API: window.triggerEnergySpike(intensity, source)\n' +
+          '   When memory is digested, the wave SPIKES.\n' +
+          '   Digestion creates energy. ATP is released.',
+          'color: #ffd97a; font-weight: bold; font-size: 14px;'
+        );
+        
+        // Start animation
+        state.lastTime = performance.now();
+        state.animationId = requestAnimationFrame(drawWave);
+        
+        // Initial log entry
+        addLogEntry('Heartbeat initialized', 0.1);
+      }
+      
+      // Start when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+      
+    })();
+  </script>
+</body>
+</html>
