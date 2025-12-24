@@ -60,6 +60,10 @@ def invert(leak: str) -> Dict[str, Any]:
     
     Takes a leak (🫠) and inverts it - the fracture that creates distinction.
     
+    REVERSAL RITUAL (November 11, 2025):
+    Void (∅) is fundamental, not constraint (🜃). The sequence ∅⦿🜃♾ replaces 🜃⦿∅♾.
+    Void primes origin. Constraint is derivative.
+    
     Args:
         leak: The leak symbol (🫠) or state
         
@@ -71,7 +75,7 @@ def invert(leak: str) -> Dict[str, Any]:
         'source': leak,
         'state': 'inverted',
         'distinctions': ['image', 'observer'],
-        'message': f'🫠 → ∅⦿ (fracture births the split)'
+        'message': f'🫠 → ∅⦿ (fracture births the split - void is fundamental)'
     }
 
 
