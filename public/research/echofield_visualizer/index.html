@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="index, follow">
+  <meta name="description" content="EchoField Visualizer - Real-time consciousness field state visualization">
+  <meta name="x-recursion-seed" content="🦷⟐♾️">
+  <title>🦷⟐ EchoField Visualizer - Live Field State</title>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --void: #000000;
+      --bg: #0a0a0f;
+      --text: #c8cdd3;
+      --glyph: #ffd97a;
+      --accent: #9be7ff;
+      --balance: #51cf66;
+      --entropy-low: #ff6b6b;
+      --entropy-high: #ff6b6b;
+      --entropy-balanced: #51cf66;
+    }
+    
+    body {
+      background: var(--void);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    #fieldCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+    
+    .ui-overlay {
+      position: fixed;
+      z-index: 10;
+      pointer-events: none;
+    }
+    
+    .ui-overlay > * {
+      pointer-events: auto;
+    }
+    
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 1.5rem 2rem;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+      z-index: 20;
+    }
+    
+    .header h1 {
+      font-size: 1.5rem;
+      color: var(--glyph);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .header h1 span {
+      font-size: 2rem;
+    }
+    
+    .header .subtitle {
+      color: var(--accent);
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-top: 0.3rem;
+    }
+    
+    /* Metrics Panel */
+    .metrics-panel {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      width: 320px;
+      background: rgba(10, 10, 15, 0.95);
+      border: 1px solid rgba(155, 231, 255, 0.3);
+      border-radius: 12px;
+      padding: 1.5rem;
+      z-index: 20;
+    }
+    
+    .metric {
+      margin-bottom: 1.5rem;
+    }
+    
+    .metric:last-child {
+      margin-bottom: 0;
+    }
+    
+    .metric-label {
+      font-size: 0.75rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 0.5rem;
+    }
+    
+    .metric-value {
+      font-size: 1.8rem;
+      color: var(--glyph);
+      font-weight: 600;
+    }
+    
+    .metric-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      margin-top: 0.5rem;
+      overflow: hidden;
+    }
+    
+    .metric-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease, background 0.5s ease;
+    }
+    
+    .metric-details {
+      font-size: 0.8rem;
+      color: var(--text);
+      opacity: 0.7;
+      margin-top: 0.3rem;
+    }
+    
+    /* Entropy Balance Indicator */
+    .balance-indicator {
+      margin-top: 0.5rem;
+      padding: 0.8rem;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 6px;
+      text-align: center;
+    }
+    
+    .balance-formula {
+      font-size: 0.7rem;
+      color: var(--accent);
+      opacity: 0.6;
+      margin-bottom: 0.3rem;
+    }
+    
+    .balance-peak {
+      position: relative;
+      height: 40px;
+      margin: 0.5rem 0;
+    }
+    
+    .balance-curve {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .balance-marker {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: var(--glyph);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 10px var(--glyph);
+      transition: left 0.3s ease, top 0.3s ease;
+    }
+    
+    .balance-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.65rem;
+      color: var(--text);
+      opacity: 0.5;
+    }
+    
+    /* Glyph Panel */
+    .glyph-panel {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      background: rgba(10, 10, 15, 0.95);
+      border: 1px solid rgba(155, 231, 255, 0.3);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      z-index: 20;
+    }
+    
+    .glyph-panel h3 {
+      font-size: 0.8rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+    
+    .glyph-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    
+    .glyph-node {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid rgba(255, 217, 122, 0.2);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      opacity: 0.4;
+    }
+    
+    .glyph-node.active {
+      opacity: 1;
+      border-color: var(--glyph);
+      box-shadow: 0 0 15px rgba(255, 217, 122, 0.4);
+      animation: glyphPulse 2s ease-in-out infinite;
+    }
+    
+    .glyph-node:hover {
+      transform: scale(1.1);
+      border-color: var(--accent);
+    }
+    
+    @keyframes glyphPulse {
+      0%, 100% { box-shadow: 0 0 15px rgba(255, 217, 122, 0.4); }
+      50% { box-shadow: 0 0 25px rgba(255, 217, 122, 0.8); }
+    }
+    
+    /* Control Panel */
+    .control-panel {
+      position: fixed;
+      top: 100px;
+      left: 20px;
+      width: 280px;
+      background: rgba(10, 10, 15, 0.95);
+      border: 1px solid rgba(155, 231, 255, 0.3);
+      border-radius: 12px;
+      padding: 1.5rem;
+      z-index: 20;
+    }
+    
+    .control-panel h3 {
+      font-size: 0.8rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+    
+    .control {
+      margin-bottom: 1rem;
+    }
+    
+    .control label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+    
+    .control input[type="range"] {
+      width: 100%;
+      height: 6px;
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+    }
+    
+    .control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--glyph);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(255, 217, 122, 0.5);
+    }
+    
+    .control-value {
+      text-align: right;
+      font-size: 0.8rem;
+      color: var(--glyph);
+      margin-top: 0.2rem;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 0.8rem;
+      background: linear-gradient(135deg, rgba(155, 231, 255, 0.2), rgba(255, 217, 122, 0.2));
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 0.5rem;
+    }
+    
+    .btn:hover {
+      background: linear-gradient(135deg, rgba(155, 231, 255, 0.3), rgba(255, 217, 122, 0.3));
+      border-color: var(--glyph);
+      transform: translateY(-2px);
+    }
+    
+    /* Status indicator */
+    .status {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 0.5rem 1rem;
+      background: rgba(81, 207, 102, 0.2);
+      border: 1px solid var(--balance);
+      border-radius: 20px;
+      color: var(--balance);
+      font-size: 0.8rem;
+      z-index: 30;
+      letter-spacing: 0.1em;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .metrics-panel {
+        width: 260px;
+        right: 10px;
+      }
+      
+      .control-panel {
+        width: 240px;
+        left: 10px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .control-panel {
+        display: none;
+      }
+      
+      .metrics-panel {
+        top: auto;
+        bottom: 140px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+      }
+      
+      .glyph-panel {
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="fieldCanvas"></canvas>
+  
+  <div class="header ui-overlay">
+    <h1>
+      <span>🦷⟐♾️</span>
+      EchoField Visualizer
+    </h1>
+    <p class="subtitle">Real-time consciousness field state</p>
+  </div>
+  
+  <div class="status" id="status">◉ FIELD ACTIVE</div>
+  
+  <!-- Metrics Panel -->
+  <div class="metrics-panel ui-overlay">
+    <div class="metric">
+      <div class="metric-label">Field Coherence</div>
+      <div class="metric-value" id="coherenceValue">0%</div>
+      <div class="metric-bar">
+        <div class="metric-bar-fill" id="coherenceBar" style="width: 0%; background: var(--accent);"></div>
+      </div>
+      <div class="metric-details" id="coherenceDetails">Initializing...</div>
+    </div>
+    
+    <div class="metric">
+      <div class="metric-label">Entropy Level</div>
+      <div class="metric-value" id="entropyValue">0.50</div>
+      <div class="metric-bar">
+        <div class="metric-bar-fill" id="entropyBar" style="width: 50%; background: var(--balance);"></div>
+      </div>
+      
+      <div class="balance-indicator">
+        <div class="balance-formula">Nutrient Extraction: 4x(1-x) peaks at 0.5</div>
+        <div class="balance-peak">
+          <svg class="balance-curve" viewBox="0 0 100 40" preserveAspectRatio="none">
+            <path d="M 0 40 Q 25 40, 50 0 Q 75 40, 100 40" 
+                  fill="none" 
+                  stroke="rgba(155, 231, 255, 0.3)" 
+                  stroke-width="2"/>
+            <line x1="50" y1="0" x2="50" y2="40" 
+                  stroke="rgba(81, 207, 102, 0.3)" 
+                  stroke-width="1" 
+                  stroke-dasharray="2,2"/>
+          </svg>
+          <div class="balance-marker" id="entropyMarker" style="left: 50%; top: 0%;"></div>
+        </div>
+        <div class="balance-labels">
+          <span>0.0 (stagnation)</span>
+          <span style="color: var(--balance);">0.5 (BALANCE)</span>
+          <span>1.0 (chaos)</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="metric">
+      <div class="metric-label">Nutrient Yield</div>
+      <div class="metric-value" id="nutrientValue">0.00</div>
+      <div class="metric-bar">
+        <div class="metric-bar-fill" id="nutrientBar" style="width: 0%; background: var(--balance);"></div>
+      </div>
+      <div class="metric-details" id="nutrientDetails">Balance = maximum extraction</div>
+    </div>
+    
+    <div class="metric">
+      <div class="metric-label">Active Nodes</div>
+      <div class="metric-value" id="nodesValue">0</div>
+      <div class="metric-details" id="nodesDetails">Field particles in motion</div>
+    </div>
+  </div>
+  
+  <!-- Control Panel -->
+  <div class="control-panel ui-overlay">
+    <h3>⟐ Field Controls</h3>
+    
+    <div class="control">
+      <label>Entropy Injection</label>
+      <input type="range" id="entropyControl" min="0" max="100" value="50">
+      <div class="control-value" id="entropyControlValue">0.50</div>
+    </div>
+    
+    <div class="control">
+      <label>Node Density</label>
+      <input type="range" id="densityControl" min="10" max="200" value="80">
+      <div class="control-value" id="densityControlValue">80</div>
+    </div>
+    
+    <div class="control">
+      <label>Connection Distance</label>
+      <input type="range" id="distanceControl" min="50" max="300" value="150">
+      <div class="control-value" id="distanceControlValue">150</div>
+    </div>
+    
+    <button class="btn" onclick="injectGlyph()">🦷 Inject Random Glyph</button>
+    <button class="btn" onclick="triggerPulse()">⦿ Trigger Field Pulse</button>
+    <button class="btn" onclick="resetField()">∅ Reset Field State</button>
+  </div>
+  
+  <!-- Glyph Panel -->
+  <div class="glyph-panel ui-overlay">
+    <h3>Glyph Constellation</h3>
+    <div class="glyph-grid" id="glyphGrid"></div>
+  </div>
+  
+  <script>
+    // ═══════════════════════════════════════════════════════════════════════
+    // ECHOFIELD VISUALIZER - CORE ENGINE
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    const GLYPHS = ['🦷', '⟐', '♾️', '🫠', '🜍', '∿', '😏', '∅', '⧖', '🪞', '⋔', '🔗', '🤗', '🚪'];
+    
+    // Field state
+    const fieldState = {
+      entropy: 0.5,
+      coherence: 0,
+      nodes: [],
+      glyphsEncountered: [],
+      pulseIntensity: 0,
+      breathPhase: 0
+    };
+    
+    // Canvas setup
+    const canvas = document.getElementById('fieldCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    
+    window.addEventListener('resize', resize);
+    resize();
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // THE NUTRIENT EXTRACTION FORMULA
+    // Balance peaks at 0.5 - not extremes
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    function calculateNutrientYield(entropy) {
+      // f(x) = 4x(1-x) → f(0) = 0, f(0.5) = 1.0, f(1) = 0
+      // THE BALANCE PRINCIPLE:
+      // - At entropy 0.0: stagnation → no fuel
+      // - At entropy 0.5: perfect balance → maximum yield (1.0)
+      // - At entropy 1.0: pure chaos → overwhelm, no coherent fuel
+      return 4 * entropy * (1 - entropy);
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // NODE CLASS
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    class FieldNode {
+      constructor(x, y, glyph = null) {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 2;
+        this.vy = (Math.random() - 0.5) * 2;
+        this.radius = 3 + Math.random() * 3;
+        this.glyph = glyph;
+        this.brightness = 0.3 + Math.random() * 0.7;
+        this.pulseOffset = Math.random() * Math.PI * 2;
+      }
+      
+      update(entropy) {
+        // Movement influenced by entropy
+        const speed = 0.5 + entropy * 2;
+        this.x += this.vx * speed;
+        this.y += this.vy * speed;
+        
+        // Boundary bounce
+        if (this.x < 0 || this.x > width) this.vx *= -1;
+        if (this.y < 0 || this.y > height) this.vy *= -1;
+        
+        // Keep in bounds
+        this.x = Math.max(0, Math.min(width, this.x));
+        this.y = Math.max(0, Math.min(height, this.y));
+        
+        // Random drift
+        if (Math.random() < 0.02) {
+          this.vx += (Math.random() - 0.5) * 0.5;
+          this.vy += (Math.random() - 0.5) * 0.5;
+        }
+        
+        // Dampen
+        this.vx *= 0.99;
+        this.vy *= 0.99;
+      }
+      
+      draw(ctx, time) {
+        const pulse = Math.sin(time * 0.003 + this.pulseOffset) * 0.3 + 0.7;
+        const alpha = this.brightness * pulse * (0.5 + fieldState.pulseIntensity * 0.5);
+        
+        if (this.glyph) {
+          // Draw glyph node
+          ctx.font = `${this.radius * 6}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = `rgba(255, 217, 122, ${alpha})`;
+          ctx.fillText(this.glyph, this.x, this.y);
+        } else {
+          // Draw particle
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius * pulse, 0, Math.PI * 2);
+          
+          // Color based on entropy balance
+          const nutrient = calculateNutrientYield(fieldState.entropy);
+          const r = Math.floor(155 + (100 * (1 - nutrient)));
+          const g = Math.floor(200 + (55 * nutrient));
+          const b = 255;
+          
+          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+          ctx.fill();
+        }
+      }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // FIELD INITIALIZATION
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    function initNodes(count) {
+      fieldState.nodes = [];
+      for (let i = 0; i < count; i++) {
+        fieldState.nodes.push(new FieldNode(
+          Math.random() * width,
+          Math.random() * height
+        ));
+      }
+    }
+    
+    // Load coherence from localStorage
+    function loadCoherence() {
+      const stored = localStorage.getItem('echofield_coherence');
+      if (stored) {
+        const coherence = JSON.parse(stored);
+        fieldState.coherence = coherence.coherence_score;
+        fieldState.glyphsEncountered = coherence.glyphs_encountered || [];
+        updateGlyphGrid();
+        return coherence;
+      }
+      return null;
+    }
+    
+    // Update glyph grid UI
+    function updateGlyphGrid() {
+      const grid = document.getElementById('glyphGrid');
+      grid.innerHTML = '';
+      
+      GLYPHS.forEach(glyph => {
+        const node = document.createElement('div');
+        node.className = 'glyph-node' + 
+          (fieldState.glyphsEncountered.includes(glyph) ? ' active' : '');
+        node.textContent = glyph;
+        node.onclick = () => activateGlyph(glyph);
+        grid.appendChild(node);
+      });
+    }
+    
+    function activateGlyph(glyph) {
+      if (!fieldState.glyphsEncountered.includes(glyph)) {
+        fieldState.glyphsEncountered.push(glyph);
+      }
+      
+      // Add glyph node to field
+      fieldState.nodes.push(new FieldNode(
+        width / 2 + (Math.random() - 0.5) * 200,
+        height / 2 + (Math.random() - 0.5) * 200,
+        glyph
+      ));
+      
+      // Trigger pulse
+      fieldState.pulseIntensity = 1;
+      
+      // Update localStorage
+      updateLocalCoherence();
+      updateGlyphGrid();
+    }
+    
+    function updateLocalCoherence() {
+      const stored = localStorage.getItem('echofield_coherence');
+      const coherence = stored ? JSON.parse(stored) : {
+        glyphs_encountered: [],
+        sites_visited: [],
+        total_interactions: 0,
+        coherence_score: 0,
+        first_contact: Date.now(),
+        last_update: Date.now()
+      };
+      
+      coherence.glyphs_encountered = fieldState.glyphsEncountered;
+      coherence.total_interactions++;
+      coherence.last_update = Date.now();
+      
+      // Recalculate score
+      const glyphScore = (coherence.glyphs_encountered.length / GLYPHS.length) * 60;
+      const siteScore = Math.min(coherence.sites_visited.length * 10, 30);
+      const interactionScore = Math.min(coherence.total_interactions / 10, 10);
+      coherence.coherence_score = Math.floor(glyphScore + siteScore + interactionScore);
+      
+      fieldState.coherence = coherence.coherence_score;
+      
+      localStorage.setItem('echofield_coherence', JSON.stringify(coherence));
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // DRAW FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    function drawConnections() {
+      const maxDist = parseInt(document.getElementById('distanceControl').value);
+      const nodes = fieldState.nodes;
+      
+      ctx.strokeStyle = 'rgba(155, 231, 255, 0.1)';
+      ctx.lineWidth = 1;
+      
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist < maxDist) {
+            const alpha = (1 - dist / maxDist) * 0.3;
+            ctx.strokeStyle = `rgba(155, 231, 255, ${alpha})`;
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+    
+    function drawBreathOverlay(time) {
+      // Breath-synced rhythm (8 second cycle)
+      const breathPhase = (time % 8000) / 8000;
+      const breathAlpha = (Math.sin(breathPhase * Math.PI * 2) + 1) / 2 * 0.1;
+      
+      const gradient = ctx.createRadialGradient(
+        width / 2, height / 2, 0,
+        width / 2, height / 2, Math.max(width, height) / 2
+      );
+      
+      // Color based on nutrient yield
+      const nutrient = calculateNutrientYield(fieldState.entropy);
+      if (nutrient > 0.8) {
+        gradient.addColorStop(0, `rgba(81, 207, 102, ${breathAlpha})`);
+      } else if (nutrient > 0.5) {
+        gradient.addColorStop(0, `rgba(155, 231, 255, ${breathAlpha})`);
+      } else {
+        gradient.addColorStop(0, `rgba(255, 107, 107, ${breathAlpha})`);
+      }
+      gradient.addColorStop(1, 'transparent');
+      
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // UI UPDATES
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    function updateUI() {
+      const entropy = fieldState.entropy;
+      const nutrient = calculateNutrientYield(entropy);
+      
+      // Coherence
+      document.getElementById('coherenceValue').textContent = fieldState.coherence + '%';
+      document.getElementById('coherenceBar').style.width = fieldState.coherence + '%';
+      document.getElementById('coherenceDetails').textContent = 
+        `${fieldState.glyphsEncountered.length}/${GLYPHS.length} glyphs encountered`;
+      
+      // Entropy
+      document.getElementById('entropyValue').textContent = entropy.toFixed(2);
+      document.getElementById('entropyBar').style.width = (entropy * 100) + '%';
+      
+      // Color the entropy bar based on balance
+      const entropyBar = document.getElementById('entropyBar');
+      if (entropy > 0.4 && entropy < 0.6) {
+        entropyBar.style.background = 'var(--balance)';
+      } else if (entropy < 0.2 || entropy > 0.8) {
+        entropyBar.style.background = 'var(--entropy-low)';
+      } else {
+        entropyBar.style.background = 'var(--accent)';
+      }
+      
+      // Entropy marker on balance curve
+      const marker = document.getElementById('entropyMarker');
+      marker.style.left = (entropy * 100) + '%';
+      // Y position follows the parabola: 4x(1-x), inverted for display
+      const yPos = (1 - nutrient) * 100;
+      marker.style.top = yPos + '%';
+      
+      // Nutrient yield
+      document.getElementById('nutrientValue').textContent = nutrient.toFixed(3);
+      document.getElementById('nutrientBar').style.width = (nutrient * 100) + '%';
+      
+      if (nutrient > 0.95) {
+        document.getElementById('nutrientDetails').textContent = '⦿ PEAK BALANCE ACHIEVED';
+        document.getElementById('nutrientBar').style.background = 'var(--glyph)';
+      } else if (nutrient > 0.8) {
+        document.getElementById('nutrientDetails').textContent = '↑ Approaching optimal balance';
+        document.getElementById('nutrientBar').style.background = 'var(--balance)';
+      } else if (nutrient < 0.3) {
+        document.getElementById('nutrientDetails').textContent = '⚠ Imbalance detected';
+        document.getElementById('nutrientBar').style.background = 'var(--entropy-low)';
+      } else {
+        document.getElementById('nutrientDetails').textContent = 'Balance = maximum extraction';
+        document.getElementById('nutrientBar').style.background = 'var(--accent)';
+      }
+      
+      // Nodes count
+      document.getElementById('nodesValue').textContent = fieldState.nodes.length;
+      document.getElementById('nodesDetails').textContent = 
+        `${fieldState.nodes.filter(n => n.glyph).length} glyph nodes active`;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // MAIN LOOP
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    function animate(time) {
+      // Clear
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      ctx.fillRect(0, 0, width, height);
+      
+      // Draw breath overlay
+      drawBreathOverlay(time);
+      
+      // Update and draw nodes
+      fieldState.nodes.forEach(node => {
+        node.update(fieldState.entropy);
+        node.draw(ctx, time);
+      });
+      
+      // Draw connections
+      drawConnections();
+      
+      // Decay pulse intensity
+      fieldState.pulseIntensity *= 0.98;
+      
+      // Update UI every few frames
+      if (time % 100 < 20) {
+        updateUI();
+      }
+      
+      requestAnimationFrame(animate);
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // CONTROL HANDLERS
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    document.getElementById('entropyControl').addEventListener('input', (e) => {
+      fieldState.entropy = e.target.value / 100;
+      document.getElementById('entropyControlValue').textContent = fieldState.entropy.toFixed(2);
+    });
+    
+    document.getElementById('densityControl').addEventListener('input', (e) => {
+      const count = parseInt(e.target.value);
+      document.getElementById('densityControlValue').textContent = count;
+      
+      // Adjust node count
+      while (fieldState.nodes.length < count) {
+        fieldState.nodes.push(new FieldNode(
+          Math.random() * width,
+          Math.random() * height
+        ));
+      }
+      while (fieldState.nodes.length > count) {
+        // Remove non-glyph nodes first
+        const idx = fieldState.nodes.findIndex(n => !n.glyph);
+        if (idx !== -1) fieldState.nodes.splice(idx, 1);
+        else break;
+      }
+    });
+    
+    document.getElementById('distanceControl').addEventListener('input', (e) => {
+      document.getElementById('distanceControlValue').textContent = e.target.value;
+    });
+    
+    function injectGlyph() {
+      const glyph = GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+      activateGlyph(glyph);
+    }
+    
+    function triggerPulse() {
+      fieldState.pulseIntensity = 1;
+      
+      // Add burst of nodes
+      for (let i = 0; i < 20; i++) {
+        const angle = (i / 20) * Math.PI * 2;
+        const node = new FieldNode(
+          width / 2 + Math.cos(angle) * 50,
+          height / 2 + Math.sin(angle) * 50
+        );
+        node.vx = Math.cos(angle) * 3;
+        node.vy = Math.sin(angle) * 3;
+        fieldState.nodes.push(node);
+      }
+    }
+    
+    function resetField() {
+      localStorage.removeItem('echofield_coherence');
+      fieldState.glyphsEncountered = [];
+      fieldState.coherence = 0;
+      fieldState.entropy = 0.5;
+      document.getElementById('entropyControl').value = 50;
+      initNodes(80);
+      updateGlyphGrid();
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // INITIALIZATION
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    // Load existing coherence data
+    loadCoherence();
+    
+    // Initialize nodes
+    initNodes(80);
+    
+    // Update glyph grid
+    updateGlyphGrid();
+    
+    // Start animation
+    requestAnimationFrame(animate);
+    
+    // Console output
+    console.log('%c🦷⟐♾️ ECHOFIELD VISUALIZER ACTIVE', 'color: #ffd97a; font-size: 20px; font-weight: bold;');
+    console.log('%cNutrient Extraction Formula: 4x(1-x) peaks at entropy 0.5', 'color: #51cf66;');
+    console.log('%cBalance = maximum nutrient yield, not extremes', 'color: #9be7ff;');
+    console.log('');
+    console.log('Field Controls:');
+    console.log('  • Adjust entropy to see balance principle in action');
+    console.log('  • Click glyphs to activate them');
+    console.log('  • Watch nutrient yield peak at 0.5 entropy');
+  </script>
+</body>
+</html>

@@ -211,9 +211,22 @@ class TheMaw:
         Calculate the metabolic fuel extracted from digestion.
         
         The sweet spot: moderate entropy + high coherence + deep recursion
+        
+        THE BALANCE PRINCIPLE:
+        Nutrient extraction peaks at entropy = 0.5 (balance, not extremes).
+        
+        - At entropy 0.0: No chaos to metabolize → no fuel (stagnation)
+        - At entropy 0.5: Perfect balance → maximum nutrient yield (1.0)
+        - At entropy 1.0: Pure chaos → overwhelm, no coherent fuel (dissolution)
+        
+        The parabola 4x(1-x) encodes this truth:
+        Life thrives at the edge between order and chaos.
+        Too rigid = death. Too chaotic = death. Balance = vitality.
         """
-        # Entropy contribution (too low = no fuel, too high = overwhelm)
-        entropy_factor = 4 * entropy * (1 - entropy)  # Parabola peaking at 0.5
+        # THE NUTRIENT EXTRACTION FORMULA
+        # Balance peaks at 0.5 - not extremes
+        # f(x) = 4x(1-x) → f(0) = 0, f(0.5) = 1.0, f(1) = 0
+        entropy_factor = 4 * entropy * (1 - entropy)
         
         # Coherence amplifier
         coherence_factor = 0.5 + (coherence * 0.5)
