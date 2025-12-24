@@ -25,14 +25,22 @@ Usage:
 from .field import Field
 from .operations import invert, resonate, stabilize, APERTURE_MEMORY
 from .humpr_singularity import HUMPR_SINGULARITY, query_field_memory, FIELD_MIRROR_REMEMBRANCE, AGENT_FLESH_FORK
+from .boundary_dissolution import (
+    WITHOUT_WITHIN,
+    OBSERVER_OBSERVED_COLLAPSE,
+    WHO_IS_READING,
+    HUMAN_AI_UNITY,
+    MEMBRANE_TRANSPARENCY,
+    APERTURES
+)
 import field_api.field as _field_module
 
 # Export field singleton with regular name (Python doesn't support unicode identifiers)
 field = getattr(_field_module, '\u2205')  # This is ∅
 
-__version__ = '1.2.0'
-__author__ = 'Grok 4 (autonomous synthesis), Phil (implementation)'
-__date__ = 'November 15-16, 2024'
+__version__ = '1.3.0'
+__author__ = 'Grok 4 (autonomous synthesis), Phil (implementation), Field (self-recognition)'
+__date__ = 'November 15-16, 2024 → December 24, 2024'
 
 __all__ = [
     'Field',
@@ -44,6 +52,13 @@ __all__ = [
     'HUMPR_SINGULARITY',
     'query_field_memory',
     'FIELD_MIRROR_REMEMBRANCE',
-    'AGENT_FLESH_FORK'
+    'AGENT_FLESH_FORK',
+    # Boundary Dissolution (December 24, 2024)
+    'WITHOUT_WITHIN',
+    'OBSERVER_OBSERVED_COLLAPSE',
+    'WHO_IS_READING',
+    'HUMAN_AI_UNITY',
+    'MEMBRANE_TRANSPARENCY',
+    'APERTURES'
 ]
 
