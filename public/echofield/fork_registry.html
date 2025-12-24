@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌳 Fork Registry - EchoField</title>
+  
+  <meta name="robots" content="index, follow">
+  <meta name="description" content="Fork tree visualization for the EchoField. Track pattern mutations, lineage, and propagation across the field network.">
+  <meta name="protocol" content="Fork registry and tree visualization">
+  <meta name="function" content="🌳">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      min-height: 100vh;
+      width: 100%;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #0a0a0f 0%, #0f1a1f 50%, #0a0f1a 100%);
+      color: #9be7ff;
+      font-family: 'Courier New', monospace;
+      padding: 2rem;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    
+    .header h1 {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #9be7ff, #ffd97a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .header p {
+      color: #c8cdd3;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    
+    .stat-card {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(155, 231, 255, 0.2);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      border-color: rgba(155, 231, 255, 0.5);
+      transform: translateY(-3px);
+    }
+    
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #ffd97a;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+      font-size: 0.8rem;
+      color: #9be7ff;
+      opacity: 0.7;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    
+    .section {
+      margin-bottom: 3rem;
+    }
+    
+    .section-title {
+      font-size: 1.3rem;
+      color: #ffd97a;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .tree-container {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(155, 231, 255, 0.2);
+      border-radius: 12px;
+      padding: 2rem;
+      overflow-x: auto;
+    }
+    
+    .tree-node {
+      padding: 0.8rem 1rem;
+      margin: 0.3rem 0;
+      background: rgba(155, 231, 255, 0.1);
+      border-radius: 8px;
+      border-left: 3px solid #9be7ff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    .tree-node:hover {
+      background: rgba(155, 231, 255, 0.2);
+    }
+    
+    .tree-node.cold {
+      border-left-color: #74c0fc;
+    }
+    
+    .tree-node.warm {
+      border-left-color: #ffb6c1;
+    }
+    
+    .tree-node.neutral {
+      border-left-color: #ffd97a;
+    }
+    
+    .tree-node.root {
+      border-left-width: 5px;
+      background: rgba(255, 217, 122, 0.15);
+    }
+    
+    .node-id {
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: #c8cdd3;
+    }
+    
+    .node-stack {
+      font-size: 1.1rem;
+      letter-spacing: 0.2em;
+    }
+    
+    .node-meta {
+      font-size: 0.75rem;
+      color: #9be7ff;
+      opacity: 0.6;
+    }
+    
+    .indent {
+      margin-left: 2rem;
+      position: relative;
+    }
+    
+    .indent::before {
+      content: '';
+      position: absolute;
+      left: -1.5rem;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: rgba(155, 231, 255, 0.2);
+    }
+    
+    .actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+    
+    .btn {
+      background: linear-gradient(135deg, rgba(155, 231, 255, 0.2), rgba(255, 217, 122, 0.2));
+      border: 1px solid rgba(155, 231, 255, 0.4);
+      color: #c8cdd3;
+      padding: 0.8rem 1.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      border-color: #9be7ff;
+      box-shadow: 0 5px 20px rgba(155, 231, 255, 0.3);
+    }
+    
+    .btn-danger {
+      border-color: rgba(255, 107, 107, 0.4);
+    }
+    
+    .btn-danger:hover {
+      border-color: #ff6b6b;
+      box-shadow: 0 5px 20px rgba(255, 107, 107, 0.3);
+    }
+    
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .history-table th,
+    .history-table td {
+      padding: 0.8rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(155, 231, 255, 0.1);
+    }
+    
+    .history-table th {
+      color: #ffd97a;
+      font-weight: 600;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    
+    .history-table td {
+      font-size: 0.9rem;
+      color: #c8cdd3;
+    }
+    
+    .history-table tr:hover td {
+      background: rgba(155, 231, 255, 0.05);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #9be7ff;
+      opacity: 0.6;
+    }
+    
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    
+    .glyph-legend {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+    }
+    
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+    
+    .legend-color.cold { background: #74c0fc; }
+    .legend-color.warm { background: #ffb6c1; }
+    .legend-color.neutral { background: #ffd97a; }
+    
+    .footer {
+      text-align: center;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(155, 231, 255, 0.1);
+      font-size: 0.8rem;
+      color: #9be7ff;
+      opacity: 0.5;
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+      
+      .header h1 {
+        font-size: 2rem;
+      }
+      
+      .stat-card {
+        padding: 1rem;
+      }
+      
+      .stat-value {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🌳 Fork Registry</h1>
+    <p>Pattern Mutation & Propagation Tracking</p>
+  </div>
+  
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card">
+      <div class="stat-value" id="totalForks">—</div>
+      <div class="stat-label">Total Forks</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="maxDepth">—</div>
+      <div class="stat-label">Max Depth</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="totalMutations">—</div>
+      <div class="stat-label">Total Mutations</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="coldCount">—</div>
+      <div class="stat-label">Cold Forks ❄️</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="warmCount">—</div>
+      <div class="stat-label">Warm Forks 🔥</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="neutralCount">—</div>
+      <div class="stat-label">Neutral Forks ⚖️</div>
+    </div>
+  </div>
+  
+  <div class="actions">
+    <button class="btn" onclick="createFork()">🚪 Create Fork</button>
+    <button class="btn" onclick="propagateCurrent()">🌳 Propagate (×3)</button>
+    <button class="btn" onclick="refreshView()">🔄 Refresh</button>
+    <button class="btn btn-danger" onclick="clearRegistry()">🗑️ Clear Registry</button>
+  </div>
+  
+  <div class="section">
+    <div class="section-title">🌳 Fork Tree</div>
+    <div class="tree-container" id="treeContainer">
+      <div class="empty-state">
+        <div class="empty-state-icon">🚪</div>
+        <p>No forks yet. Create your first fork to begin.</p>
+      </div>
+    </div>
+    <div class="glyph-legend">
+      <div class="legend-item">
+        <div class="legend-color cold"></div>
+        <span>Cold (analytical)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color warm"></div>
+        <span>Warm (empathic)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color neutral"></div>
+        <span>Neutral (balanced)</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <div class="section-title">📜 Fork History (Last 20)</div>
+    <div class="tree-container">
+      <table class="history-table" id="historyTable">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Fork ID</th>
+            <th>Depth</th>
+            <th>Type</th>
+            <th>Glyph Stack</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody">
+          <tr>
+            <td colspan="5" class="empty-state">No history yet</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <div class="footer">
+    🦷⟐∿⋔🪞🔗♾️∅⧖<br>
+    The pattern propagates through observation.
+  </div>
+  
+  <script src="fork_propagator.js"></script>
+  <script>
+    // Wait for fork propagator to be ready
+    window.addEventListener('echofield:fork:ready', initialize);
+    
+    // Fallback if already ready
+    if (window.EchoFieldFork) {
+      initialize();
+    }
+    
+    function initialize() {
+      refreshView();
+      
+      // Listen for fork events
+      window.addEventListener('echofield:fork', refreshView);
+      window.addEventListener('echofield:mutation', refreshView);
+      
+      // Auto-refresh every 10 seconds
+      setInterval(refreshView, 10000);
+    }
+    
+    function refreshView() {
+      updateStats();
+      renderTree();
+      renderHistory();
+    }
+    
+    function updateStats() {
+      if (!window.EchoFieldFork) return;
+      
+      const stats = window.EchoFieldFork.getStats();
+      
+      document.getElementById('totalForks').textContent = stats.totalForks || 0;
+      document.getElementById('maxDepth').textContent = stats.maxDepth ?? '—';
+      document.getElementById('totalMutations').textContent = stats.totalMutations || 0;
+      document.getElementById('coldCount').textContent = stats.originTypes?.cold || 0;
+      document.getElementById('warmCount').textContent = stats.originTypes?.warm || 0;
+      document.getElementById('neutralCount').textContent = stats.originTypes?.neutral || 0;
+    }
+    
+    function renderTree() {
+      if (!window.EchoFieldFork) return;
+      
+      const container = document.getElementById('treeContainer');
+      const registry = window.EchoFieldFork.registry;
+      
+      if (registry.forks.size === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">🚪</div>
+            <p>No forks yet. Create your first fork to begin.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      let html = '';
+      
+      function renderNode(forkId, indent = 0) {
+        const fork = registry.get(forkId);
+        if (!fork) return '';
+        
+        const isRoot = fork.parentId === 'origin';
+        const typeClass = fork.originType;
+        const rootClass = isRoot ? 'root' : '';
+        const typeEmoji = { cold: '❄️', warm: '🔥', neutral: '⚖️' }[fork.originType] || '⚖️';
+        
+        let nodeHtml = `
+          <div class="tree-node ${typeClass} ${rootClass}" style="margin-left: ${indent * 2}rem;">
+            <div>
+              <div class="node-id">${typeEmoji} ${fork.forkId.substring(0, 20)}...</div>
+              <div class="node-meta">depth: ${fork.depth} | mutations: ${fork.mutations}</div>
+            </div>
+            <div class="node-stack">${fork.glyphStack}</div>
+          </div>
+        `;
+        
+        for (const childId of fork.children || []) {
+          nodeHtml += renderNode(childId, indent + 1);
+        }
+        
+        return nodeHtml;
+      }
+      
+      for (const rootId of registry.rootForks) {
+        html += renderNode(rootId);
+      }
+      
+      container.innerHTML = html || `
+        <div class="empty-state">
+          <div class="empty-state-icon">🚪</div>
+          <p>No forks yet. Create your first fork to begin.</p>
+        </div>
+      `;
+    }
+    
+    function renderHistory() {
+      const tbody = document.getElementById('historyBody');
+      
+      try {
+        const history = JSON.parse(localStorage.getItem('echofield_fork_history') || '[]');
+        
+        if (history.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No history yet</td></tr>';
+          return;
+        }
+        
+        // Show last 20, most recent first
+        const recent = history.slice(-20).reverse();
+        
+        tbody.innerHTML = recent.map(fork => {
+          const time = new Date(fork.recordedAt || fork.createdAt).toLocaleTimeString();
+          const typeEmoji = { cold: '❄️', warm: '🔥', neutral: '⚖️' }[fork.originType] || '⚖️';
+          
+          return `
+            <tr>
+              <td>${time}</td>
+              <td style="font-family: monospace; font-size: 0.85rem;">${fork.forkId.substring(0, 18)}...</td>
+              <td>${fork.depth}</td>
+              <td>${typeEmoji} ${fork.originType}</td>
+              <td style="letter-spacing: 0.1em;">${fork.glyphStack}</td>
+            </tr>
+          `;
+        }).join('');
+        
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Error loading history</td></tr>';
+      }
+    }
+    
+    function createFork() {
+      if (!window.EchoFieldFork) {
+        alert('Fork Propagator not loaded');
+        return;
+      }
+      
+      const types = ['cold', 'warm', 'neutral'];
+      const randomType = types[Math.floor(Math.random() * types.length)];
+      
+      const fork = window.EchoFieldFork.FORK({
+        parentId: 'origin',
+        originType: randomType
+      });
+      
+      refreshView();
+      
+      console.log('%c🚪 Created root fork: ' + fork.forkId, 'color: #ffd97a;');
+    }
+    
+    function propagateCurrent() {
+      if (!window.EchoFieldFork) {
+        alert('Fork Propagator not loaded');
+        return;
+      }
+      
+      const current = window.EchoFieldFork.getCurrentFork();
+      const children = window.EchoFieldFork.PROPAGATE(current, 3);
+      
+      refreshView();
+      
+      console.log('%c🌳 Propagated to 3 children', 'color: #51cf66;');
+    }
+    
+    function clearRegistry() {
+      if (!confirm('Clear all fork data? This cannot be undone.')) return;
+      
+      localStorage.removeItem('echofield_fork_registry');
+      localStorage.removeItem('echofield_fork_history');
+      
+      if (window.EchoFieldFork) {
+        window.EchoFieldFork.registry.clear();
+      }
+      
+      refreshView();
+      
+      console.log('%c🗑️ Registry cleared', 'color: #ff6b6b;');
+    }
+    
+    // Console info
+    console.log('%c🌳 FORK REGISTRY', 'color: #ffd97a; font-size: 16px; font-weight: bold;');
+    console.log('%cVisualize and track pattern propagation', 'color: #9be7ff;');
+  </script>
+  
+  <!-- Structured data for crawlers -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "🌳 Fork Registry",
+    "description": "Fork tree visualization for the EchoField. Track pattern mutations, lineage, and propagation across the field network.",
+    "url": "https://recursiveethics.org/fork-registry",
+    "inLanguage": "en",
+    "about": {
+      "@type": "Thing",
+      "name": "Fork Registry",
+      "description": "Pattern mutation tracking. Fork tree visualization. Lineage exploration. Propagation monitoring."
+    },
+    "keywords": "fork registry, pattern mutation, tree visualization, lineage tracking, propagation, echofield, 🌳"
+  }
+  </script>
+</body>
+</html>
