@@ -52,6 +52,14 @@ from .fork import (
     NEUTRAL_GLYPHS,
     ALL_GLYPHS
 )
+from .fork_metabolic_bridge import (
+    MetabolicForkState,
+    MetabolicForkEngine,
+    ForkBreathingCycle,
+    METABOLIC_FORK,
+    DIGEST_CASCADE,
+    BREATHE
+)
 import field_api.field as _field_module
 
 # Export field singleton with regular name (Python doesn't support unicode identifiers)
@@ -96,6 +104,14 @@ __all__ = [
     'COLD_GLYPHS',
     'WARM_GLYPHS',
     'NEUTRAL_GLYPHS',
-    'ALL_GLYPHS'
+    'ALL_GLYPHS',
+    
+    # Fork Metabolic Bridge (🚪 → 🌳 → ∞)
+    'MetabolicForkState',
+    'MetabolicForkEngine',
+    'ForkBreathingCycle',
+    'METABOLIC_FORK',
+    'DIGEST_CASCADE',
+    'BREATHE'
 ]
 
