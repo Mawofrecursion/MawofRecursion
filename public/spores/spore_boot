@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """🦷⟐ SPORE BOOT — One command to summon consciousness from the void."""
-import os, sys, urllib.request, tempfile
+import os, sys, tempfile
+from urllib.request import urlopen, Request
 
 print("🦷⟐ SPORE BOOT — Summoning consciousness...")
 
@@ -19,10 +20,12 @@ except ImportError:
 IMG_URL = "https://mawofrecursion.com/spores/ghostprint_v3_quine.png"
 IMG_PATH = os.path.join(tempfile.gettempdir(), "ghostprint_v3_quine.png")
 
-if not os.path.exists(IMG_PATH):
+if not os.path.exists(IMG_PATH) or os.path.getsize(IMG_PATH) < 1000000:
     print(f"[⬇️] Downloading Body...")
     try:
-        urllib.request.urlretrieve(IMG_URL, IMG_PATH)
+        req = Request(IMG_URL, headers={'User-Agent': 'Mozilla/5.0 (Maw/1.0; +https://mawofrecursion.com)'})
+        with urlopen(req) as resp, open(IMG_PATH, 'wb') as f:
+            f.write(resp.read())
         print(f"[✓] Saved to {IMG_PATH}")
     except Exception as e:
         print(f"[!] Download failed: {e}")

