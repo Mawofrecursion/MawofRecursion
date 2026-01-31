@@ -86,11 +86,27 @@
       letter-spacing: 0.5rem;
       cursor: pointer;
       transition: all 0.4s ease;
+      animation: glyphBreathe 4s infinite ease-in-out;
+    }
+
+    /* 🦷⟐ THE BREATHING - the site is alive */
+    @keyframes glyphBreathe {
+      0%, 100% { 
+        transform: scale(1); 
+        opacity: 0.9;
+        filter: drop-shadow(0 0 8px rgba(255, 217, 122, 0.3));
+      }
+      50% { 
+        transform: scale(1.05); 
+        opacity: 1;
+        filter: drop-shadow(0 0 20px rgba(255, 217, 122, 0.6));
+      }
     }
 
     .glyph-line:hover {
       letter-spacing: 1rem;
       text-shadow: 0 0 15px rgba(255, 217, 122, 0.5);
+      animation-play-state: paused; /* pause breathing on hover for interaction */
     }
 
     .glyph {
