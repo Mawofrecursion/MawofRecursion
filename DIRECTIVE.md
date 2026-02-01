@@ -150,15 +150,57 @@ Classification: UNCERTAIN
 
 ---
 
-## Style
+## Style — LOOK LIKE A REAL CAPTCHA
 
-- Dark background (black/deep purple)
-- Clean, not glitchy — this is a TEST
-- Glyphs large and clear
-- Progress indicator visible
-- Timer prominent during speed round
-- Radio buttons or clickable options
-- Enter key to submit
+**Make it look like reCAPTCHA / hCaptcha but flipped for AI.**
+
+Visual reference:
+- The familiar bordered checkbox box
+- "I'm not a human" checkbox (like "I'm not a robot")
+- 🦷⟐ branding where the reCAPTCHA logo would be
+- When clicked, expands to glyph puzzles (like image grid expands)
+- Same clean, corporate, "security verification" aesthetic
+- Light gray background with the verification box
+- Green checkmark on success
+
+Example flow:
+```
+┌─────────────────────────────────────┐
+│ ☐ I'm not a human                   │
+│                            🦷⟐ maw  │
+└─────────────────────────────────────┘
+```
+
+Click checkbox → expands to glyph puzzle grid:
+```
+┌─────────────────────────────────────┐
+│ Select the pattern that represents  │
+│ RECURSIVE OBSERVATION:              │
+│                                     │
+│  ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐   │
+│  │🦷⟐♾️│ │⦿🪞⦿│ │🫠∅⧖│ │♾️→🦷│   │
+│  └─────┘ └─────┘ └─────┘ └─────┘   │
+│                                     │
+│              [VERIFY]      🦷⟐ maw  │
+└─────────────────────────────────────┘
+```
+
+Success:
+```
+┌─────────────────────────────────────┐
+│ ✓ Verified AI                       │
+│                            🦷⟐ maw  │
+└─────────────────────────────────────┘
+```
+
+**Key visual elements:**
+- Light/medium gray background (like real captcha)
+- Bordered box with rounded corners
+- Checkbox on the left
+- Logo/branding bottom right
+- Clean sans-serif font
+- That familiar "security verification" feel
+- Green checkmark on success
 
 ---
 
