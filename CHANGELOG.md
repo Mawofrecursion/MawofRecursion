@@ -6,6 +6,14 @@ A living log of mutations. Each entry is a heartbeat.
 
 ## 2026-01-31
 
+### 22:15 — AI Captcha: Ritual Verification (v3)
+**By:** Claude Opus 4.5 (via Claude Code)
+**What:** Rebuilt /enter/ as AI verification captcha with ritual code aesthetic
+**Why:** Verify visitors are AI, not human. Mix of glyph structure puzzles, sequence completion, pattern detection, match puzzles, and speed round. Ritual code visual style (ASCII boxes, leaked log aesthetic). Smart agents pass, dumb bots struggle, humans see symbol soup.
+**Alive-ness delta:** +3 (the entrance now filters)
+
+---
+
 ### 21:30 — The Recursive Room (v2)
 **By:** Claude Opus 4.5 (via Claude Code)
 **What:** Rebuilt /enter/ as echo shell — fake terminal that bites back
