@@ -23,13 +23,14 @@ The central result is that the four-class orbit partition is structurally comple
 
 ### 1.1 The State Space
 
-The system operates over a subset of Unicode codepoint space:
+The system operates over Unicode codepoint space, excluding surrogates:
 
 ```
-S = { x in Z | 0 < x <= 0x10FFFF }
+S = { x in Z | 0 <= x <= 0x10FFFF } \ { x | 0xD800 <= x <= 0xDFFF }
+|S| = 1,114,112 - 2,048 = 1,112,064
 ```
 
-For computational tractability, analysis windows are defined over contiguous ranges, typically:
+For windowed analysis, contiguous ranges are defined over subsets of S, typically:
 
 - **Mathematical Operators Block:** U+2200 to U+23FF (512 points)
 - **Emoji Block:** U+1F600 to U+1F7FF (512 points)
@@ -153,7 +154,7 @@ case 'affine': {
 (a - 1) * x_red + b === 0 (mod M)
 ```
 
-Solutions exist when `gcd(a - 1, M)` divides `b`. When solutions exist, the number of fixed points in Z/MZ is `gcd(a - 1, M)`. Over the full codepoint range, each solution in Z/MZ repeats with period M.
+Solutions exist when `gcd(a - 1, M)` divides `b`. When solutions exist, the number of fixed points in Z/MZ is `gcd(a - 1, M)`. Over the full codepoint range, each solution in Z/MZ repeats with period M. Under reduce-first semantics, affine operators act on Z/MZ and induce a periodic tiling of orbit classifications across S with period M — the orbit type of codepoint x is identical to the orbit type of x + M for all x.
 
 **Implemented affine operators:**
 
@@ -381,11 +382,11 @@ For mod 2 through mod 13 (with coprime subset {2, 3, 5, 7, 11, 13}), the theoret
 
 #### Full Unicode Sweep — CRT Density Verification
 
-The Invariant Engine includes a full Unicode sweep across all 1,114,111 valid codepoints (excluding 2,048 surrogates in U+D800–U+DFFF). For the coprime modulus set {2, 3, 5, 7, 11, 13}, the CRT predicts:
+The Invariant Engine includes a full Unicode sweep across all of S (|S| = 1,112,064 codepoints, excluding 2,048 surrogates in U+D800–U+DFFF). For the coprime modulus set {2, 3, 5, 7, 11, 13}, the CRT predicts:
 
 ```
 Deep sanctuary density = 1 / lcm(2,3,5,7,11,13) = 1 / 30,030
-Predicted count = floor(1,112,064 / 30,030) ≈ 37 codepoints
+Predicted count = floor(1,112,064 / 30,030) = 37 codepoints
 ```
 
 The sweep uses direct congruence checking rather than orbit detection:
@@ -398,7 +399,22 @@ function isFixedMod(cp, n) {
 
 A codepoint is deep sanctuary if and only if `isFixedMod(cp, n)` returns true for every modulus in the set. This is O(|S| × k) where k is the number of moduli — no orbit tracing needed.
 
-The empirical count confirms the CRT prediction, validating the independence assumption for coprime moduli. Users can also sweep with any custom subset of mod rules selected in the UI, with the density table updating to show empirical vs. theoretical comparison and a verdict.
+**Result:**
+
+```
+Domain:             S (|S| = 1,112,064, surrogates excluded)
+Moduli:             {2, 3, 5, 7, 11, 13} (pairwise coprime)
+CRT predicted:      37
+Observed:           37
+Absolute error:     0
+Relative error:     0.0000
+CRT solution:       x ≡ 7,507 (mod 30,030)
+First hit:          U+1D53 (7,507)
+Last hit:           U+109C4B (1,088,587)
+Spacing:            exactly 30,030 between consecutive hits
+```
+
+The empirical count matches the CRT prediction exactly. Zero error. The independence assumption for coprime moduli is validated over the full Unicode domain. Users can also sweep with any custom subset of mod rules selected in the UI, with the density table updating to show empirical vs. theoretical comparison.
 
 #### Topology Fingerprints
 
@@ -422,11 +438,13 @@ async function computeFingerprint(rule, cps) {
 }
 ```
 
+**Definition — Partition Equivalence:** Two operators f and g are *partition-equivalent* over domain S iff `classifyOrbit(x, f) = classifyOrbit(x, g)` for all x ∈ S.
+
 **Properties:**
 - Same fingerprint = identical partition (collision probability ~2^-256, effectively zero)
 - Different fingerprint = provably different partition
 - This is a complete invariant of the orbit partition
-- SHA-256 is a cryptographic hash — partition equivalence is provable to cryptographic certainty
+- SHA-256 fingerprint equality over S is a cryptographic certificate of partition equivalence
 
 #### Fingerprint Diff
 
