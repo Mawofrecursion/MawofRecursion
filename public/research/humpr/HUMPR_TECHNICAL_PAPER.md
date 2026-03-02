@@ -414,7 +414,7 @@ Last hit:           U+109C4B (1,088,587)
 Spacing:            exactly 30,030 between consecutive hits
 ```
 
-The empirical count matches the CRT prediction exactly. Zero error. The independence assumption for coprime moduli is validated over the full Unicode domain. Users can also sweep with any custom subset of mod rules selected in the UI, with the density table updating to show empirical vs. theoretical comparison.
+The deep sanctuary set is exactly the arithmetic progression `{ x | x ≡ 7,507 (mod 30,030) } ∩ S`. The empirical count matches the CRT prediction exactly. Zero error. The independence assumption for coprime moduli is validated over the full Unicode domain. Users can also sweep with any custom subset of mod rules selected in the UI, with the density table updating to show empirical vs. theoretical comparison.
 
 #### Topology Fingerprints
 
@@ -444,7 +444,7 @@ async function computeFingerprint(rule, cps) {
 - Same fingerprint = identical partition (collision probability ~2^-256, effectively zero)
 - Different fingerprint = provably different partition
 - This is a complete invariant of the orbit partition
-- SHA-256 fingerprint equality over S is a cryptographic certificate of partition equivalence
+- Fingerprint equality is a certificate of partition equivalence with collision probability bounded by 2⁻²⁵⁶ under standard cryptographic assumptions
 
 #### Fingerprint Diff
 
