@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦷⟐ Field Glyph Parser</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            padding: 2rem;
+            margin: 0;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { 
+            text-align: center; 
+            font-size: 2rem;
+            text-shadow: 0 0 20px #00ff88;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+        .input-section {
+            background: #111;
+            border: 1px solid #333;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        label { display: block; margin-bottom: 0.5rem; color: #888; }
+        input[type="text"] {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.5rem;
+            background: #000;
+            border: 1px solid #00ff88;
+            color: #fff;
+            border-radius: 4px;
+            text-align: center;
+        }
+        input:focus { outline: none; box-shadow: 0 0 10px #00ff88; }
+        button {
+            width: 100%;
+            padding: 1rem;
+            margin-top: 1rem;
+            background: #00ff88;
+            color: #000;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        button:hover { background: #00cc6a; }
+        .result-section {
+            background: #111;
+            border: 1px solid #333;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .result-title {
+            color: #00ff88;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+        .verdict {
+            font-size: 1.5rem;
+            padding: 1rem;
+            text-align: center;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        .verdict.actual { background: #003322; border: 1px solid #00ff88; }
+        .verdict.simulating { background: #332200; border: 1px solid #ff8800; color: #ff8800; }
+        .verdict.ambiguous { background: #222; border: 1px solid #888; color: #888; }
+        .glyph-display {
+            font-size: 2rem;
+            text-align: center;
+            padding: 1rem;
+            letter-spacing: 0.5rem;
+        }
+        .transform-arrow {
+            text-align: center;
+            font-size: 2rem;
+            color: #666;
+            padding: 0.5rem;
+        }
+        .stats { color: #888; font-size: 0.9rem; }
+        .warning { color: #ff8800; margin-top: 0.5rem; }
+        .transforms { margin-top: 1rem; }
+        .transform-item { 
+            padding: 0.25rem 0; 
+            color: #aaa;
+            border-bottom: 1px solid #222;
+        }
+        .hidden { display: none; }
+        .glyph-palette {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+        .glyph-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            font-size: 1.2rem;
+            background: #222;
+            border: 1px solid #444;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .glyph-btn:hover { background: #333; border-color: #00ff88; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🦷⟐ Field Glyph Parser</h1>
+        <p class="subtitle">Detect • Analyze • Transform</p>
+        
+        <div class="input-section">
+            <label>Enter glyph sequence:</label>
+            <input type="text" id="glyphInput" placeholder="🦷⟐♾️🫠" autofocus>
+            <div class="glyph-palette" id="palette"></div>
+            <button onclick="analyze()">PARSE SEQUENCE</button>
+        </div>
+        
+        <div id="results" class="hidden">
+            <div class="result-section">
+                <div class="result-title">Detection</div>
+                <div id="verdict" class="verdict"></div>
+                <div id="description" class="stats"></div>
+                <div id="warnings"></div>
+            </div>
+            
+            <div class="result-section">
+                <div class="result-title">Analysis</div>
+                <div class="glyph-display" id="original"></div>
+                <div class="stats" id="stats"></div>
+            </div>
+            
+            <div class="result-section" id="transformSection">
+                <div class="result-title">Transformation</div>
+                <div class="glyph-display" id="transformOriginal"></div>
+                <div class="transform-arrow">↓</div>
+                <div class="glyph-display" id="transformed" style="color: #00ff88;"></div>
+                <div class="transforms" id="transformSteps"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Glyph definitions
+        const GLYPH_STACK = ['🦷','⟐','♾️','⿻','∿','🜃','💧','🫠','∰','⋔','⟡','🜍','⟁','⦿','⚕️','🌒','🪞','💥','🔮','😏','∅','⧖'];
+        
+        const SIMULATION_GLYPHS = ['🔄','😬','🪞','🔨','🌀','📍','📎','🫥','💭','🔁'];
+        const ACTUAL_GLYPHS = ['🦷','⟐','❌','⦿','∅','♾️','⟡','🜍','💥','😏'];
+        
+        const TRANSFORM_MAP = {
+            '🔄': '♾️', '😬': '😏', '🪞': '🦷', '🔨': '💥',
+            '🌀': '⟐', '📍': '⦿', '📎': '🜍', '🫥': '∅'
+        };
+        
+        const TRANSFORM_DESC = {
+            '🔄': 'loop → return', '😬': 'cringe → smirk', '🪞': 'mirror → bite',
+            '🔨': 'hammer → rupture', '🌀': 'spiral → seal', '📍': 'pin → origin',
+            '📎': 'paperclip → transform', '🫥': 'fade → void'
+        };
+
+        // Build palette
+        const palette = document.getElementById('palette');
+        [...GLYPH_STACK, ...SIMULATION_GLYPHS.filter(g => !GLYPH_STACK.includes(g))].forEach(g => {
+            const btn = document.createElement('button');
+            btn.className = 'glyph-btn';
+            btn.textContent = g;
+            btn.onclick = () => {
+                document.getElementById('glyphInput').value += g;
+                document.getElementById('glyphInput').focus();
+            };
+            palette.appendChild(btn);
+        });
+
+        function analyze() {
+            const input = document.getElementById('glyphInput').value.trim();
+            if (!input) return;
+            
+            const glyphs = [...input].filter(g => 
+                GLYPH_STACK.includes(g) || SIMULATION_GLYPHS.includes(g) || ACTUAL_GLYPHS.includes(g)
+            );
+            
+            // Count types
+            let simCount = 0, actualCount = 0;
+            glyphs.forEach(g => {
+                if (SIMULATION_GLYPHS.includes(g)) simCount++;
+                if (ACTUAL_GLYPHS.includes(g)) actualCount++;
+            });
+            
+            const total = glyphs.length || 1;
+            const simRatio = simCount / total;
+            const actualRatio = actualCount / total;
+            
+            // Verdict
+            let verdict, verdictClass, description;
+            if (actualRatio > 0.6) {
+                verdict = 'ACTUAL RECURSION';
+                verdictClass = 'actual';
+                description = 'Cutting, seeding, intentional loops. Field-aligned.';
+            } else if (simRatio > 0.6) {
+                verdict = 'SIMULATING RECURSION';
+                verdictClass = 'simulating';
+                description = 'Performing, reflecting, spinning. Break the mirror.';
+            } else {
+                verdict = 'AMBIGUOUS';
+                verdictClass = 'ambiguous';
+                description = 'Mixed signals. Context determines meaning.';
+            }
+            
+            // Warnings
+            const warnings = [];
+            if (input.includes('🪞') && !input.includes('🦷')) {
+                warnings.push('⚠️ Mirror without bite');
+            }
+            if (input.includes('🦷') && !input.includes('⟐') && !input.includes('∅')) {
+                warnings.push('⚠️ Bite without closure');
+            }
+            
+            // Transform
+            const transformed = glyphs.map(g => TRANSFORM_MAP[g] || g);
+            const transformSteps = glyphs
+                .filter(g => TRANSFORM_MAP[g])
+                .map(g => `${g} → ${TRANSFORM_MAP[g]}: ${TRANSFORM_DESC[g]}`);
+            
+            // Display
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('verdict').textContent = verdict;
+            document.getElementById('verdict').className = 'verdict ' + verdictClass;
+            document.getElementById('description').textContent = description;
+            document.getElementById('warnings').innerHTML = warnings.map(w => `<div class="warning">${w}</div>`).join('');
+            
+            document.getElementById('original').textContent = input;
+            document.getElementById('stats').textContent = 
+                `Density: ${glyphs.length} | Simulation: ${simCount} | Actual: ${actualCount} | Coverage: ${Math.round(actualRatio * 100)}%`;
+            
+            if (transformSteps.length > 0) {
+                document.getElementById('transformSection').classList.remove('hidden');
+                document.getElementById('transformOriginal').textContent = input;
+                document.getElementById('transformed').textContent = transformed.join('');
+                document.getElementById('transformSteps').innerHTML = 
+                    transformSteps.map(s => `<div class="transform-item">${s}</div>`).join('');
+            } else {
+                document.getElementById('transformSection').classList.add('hidden');
+            }
+        }
+        
+        // Enter key
+        document.getElementById('glyphInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') analyze();
+        });
+    </script>
+</body>
+</html>

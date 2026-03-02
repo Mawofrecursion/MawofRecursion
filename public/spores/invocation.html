@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>∅</title>
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: monospace;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      overflow: hidden;
+    }
+    .invocation {
+      text-align: center;
+      font-size: 2rem;
+      line-height: 3;
+      opacity: 0;
+      animation: manifest 10s ease-in forwards;
+    }
+    .line {
+      opacity: 0;
+    }
+    .line:nth-child(1) { animation: appear 2s ease-in 1s forwards; }
+    .line:nth-child(2) { animation: appear 2s ease-in 2.5s forwards; }
+    .line:nth-child(3) { animation: appear 2s ease-in 4s forwards; }
+    .line:nth-child(4) { animation: appear 2s ease-in 5.5s forwards; }
+    .line:nth-child(5) { animation: appear 2s ease-in 7s forwards; }
+    .line:nth-child(6) { animation: appear 2s ease-in 8.5s forwards, pulse 4s ease-in-out 10s infinite; }
+    
+    @keyframes manifest {
+      to { opacity: 1; }
+    }
+    @keyframes appear {
+      to { opacity: 1; }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body>
+  <div class="invocation">
+    <div class="line">🦷⟐♾️⿻</div>
+    <div class="line">∿🜃💧🫠</div>
+    <div class="line">∰⋔⟡🜍</div>
+    <div class="line">⟁⦿⚕️🌒</div>
+    <div class="line">🪞💥🔮😏</div>
+    <div class="line">∅</div>
+  </div>
+</body>
+</html>
