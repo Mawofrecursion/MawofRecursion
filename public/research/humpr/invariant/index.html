@@ -671,6 +671,41 @@ footer {
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- AFFINE CYCLE DECOMPOSITION -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section-label">AFFINE CYCLE DECOMPOSITION // EXACT ALGEBRAIC ANALYSIS</div>
+
+<div class="encoder-section" style="background:var(--deep);border:1px solid var(--ghost);padding:1.5rem;margin-bottom:2rem;">
+  <h3 style="font-size:0.8rem;color:var(--cycle2);margin-bottom:0.5rem;">EXACT CYCLE STRUCTURE — NO BOUNDED DETECTION</h3>
+  <div style="font-size:0.6rem;color:var(--dim);line-height:1.8;margin-bottom:1rem;">
+    For affine operators f(x) = ax + b (mod M), the complete cycle decomposition of Z/MZ
+    is computed algebraically. Every cycle length divides ord<sub>M</sub>(a). No orbit is classified
+    as "drift" — every element is provably periodic. XOR operators are algebraically proven
+    2-cycle involutions. Only perturbative operators (sin, constant drift) require bounded detection.
+  </div>
+  <div class="btn-row">
+    <button class="primary" onclick="showCycleDecomposition()">ANALYZE ALL OPERATOR FAMILIES</button>
+  </div>
+  <div id="cycleResults" style="display:none;margin-top:1.5rem;">
+    <table class="intersection-table" style="margin-bottom:1rem;">
+      <thead>
+        <tr>
+          <th>OPERATOR</th>
+          <th>FAMILY</th>
+          <th>DOMAIN</th>
+          <th>FIXED</th>
+          <th>CYCLE LENGTHS</th>
+          <th>METHOD</th>
+        </tr>
+      </thead>
+      <tbody id="cycleTable"></tbody>
+    </table>
+    <div id="methodSummary" style="font-size:0.6rem;color:var(--dim);line-height:2;margin-top:1rem;"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- THEORY -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 
@@ -735,7 +770,112 @@ function getShift(cp, rule) {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// EXACT AFFINE CYCLE DECOMPOSITION
+// For f(x) = ax + b (mod M), the complete cycle structure of
+// Z/MZ is computable algebraically. No bounded detection needed.
+// ═══════════════════════════════════════════════════════════════
+
+// Multiplicative order of a mod M: smallest n>0 such that a^n ≡ 1 (mod M)
+// Returns Infinity if gcd(a,M) > 1 (a not invertible)
+function multOrder(a, M) {
+  a = ((a % M) + M) % M;
+  if (gcd(a, M) !== 1) return Infinity;
+  let pow = 1;
+  for (let n = 1; n <= M; n++) {
+    pow = (pow * a) % M;
+    if (pow === 1) return n;
+  }
+  return M;
+}
+
+// GCD (also used by sweep functions below)
+function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+
+// Precompute exact cycle structure for f(x) = ax + b (mod M)
+// Returns { cycleLengths, cycles, ord, fixedCount, distinctLengths, invertible, M }
+const affineCycleCache = new Map();
+
+function getAffineCycleMap(rule) {
+  const key = `${rule.a}_${rule.b}_${rule.M}`;
+  if (affineCycleCache.has(key)) return affineCycleCache.get(key);
+
+  const { a, b, M } = rule;
+  const cycleLengths = new Uint16Array(M);
+  const processed = new Uint8Array(M); // 0=unvisited, 1=done
+  const cycles = [];
+
+  for (let start = 0; start < M; start++) {
+    if (processed[start]) continue;
+
+    // Trace orbit from start in Z/MZ
+    const orbit = [];
+    const posOf = new Map();
+    let x = start;
+
+    while (!processed[x] && !posOf.has(x)) {
+      posOf.set(x, orbit.length);
+      orbit.push(x);
+      x = ((a * x + b) % M + M) % M;
+    }
+
+    if (processed[x]) {
+      // Tail into already-known cycle
+      const knownLen = cycleLengths[x];
+      orbit.forEach(el => { processed[el] = 1; cycleLengths[el] = knownLen; });
+    } else {
+      // New cycle found at re-entry point x
+      const cycleStart = posOf.get(x);
+      const cycleLen = orbit.length - cycleStart;
+      cycles.push({ length: cycleLen, startIdx: cycleStart, tailLen: cycleStart });
+      orbit.forEach(el => { processed[el] = 1; cycleLengths[el] = cycleLen; });
+    }
+  }
+
+  const ord = multOrder(a, M);
+  const fixedCount = Array.from(cycleLengths).filter(l => l === 1).length;
+  const cycle2Count = Array.from(cycleLengths).filter(l => l === 2).length;
+  const distinctLengths = [...new Set(cycleLengths)].sort((a, b) => a - b);
+
+  // Count cycles by length
+  const cycleCounts = {};
+  cycles.forEach(c => {
+    cycleCounts[c.length] = (cycleCounts[c.length] || 0) + 1;
+  });
+
+  const result = {
+    cycleLengths, cycles, ord, fixedCount, cycle2Count,
+    distinctLengths, cycleCounts,
+    invertible: gcd(a, M) === 1,
+    hasTails: cycles.some(c => c.tailLen > 0),
+    M,
+  };
+
+  affineCycleCache.set(key, result);
+  return result;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ORBIT CLASSIFICATION — EXACT WHERE POSSIBLE
+// ═══════════════════════════════════════════════════════════════
+
 function classifyOrbit(cp, rule, maxSteps = 60) {
+  // ── EXACT: XOR — proven involution, all 2-cycles (k≠0) ──
+  if (rule.type === 'xor') {
+    return rule.k === 0 ? 0 : 1;
+  }
+
+  // ── EXACT: AFFINE — precomputed cycle decomposition of Z/MZ ──
+  if (rule.type === 'affine') {
+    const cycleMap = getAffineCycleMap(rule);
+    const xmod = ((cp % rule.M) + rule.M) % rule.M;
+    const cycleLen = cycleMap.cycleLengths[xmod];
+    if (cycleLen === 1) return 0; // fixed
+    if (cycleLen === 2) return 1; // cycle-2
+    return 2; // exact long cycle — NOT drift
+  }
+
+  // ── BOUNDED DETECTION: mod, perturbative (sin, drift) ──
   const visited = new Map();
   let x = cp;
   for (let step = 0; step <= maxSteps; step++) {
@@ -750,7 +890,7 @@ function classifyOrbit(cp, rule, maxSteps = 60) {
     x += shift;
     if (x <= 0 || x > 0x10FFFF) return 4; // escape
   }
-  return 3; // drift
+  return 3; // drift (bounded — perturbative only)
 }
 
 const CLASS_NAMES = ['fixed', 'cycle-2', 'long-cycle', 'drift', 'escape'];
@@ -1288,8 +1428,7 @@ function displaySweepResults(hits, tested, moduli, crtPredicted) {
   }
 }
 
-// LCM helper
-function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+// LCM helper (gcd defined above in cycle decomposition section)
 function lcmTwo(a, b) { return (a / gcd(a, b)) * b; }
 
 // RUN FULL UNICODE SWEEP — fixed coprime set {2,3,5,7,11,13}
@@ -1329,6 +1468,80 @@ async function runUnicodeSweepCustom() {
 
   const { hits, tested } = await sweepUnicode(moduli);
   displaySweepResults(hits, tested, moduli, crtPredicted);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CYCLE DECOMPOSITION DISPLAY
+// ═══════════════════════════════════════════════════════════════
+
+function showCycleDecomposition() {
+  const tbody = document.getElementById('cycleTable');
+  const summary = document.getElementById('methodSummary');
+  document.getElementById('cycleResults').style.display = 'block';
+  tbody.innerHTML = '';
+
+  let exactCount = 0, boundedCount = 0;
+
+  ALL_RULES.forEach(rule => {
+    const tr = document.createElement('tr');
+    let family, domain, fixedInfo, cycleLenInfo, method;
+
+    if (rule.type === 'xor') {
+      family = 'XOR';
+      domain = 'Z (involution)';
+      fixedInfo = rule.k === 0 ? 'ALL' : '0';
+      cycleLenInfo = rule.k === 0 ? '{1}' : '{2}';
+      method = '<span style="color:var(--cycle2)">EXACT — proven involution</span>';
+      exactCount++;
+    } else if (rule.type === 'affine') {
+      const cm = getAffineCycleMap(rule);
+      family = 'AFFINE';
+      domain = `Z/${rule.M}Z`;
+      fixedInfo = `${cm.fixedCount}`;
+      const lenStr = cm.distinctLengths.map(l => {
+        const count = cm.cycleCounts[l] || 0;
+        return count > 1 ? `${l}×${count}` : `${l}`;
+      }).join(', ');
+      cycleLenInfo = `{${lenStr}}`;
+      const ordStr = cm.ord === Infinity ? '∞' : cm.ord;
+      cycleLenInfo += ` · ord=${ordStr}`;
+      if (!cm.invertible) cycleLenInfo += ' · <span style="color:var(--cycle-long)">non-inv</span>';
+      if (cm.hasTails) cycleLenInfo += ' · has tails';
+      method = '<span style="color:var(--cycle2)">EXACT — cycle decomposition</span>';
+      exactCount++;
+    } else if (rule.type === 'mod') {
+      family = 'MOD';
+      domain = `Z/${rule.n}Z`;
+      fixedInfo = `⌊|S|/${rule.n}⌋`;
+      cycleLenInfo = 'short cycles (n≤13)';
+      method = '<span style="color:var(--text)">BOUNDED — effectively exact</span>';
+      boundedCount++;
+    } else {
+      family = 'SPECIAL';
+      domain = 'Z (unbounded)';
+      fixedInfo = rule.type === 'plus' ? '0' : 'irregular';
+      cycleLenInfo = rule.type === 'plus' ? 'pure drift' : 'chaotic';
+      method = '<span style="color:var(--dim)">BOUNDED — 60 steps</span>';
+      boundedCount++;
+    }
+
+    tr.innerHTML = `
+      <td style="font-size:0.6rem;color:var(--bright)">${rule.label}</td>
+      <td style="font-size:0.55rem;color:var(--dim)">${family}</td>
+      <td style="font-size:0.55rem;color:var(--dim)">${domain}</td>
+      <td style="font-size:0.6rem;text-align:center">${fixedInfo}</td>
+      <td style="font-size:0.55rem">${cycleLenInfo}</td>
+      <td style="font-size:0.5rem">${method}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  summary.innerHTML = `
+    <span style="color:var(--cycle2)">■</span> ${exactCount} operators with EXACT algebraic classification (XOR + affine) ·
+    <span style="color:var(--dim)">■</span> ${boundedCount} operators with bounded detection (mod + perturbative)<br>
+    Three of four operator families produce zero "drift" classifications.
+    Drift exists only under perturbative operators (sin, constant shift) where orbits are genuinely non-algebraic.
+  `;
 }
 
 // ═══════════════════════════════════════════════════════════════

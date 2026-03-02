@@ -66,7 +66,16 @@ Under bounded iteration (default: 60 steps), each orbit is classified into exact
 
 **Completeness Claim:** Under bounded discrete iteration, these four classes partition the state space exhaustively. There is no fifth behavioral class. This aligns with the Poincare classification of orbits in discrete dynamical systems: fixed points, periodic orbits, non-periodic bounded trajectories, and unbounded trajectories.
 
-**Limitation:** Drift classification is empirical, not proven. A codepoint classified as "drift" at 60 steps may be periodic with period > 60. This is bounded orbit detection, not exact periodicity analysis.
+**Limitation (partially resolved):** Drift classification under bounded detection is empirical, not proven. A codepoint classified as "drift" at 60 steps may be periodic with period > 60. However, this limitation has been **eliminated for three of four operator families:**
+
+| Family | Classification Method | Drift Possible? |
+|--------|----------------------|-----------------|
+| Modular | Bounded detection (effectively exact, all cycles short for n≤13) | No |
+| XOR | **Exact** — algebraically proven involution, all orbits are 2-cycles | No |
+| Affine | **Exact** — full cycle decomposition of Z/MZ, no bounded iteration | No |
+| Perturbative (sin, drift) | Bounded detection (60 steps) | Yes (by design) |
+
+Only perturbative operators retain bounded detection. For affine operators, the cycle decomposition is precomputed over Z/MZ (at most M=1024 elements) and every orbit is classified exactly. Elements previously misclassified as "drift" (e.g., under `5x+3 mod 1024` with cycle length 1024 > 60) are now correctly classified as "long-cycle."
 
 ### 1.4 Implementation
 
@@ -329,10 +338,48 @@ Reads an encoded PNG, extracts the data band at rows 496-497, reconstructs orbit
 
 25+ operators across four families, individually togglable:
 
-- **Modular:** mod 2 through mod 13 (12 operators)
-- **XOR:** keys 1, 7, 13, 42, 85, 170, 255 (7 operators)
-- **Affine:** 6 presets of `f(x) = ax + b (mod M)`
-- **Special:** +1 drift, -1 drift, sin(x*.1)*3, sin(x*.5)*5 (4 operators)
+- **Modular:** mod 2 through mod 13 (12 operators) — bounded detection, effectively exact
+- **XOR:** keys 1, 7, 13, 42, 85, 170, 255 (7 operators) — **exact** (proven involution)
+- **Affine:** 6 presets of `f(x) = ax + b (mod M)` — **exact** (algebraic cycle decomposition)
+- **Special:** +1 drift, -1 drift, sin(x*.1)*3, sin(x*.5)*5 (4 operators) — bounded detection
+
+#### Exact Affine Cycle Decomposition
+
+For affine operators, the full cycle structure of Z/MZ is precomputed in O(M) time. Since affine operators under reduce-first semantics tile S with period M, the cycle length of any codepoint cp is determined by `cp mod M`. The precomputed table eliminates bounded iteration entirely.
+
+```javascript
+function classifyOrbit(cp, rule, maxSteps) {
+  // EXACT: XOR — proven involution
+  if (rule.type === 'xor') return rule.k === 0 ? 0 : 1;
+
+  // EXACT: AFFINE — precomputed cycle decomposition
+  if (rule.type === 'affine') {
+    const cycleMap = getAffineCycleMap(rule);
+    const cycleLen = cycleMap.cycleLengths[cp % rule.M];
+    if (cycleLen === 1) return 0;  // fixed
+    if (cycleLen === 2) return 1;  // cycle-2
+    return 2;                       // exact long cycle
+  }
+
+  // BOUNDED: mod, perturbative (60 steps)
+  // ... standard orbit tracing ...
+}
+```
+
+**Concrete results for implemented affine operators:**
+
+| Rule | M | gcd(a,M) | Invertible | ord_M(a) | Fixed | Distinct Cycle Lengths |
+|------|---|----------|-----------|----------|-------|----------------------|
+| 2x+1 mod 997 | 997 | 1 | Yes | 332 | 1 | {1, 332} |
+| 3x mod 512 | 512 | 1 | Yes | 128 | 2 | {1, 2, 4, 8, 16, 32, 64, 128} |
+| 5x+3 mod 1024 | 1024 | 1 | Yes | 256 | 0 | {1024} |
+| 7x mod 256 | 256 | 1 | Yes | 32 | 2 | {1, 2, 4, 8, 16, 32} |
+| x+1 mod 256 | 256 | 1 | Yes | 1 | 0 | {256} |
+| 2x mod 512 | 512 | 2 | No | — | 1* | {1} |
+
+*Note: `2x mod 512` is non-invertible (gcd(2,512)=2). All 512 elements eventually reach the fixed point 0 via tails. Pre-periodic elements are classified by their eventual cycle.
+
+**Key correction:** Under 60-step bounded detection, `5x+3 mod 1024` (cycle length 1024) and `x+1 mod 256` (cycle length 256) were misclassified as "drift." With exact cycle decomposition, they are correctly classified as "long-cycle." This changes the partition vector and produces different (more accurate) SHA-256 fingerprints.
 
 #### Invariant Intersection
 
@@ -500,9 +547,9 @@ The partition vector is recoverable from each representation (proven by the Enco
 
 ### 5.1 Known Limitations
 
-1. **Bounded orbit detection:** Drift classification at 60 steps cannot guarantee non-periodicity. A codepoint with period 61 would be misclassified as drift.
+1. **Bounded orbit detection (perturbative only):** Drift classification at 60 steps cannot guarantee non-periodicity for perturbative operators (sin, constant drift). This limitation has been **eliminated for XOR** (proven involution) and **affine** (exact cycle decomposition). Three of four operator families now use exact algebraic classification.
 
-2. **Escape is operator-relative:** Many bounded operators (all modular, all XOR) produce no escapes. Escape is primarily relevant for affine operators with large multipliers.
+2. **Escape is operator-relative:** Many bounded operators (all modular, all XOR) produce no escapes. Under reduce-first affine semantics, escape is also eliminated for affine operators (all orbits stay in Z/MZ).
 
 3. **Modulus arbitrariness:** Mod 3 is not special. Any modulus defines a congruence class. The "founding glyphs" immunity is a property of their residue class, not their identity.
 
@@ -514,7 +561,7 @@ The partition vector is recoverable from each representation (proven by the Enco
 
 1. **Algebraic coupling detection:** When deep sanctuary density exceeds CRT predictions, what algebraic structure explains the coupling between operator families?
 
-2. **Analytical cycle decomposition:** For affine operators, full cycle structure can be computed analytically rather than empirically. This would eliminate the bounded-detection limitation for that operator class.
+2. **Analytical cycle decomposition: RESOLVED.** Full cycle decomposition for affine operators is now implemented. The cycle structure of Z/MZ is precomputed in O(M) time. Bounded detection is eliminated for affine operators. Cycle lengths are exact, not estimated.
 
 3. **Cross-domain partition comparison:** Can the topology fingerprint be used to detect structural similarity between operators from different families (e.g., is there a modular operator whose partition matches an affine operator)?
 
@@ -551,8 +598,9 @@ HUMPR Instrument Suite
 |   +-- Live execution .... Interactive demonstration of all four behaviors
 |
 +-- INVARIANT ENGINE ...... Cross-operator intersection and fingerprinting
-    +-- 25+ operators ..... Mod, XOR, Affine (reduce-first), Special families
+    +-- 25+ operators ..... Mod, XOR (exact), Affine (exact), Special families
     +-- Intersection ...... Deep sanctuary = intersection of all Fix(f_i)
+    +-- Cycle Decomp ...... Exact algebraic cycle structure for affine Z/MZ
     +-- Fingerprints ...... SHA-256 hash of partition vectors (Web Crypto API)
     +-- Unicode Sweep ..... Full 1.1M codepoint CRT density verification
     +-- Diff .............. Codepoint-level comparison of any two operators
