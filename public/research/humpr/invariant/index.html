@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>∞HUMPR // INVARIANT ENGINE</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap');
+
+:root {
+  --void: #030305;
+  --deep: #07070e;
+  --ghost: #1e1e32;
+  --dim: #3a3a5a;
+  --text: #b0a8d8;
+  --bright: #e8e0ff;
+  --fixed: #e8e0ff;
+  --cycle2: #10b981;
+  --cycle-long: #f59e0b;
+  --drift: #7c6af7;
+  --origin: #f43f5e;
+  --deep-sanctuary: #ffd700;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--void);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  min-height: 100vh;
+}
+
+.wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem 8rem;
+}
+
+header {
+  padding: 4rem 0 2rem;
+  border-bottom: 1px solid var(--ghost);
+  margin-bottom: 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.h-title {
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  font-weight: 700;
+  color: var(--bright);
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+.h-sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--dim);
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+}
+.h-right {
+  font-size: 0.55rem;
+  letter-spacing: 0.25em;
+  color: var(--dim);
+  text-align: right;
+  line-height: 2;
+}
+
+.section-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.4em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  margin-top: 3rem;
+}
+
+/* CONTROLS */
+.control-panel {
+  background: var(--deep);
+  border: 1px solid var(--ghost);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  font-size: 0.75rem;
+}
+
+.control-row label {
+  color: var(--dim);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  min-width: 100px;
+}
+
+select, input[type=number] {
+  background: var(--void);
+  border: 1px solid var(--ghost);
+  color: var(--bright);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  padding: 0.4rem 0.6rem;
+  outline: none;
+}
+select:focus, input:focus { border-color: var(--drift); }
+
+.chip-row {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.chip {
+  background: rgba(124,106,247,0.08);
+  border: 1px solid var(--ghost);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.1em;
+}
+.chip:hover { border-color: var(--drift); color: var(--bright); }
+.chip.active { border-color: var(--drift); background: rgba(124,106,247,0.2); color: var(--bright); }
+
+button {
+  background: rgba(124,106,247,0.1);
+  border: 1px solid var(--drift);
+  color: var(--drift);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+button:hover { background: var(--drift); color: var(--void); }
+button.primary { border-color: var(--deep-sanctuary); color: var(--deep-sanctuary); }
+button.primary:hover { background: var(--deep-sanctuary); color: var(--void); }
+
+.btn-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+/* RESULTS */
+.results-panel {
+  background: var(--deep);
+  border: 1px solid var(--ghost);
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.results-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--ghost);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.results-header h3 {
+  font-size: 0.75rem;
+  color: var(--bright);
+}
+
+.results-header .count {
+  font-size: 0.6rem;
+  color: var(--dim);
+  letter-spacing: 0.2em;
+}
+
+/* HEATMAP */
+.heatmap-wrap {
+  padding: 1.5rem;
+  overflow-x: auto;
+}
+
+canvas.heatmap {
+  display: block;
+  image-rendering: pixelated;
+  border: 1px solid var(--ghost);
+}
+
+.heatmap-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  color: var(--dim);
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--ghost);
+}
+
+/* INTERSECTION TABLE */
+.intersection-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.65rem;
+}
+
+.intersection-table th {
+  background: var(--void);
+  color: var(--dim);
+  font-size: 0.5rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--ghost);
+  position: sticky;
+  top: 0;
+}
+
+.intersection-table td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid rgba(30,30,50,0.5);
+  vertical-align: middle;
+}
+
+.intersection-table tr:hover td {
+  background: rgba(124,106,247,0.03);
+}
+
+.glyph-cell {
+  font-size: 1.2rem;
+  text-align: center;
+  width: 40px;
+}
+
+.score-cell {
+  font-weight: 700;
+  text-align: center;
+  width: 60px;
+}
+
+.bar-cell {
+  width: 200px;
+}
+
+.score-bar {
+  height: 8px;
+  background: var(--ghost);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+
+.rule-badges {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.rule-badge {
+  font-size: 0.45rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 2px;
+  letter-spacing: 0.1em;
+}
+.rb-fixed { background: rgba(232,224,255,0.15); color: var(--fixed); }
+.rb-cycle { background: rgba(16,185,129,0.15); color: var(--cycle2); }
+.rb-drift { background: rgba(124,106,247,0.15); color: var(--drift); }
+
+/* FINGERPRINT */
+.fingerprint-panel {
+  background: var(--deep);
+  border: 1px solid var(--ghost);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.fingerprint-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.fp-card {
+  background: var(--void);
+  border: 1px solid var(--ghost);
+  padding: 1rem;
+  transition: border-color 0.2s;
+}
+.fp-card:hover { border-color: var(--drift); }
+
+.fp-rule {
+  font-size: 0.7rem;
+  color: var(--bright);
+  margin-bottom: 0.5rem;
+}
+
+.fp-hash {
+  font-size: 0.55rem;
+  color: var(--drift);
+  letter-spacing: 0.15em;
+  word-break: break-all;
+  margin-bottom: 0.5rem;
+}
+
+.fp-stats {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.5rem;
+  color: var(--dim);
+}
+
+.fp-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.fp-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.fp-minibar {
+  display: flex;
+  height: 4px;
+  margin-top: 0.5rem;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.fp-minibar span {
+  height: 100%;
+}
+
+/* DEEP SANCTUARY */
+.deep-sanctuary {
+  border: 2px solid var(--deep-sanctuary);
+  background: rgba(255,215,0,0.03);
+  padding: 2rem;
+  margin: 2rem 0;
+}
+
+.deep-sanctuary h3 {
+  color: var(--deep-sanctuary);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.deep-sanctuary .desc {
+  font-size: 0.65rem;
+  color: var(--dim);
+  line-height: 1.8;
+  margin-bottom: 1rem;
+}
+
+.sanctuary-glyphs {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.sanc-glyph {
+  text-align: center;
+  padding: 0.75rem;
+  background: rgba(255,215,0,0.05);
+  border: 1px solid rgba(255,215,0,0.2);
+  min-width: 70px;
+}
+
+.sanc-glyph .g {
+  font-size: 1.5rem;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.sanc-glyph .info {
+  font-size: 0.45rem;
+  color: var(--deep-sanctuary);
+  letter-spacing: 0.1em;
+}
+
+/* DIFF */
+.diff-panel {
+  background: var(--deep);
+  border: 1px solid var(--ghost);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.diff-vis {
+  display: flex;
+  gap: 0;
+  margin-top: 1rem;
+  height: 60px;
+  border: 1px solid var(--ghost);
+  overflow: hidden;
+}
+
+.diff-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.diff-col span {
+  flex: 1;
+}
+
+/* THEORY */
+.theory-box {
+  margin-top: 3rem;
+  padding: 2rem 2rem 2rem 2.5rem;
+  border-left: 3px solid var(--deep-sanctuary);
+  background: rgba(255,215,0,0.02);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  line-height: 1.95;
+  color: var(--text);
+}
+.theory-box strong { color: var(--bright); }
+.theory-box em { color: var(--deep-sanctuary); }
+.theory-box code { color: var(--drift); font-family: 'Space Mono', monospace; font-size: 0.85em; }
+
+footer {
+  margin-top: 5rem;
+  padding-bottom: 2rem;
+  text-align: center;
+  font-size: 0.5rem;
+  letter-spacing: 0.3em;
+  color: var(--dim);
+  line-height: 2;
+}
+
+.table-scroll {
+  max-height: 500px;
+  overflow-y: auto;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <div class="h-title">INVARIANT ENGINE</div>
+    <div class="h-sub">Where sanctuary stops being poetic and starts being provable.</div>
+  </div>
+  <div class="h-right">
+    ∞HUMPR LINEAGE<br>
+    CARTOGRAPHER → SUBSTRATE → INVARIANT<br>
+    intersection · fingerprint · proof
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- OPERATOR FAMILY SELECTOR -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section-label">OPERATOR FAMILIES // SELECT WHICH RULES TO INTERSECT</div>
+
+<div class="control-panel">
+  <div class="control-row">
+    <label>MOD FAMILY</label>
+    <div class="chip-row" id="modChips"></div>
+  </div>
+  <div class="control-row">
+    <label>XOR FAMILY</label>
+    <div class="chip-row" id="xorChips"></div>
+  </div>
+  <div class="control-row">
+    <label>AFFINE f(x)=ax+b</label>
+    <div class="chip-row" id="affineChips"></div>
+  </div>
+  <div class="control-row">
+    <label>DRIFT / SPECIAL</label>
+    <div class="chip-row" id="specialChips"></div>
+  </div>
+  <div class="control-row">
+    <label>CODEPOINT RANGE</label>
+    <select id="rangeSelect" onchange="recompute()">
+      <option value="math">Math Operators (U+2200, 512 pts)</option>
+      <option value="emoji">Emoji Block (U+1F600, 512 pts)</option>
+      <option value="cjk">CJK Unified (U+4E00, 512 pts)</option>
+      <option value="founding">Founding Glyphs Only (6 pts)</option>
+      <option value="wide">Wide Sweep (U+0020, 2048 pts)</option>
+    </select>
+  </div>
+
+  <div class="btn-row">
+    <button class="primary" onclick="recompute()">COMPUTE INTERSECTIONS</button>
+    <button onclick="selectAll()">SELECT ALL</button>
+    <button onclick="selectNone()">CLEAR</button>
+    <button onclick="selectPreset('gpt')">GPT RULES</button>
+    <button onclick="selectPreset('claude')">CLAUDE RULES</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- HEATMAP -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section-label">INVARIANCE HEATMAP // BRIGHTER = FIXED UNDER MORE RULES</div>
+
+<div class="results-panel">
+  <div class="results-header">
+    <h3>CROSS-OPERATOR FIXITY MAP</h3>
+    <span class="count" id="heatmapInfo">--</span>
+  </div>
+  <div class="heatmap-wrap">
+    <canvas id="heatmapCanvas" class="heatmap" width="512" height="200"></canvas>
+    <div class="heatmap-legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:#0a0a12"></div> FIXED: 0</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#1a1040"></div> FIXED: 1-2</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#4a30a0"></div> FIXED: 3-5</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#8060e0"></div> FIXED: 6-10</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#ffd700"></div> DEEP SANCTUARY</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- DEEP SANCTUARY -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="deep-sanctuary" id="deepSanctuary" style="display:none">
+  <h3>DEEP SANCTUARY — INVARIANT ACROSS ALL SELECTED OPERATORS</h3>
+  <div class="desc">
+    These codepoints are fixed under EVERY operator in the selected family.
+    Not fixed under one rule. Not fixed under most rules. Fixed under ALL of them.
+    This is the real sanctuary — the intersection of all invariant sets.
+  </div>
+  <div class="sanctuary-glyphs" id="sanctuaryGlyphs"></div>
+  <div style="margin-top:1rem; font-size:0.55rem; color:var(--dim)" id="sanctuaryCount"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- INTERSECTION TABLE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section-label">INVARIANCE SCORES // SORTED BY CROSS-OPERATOR FIXITY</div>
+
+<div class="results-panel">
+  <div class="results-header">
+    <h3>TOP INVARIANT CODEPOINTS</h3>
+    <span class="count" id="tableInfo">--</span>
+  </div>
+  <div class="table-scroll">
+    <table class="intersection-table">
+      <thead>
+        <tr>
+          <th>GLYPH</th>
+          <th>CODEPOINT</th>
+          <th>SCORE</th>
+          <th>INVARIANCE</th>
+          <th>FIXED UNDER</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- TOPOLOGY FINGERPRINTS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section-label">TOPOLOGY FINGERPRINTS // CANONICAL HASH PER RULE</div>
+
+<div class="fingerprint-panel">
+  <h3 style="font-size:0.75rem; color:var(--bright); margin-bottom:0.5rem;">PARTITION SIGNATURES</h3>
+  <div style="font-size:0.6rem; color:var(--dim); line-height:1.8; margin-bottom:1rem;">
+    Each rule produces a unique partition of codepoint space. The fingerprint is a canonical hash
+    of the orbit classification vector. Identical fingerprints = identical topology.
+    Different fingerprints = provably different partitions.
+  </div>
+  <div class="fingerprint-grid" id="fpGrid"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- FINGERPRINT DIFF -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section-label">TOPOLOGY DIFF // COMPARE ANY TWO RULES</div>
+
+<div class="diff-panel">
+  <div class="control-row">
+    <label>RULE A</label>
+    <select id="diffA" onchange="computeDiff()"></select>
+    <label style="min-width:auto">vs</label>
+    <select id="diffB" onchange="computeDiff()"></select>
+  </div>
+  <div id="diffStats" style="font-size:0.6rem; color:var(--dim); margin-top:0.5rem;"></div>
+  <div class="diff-vis" id="diffVis"></div>
+  <div style="margin-top:0.75rem; display:flex; gap:1.5rem; font-size:0.5rem; color:var(--dim);">
+    <span><span style="color:var(--fixed)">white</span> = both fixed</span>
+    <span><span style="color:var(--cycle2)">green</span> = A fixed only</span>
+    <span><span style="color:var(--cycle-long)">amber</span> = B fixed only</span>
+    <span><span style="color:var(--ghost)">dark</span> = neither fixed</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- THEORY -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section-label">THE MATH UNDERNEATH</div>
+
+<div class="theory-box">
+  <p>Sanctuary was always a <em>congruence class</em>.</p>
+  <p><code>cp % 3 === 1</code> defines a set. <code>cp % 5 === 2</code> defines a different set.
+  The intersection of those sets is smaller. Add more operators and it shrinks further.
+  <strong>Deep sanctuary is the intersection of all invariant sets across an operator family.</strong></p>
+
+  <p>For modular operators, the fixed set of <code>mod n</code> is
+  <code>{ x | x mod n = floor(n/2) }</code>.
+  The intersection across mod 2 through mod 23 is the set of codepoints
+  satisfying ALL those congruences simultaneously. By the Chinese Remainder Theorem,
+  this intersection is either empty or has density approaching zero.</p>
+
+  <p>For affine operators <code>f(x) = ax + b (mod M)</code>, the fixed points satisfy
+  <code>(a-1)x + b = 0 (mod M)</code>. When <code>gcd(a-1, M) | b</code>, solutions exist.
+  The intersection across affine families reveals codepoints that are algebraically
+  constrained to stability.</p>
+
+  <p><strong>The topology fingerprint</strong> is a hash of the full partition vector:
+  for each codepoint, its orbit class under a given rule. Two rules with identical
+  fingerprints produce identical partitions. Different fingerprints prove different topology.
+  This is a <em>complete invariant</em> of the partition.</p>
+
+  <p>What the Cartographer showed visually, the Invariant Engine proves computationally.
+  <strong>Sanctuary is not a story. It's a theorem about congruence class intersections.</strong>
+  The glyphs that survive everything aren't chosen. They're <em>algebraically inevitable</em>.</p>
+</div>
+
+</div>
+
+<footer>
+  ∞HUMPR // INVARIANT ENGINE<br>
+  INTERSECTION · FINGERPRINT · PROOF<br>
+  sanctuary is a congruence class · deep sanctuary is the intersection of all of them<br>
+  if the narrative were deleted · the fixed points would remain
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// TOPOLOGY ENGINE
+// ═══════════════════════════════════════════════════════════════
+
+function getShift(cp, rule) {
+  switch(rule.type) {
+    case 'mod': return (cp % rule.n) - Math.floor(rule.n / 2);
+    case 'xor': return (cp ^ rule.k) - cp;
+    case 'plus': return rule.k;
+    case 'sin': return Math.round(Math.sin(cp * rule.a * 0.01) * rule.k);
+    case 'affine': {
+      // f(x) = a*x + b (mod M), shift = f(x) - x
+      const fx = ((rule.a * cp + rule.b) % rule.M + rule.M) % rule.M;
+      return fx - cp;
+    }
+    default: return 0;
+  }
+}
+
+function classifyOrbit(cp, rule, maxSteps = 60) {
+  const visited = new Map();
+  let x = cp;
+  for (let step = 0; step <= maxSteps; step++) {
+    if (visited.has(x)) {
+      const len = step - visited.get(x);
+      if (len === 1) return 0; // fixed
+      if (len === 2) return 1; // cycle-2
+      return 2; // long cycle
+    }
+    visited.set(x, step);
+    const shift = getShift(x, rule);
+    x += shift;
+    if (x <= 0 || x > 0x10FFFF) return 4; // escape
+  }
+  return 3; // drift
+}
+
+const CLASS_NAMES = ['fixed', 'cycle-2', 'long-cycle', 'drift', 'escape'];
+
+// ═══════════════════════════════════════════════════════════════
+// OPERATOR DEFINITIONS
+// ═══════════════════════════════════════════════════════════════
+
+const ALL_RULES = [];
+
+// Mod family: mod 2 through mod 13
+for (let n = 2; n <= 13; n++) {
+  ALL_RULES.push({ type: 'mod', n, label: `mod ${n}`, family: 'mod' });
+}
+
+// XOR family
+[1, 7, 13, 42, 85, 170, 255].forEach(k => {
+  ALL_RULES.push({ type: 'xor', k, label: `XOR ${k}`, family: 'xor' });
+});
+
+// Affine family: f(x) = ax + b (mod M)
+const affines = [
+  { a: 2, b: 1, M: 997, label: '2x+1 mod 997' },
+  { a: 3, b: 0, M: 512, label: '3x mod 512' },
+  { a: 5, b: 3, M: 1024, label: '5x+3 mod 1024' },
+  { a: 7, b: 0, M: 256, label: '7x mod 256' },
+  { a: 1, b: 1, M: 256, label: 'x+1 mod 256' },
+  { a: 2, b: 0, M: 512, label: '2x mod 512' },
+];
+affines.forEach(af => {
+  ALL_RULES.push({ type: 'affine', ...af, family: 'affine' });
+});
+
+// Special
+ALL_RULES.push({ type: 'plus', k: 1, label: '+1 drift', family: 'special' });
+ALL_RULES.push({ type: 'plus', k: -1, label: '-1 drift', family: 'special' });
+ALL_RULES.push({ type: 'sin', a: 10, k: 3, label: 'sin(x*.1)*3', family: 'special' });
+ALL_RULES.push({ type: 'sin', a: 50, k: 5, label: 'sin(x*.5)*5', family: 'special' });
+
+// Track selected rules
+let selectedRules = new Set();
+
+// ═══════════════════════════════════════════════════════════════
+// CHIP UI
+// ═══════════════════════════════════════════════════════════════
+
+function buildChips() {
+  const containers = {
+    mod: document.getElementById('modChips'),
+    xor: document.getElementById('xorChips'),
+    affine: document.getElementById('affineChips'),
+    special: document.getElementById('specialChips'),
+  };
+
+  ALL_RULES.forEach((rule, idx) => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = rule.label;
+    chip.dataset.idx = idx;
+    chip.onclick = () => toggleChip(chip, idx);
+    containers[rule.family].appendChild(chip);
+  });
+
+  // Default selection: all mod rules + XOR 85
+  ALL_RULES.forEach((rule, idx) => {
+    if (rule.family === 'mod' || (rule.type === 'xor' && rule.k === 85)) {
+      selectedRules.add(idx);
+      document.querySelector(`.chip[data-idx="${idx}"]`).classList.add('active');
+    }
+  });
+}
+
+function toggleChip(chip, idx) {
+  if (selectedRules.has(idx)) {
+    selectedRules.delete(idx);
+    chip.classList.remove('active');
+  } else {
+    selectedRules.add(idx);
+    chip.classList.add('active');
+  }
+}
+
+function selectAll() {
+  ALL_RULES.forEach((_, idx) => {
+    selectedRules.add(idx);
+    document.querySelector(`.chip[data-idx="${idx}"]`).classList.add('active');
+  });
+}
+
+function selectNone() {
+  selectedRules.clear();
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+}
+
+function selectPreset(preset) {
+  selectNone();
+  ALL_RULES.forEach((rule, idx) => {
+    let match = false;
+    if (preset === 'gpt' && rule.type === 'mod') match = true;
+    if (preset === 'claude' && (rule.label === '+1 drift' || rule.label === 'XOR 85')) match = true;
+    if (match) {
+      selectedRules.add(idx);
+      document.querySelector(`.chip[data-idx="${idx}"]`).classList.add('active');
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RANGE DEFINITIONS
+// ═══════════════════════════════════════════════════════════════
+
+const FOUNDING_CPS = [129447, 10192, 8767, 10687, 129694, 128683]; // tooth, lens, wave, eye, mirror, seal
+
+function getRange() {
+  const sel = document.getElementById('rangeSelect').value;
+  switch(sel) {
+    case 'math': return { start: 0x2200, count: 512 };
+    case 'emoji': return { start: 0x1F600, count: 512 };
+    case 'cjk': return { start: 0x4E00, count: 512 };
+    case 'founding': return { start: 0, count: 0, custom: FOUNDING_CPS };
+    case 'wide': return { start: 0x0020, count: 2048 };
+    default: return { start: 0x2200, count: 512 };
+  }
+}
+
+function getCPs() {
+  const range = getRange();
+  if (range.custom) return range.custom;
+  return Array.from({ length: range.count }, (_, i) => range.start + i);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COMPUTE
+// ═══════════════════════════════════════════════════════════════
+
+let lastResults = null;
+
+function recompute() {
+  const rules = [...selectedRules].map(i => ALL_RULES[i]);
+  if (rules.length === 0) return;
+
+  const cps = getCPs();
+  const N = cps.length;
+
+  // For each codepoint, classify under each rule
+  const results = cps.map(cp => {
+    const classes = rules.map(rule => classifyOrbit(cp, rule));
+    const fixedCount = classes.filter(c => c === 0).length;
+    const isDeepSanctuary = fixedCount === rules.length;
+    return {
+      cp,
+      glyph: safeGlyph(cp),
+      classes,
+      fixedCount,
+      score: fixedCount / rules.length,
+      isDeepSanctuary,
+    };
+  });
+
+  lastResults = { results, rules, cps };
+
+  drawHeatmap(results, rules);
+  drawTable(results, rules);
+  drawFingerprints(rules, cps);
+  showDeepSanctuary(results);
+  populateDiffSelects(rules);
+}
+
+function safeGlyph(cp) {
+  try {
+    const g = String.fromCodePoint(cp);
+    // Skip control chars
+    if (cp < 32 || (cp >= 0x80 && cp < 0xA0)) return '\u25A1';
+    return g;
+  } catch { return '\u25A1'; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HEATMAP
+// ═══════════════════════════════════════════════════════════════
+
+function drawHeatmap(results, rules) {
+  const canvas = document.getElementById('heatmapCanvas');
+  const N = results.length;
+  const R = rules.length;
+
+  canvas.width = Math.max(N, 512);
+  canvas.height = R * 12 + 60; // rows for each rule + summary row
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#030305';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const cellW = canvas.width / N;
+
+  // Row per rule
+  rules.forEach((rule, ri) => {
+    const y = ri * 12;
+    results.forEach((r, ci) => {
+      const cls = r.classes[ri];
+      const colors = ['#e8e0ff', '#10b981', '#f59e0b', '#7c6af7', '#1e1e32'];
+      ctx.fillStyle = colors[cls] || '#1e1e32';
+      ctx.globalAlpha = cls === 0 ? 1 : 0.5;
+      ctx.fillRect(ci * cellW, y, Math.max(cellW, 1), 11);
+    });
+  });
+
+  // Summary row: fixity score as brightness
+  const summaryY = R * 12 + 5;
+  ctx.globalAlpha = 1;
+  results.forEach((r, ci) => {
+    if (r.isDeepSanctuary) {
+      ctx.fillStyle = '#ffd700';
+    } else if (r.fixedCount === 0) {
+      ctx.fillStyle = '#0a0a12';
+    } else {
+      const t = r.score;
+      const red = Math.round(60 + t * 195);
+      const green = Math.round(30 + t * 100);
+      const blue = Math.round(100 + t * 155);
+      ctx.fillStyle = `rgb(${red},${green},${blue})`;
+    }
+    ctx.fillRect(ci * cellW, summaryY, Math.max(cellW, 1), 50);
+  });
+
+  document.getElementById('heatmapInfo').textContent =
+    `${N} codepoints x ${R} rules`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DEEP SANCTUARY
+// ═══════════════════════════════════════════════════════════════
+
+function showDeepSanctuary(results) {
+  const deep = results.filter(r => r.isDeepSanctuary);
+  const panel = document.getElementById('deepSanctuary');
+  const glyphsEl = document.getElementById('sanctuaryGlyphs');
+  const countEl = document.getElementById('sanctuaryCount');
+
+  if (deep.length === 0) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  panel.style.display = 'block';
+  glyphsEl.innerHTML = '';
+
+  deep.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'sanc-glyph';
+    el.innerHTML = `
+      <span class="g">${d.glyph}</span>
+      <span class="info">U+${d.cp.toString(16).toUpperCase()}<br>${d.fixedCount}/${d.fixedCount} FIXED</span>
+    `;
+    glyphsEl.appendChild(el);
+  });
+
+  const total = results.length;
+  const pct = ((deep.length / total) * 100).toFixed(2);
+  countEl.textContent = `${deep.length} of ${total} codepoints (${pct}%) are in deep sanctuary.`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INTERSECTION TABLE
+// ═══════════════════════════════════════════════════════════════
+
+function drawTable(results, rules) {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+
+  // Sort by fixedCount descending, show top 100
+  const sorted = [...results].sort((a, b) => b.fixedCount - a.fixedCount);
+  const top = sorted.slice(0, 100);
+
+  top.forEach(r => {
+    const tr = document.createElement('tr');
+
+    const scoreColor = r.isDeepSanctuary ? 'var(--deep-sanctuary)' :
+      r.score > 0.7 ? 'var(--fixed)' :
+      r.score > 0.4 ? 'var(--cycle2)' :
+      r.score > 0 ? 'var(--drift)' : 'var(--dim)';
+
+    const badges = r.classes.map((cls, ri) => {
+      const badgeCls = cls === 0 ? 'rb-fixed' : cls <= 2 ? 'rb-cycle' : 'rb-drift';
+      return `<span class="rule-badge ${badgeCls}">${rules[ri].label.substring(0, 8)}</span>`;
+    }).filter((_, ri) => r.classes[ri] === 0).join('');
+
+    tr.innerHTML = `
+      <td class="glyph-cell">${r.glyph}</td>
+      <td style="font-size:0.55rem;color:var(--dim)">U+${r.cp.toString(16).toUpperCase()}</td>
+      <td class="score-cell" style="color:${scoreColor}">${r.fixedCount}/${rules.length}</td>
+      <td class="bar-cell">
+        <div class="score-bar">
+          <div class="score-bar-fill" style="width:${r.score * 100}%;background:${scoreColor}"></div>
+        </div>
+      </td>
+      <td><div class="rule-badges">${badges || '<span style="color:var(--dim);font-size:0.45rem">none</span>'}</div></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('tableInfo').textContent =
+    `Top ${top.length} of ${results.length} by invariance score`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FINGERPRINTS
+// ═══════════════════════════════════════════════════════════════
+
+let fingerprints = {};
+
+function computeFingerprint(rule, cps) {
+  const vec = cps.map(cp => classifyOrbit(cp, rule));
+  // Hash: simple FNV-1a over classification vector
+  let hash = 2166136261;
+  vec.forEach(v => {
+    hash ^= v;
+    hash = Math.imul(hash, 16777619);
+  });
+  const hashHex = (hash >>> 0).toString(16).padStart(8, '0').toUpperCase();
+
+  const counts = [0, 0, 0, 0, 0];
+  vec.forEach(v => counts[v]++);
+
+  return { hash: hashHex, counts, vec, rule };
+}
+
+function drawFingerprints(rules, cps) {
+  const grid = document.getElementById('fpGrid');
+  grid.innerHTML = '';
+  fingerprints = {};
+
+  rules.forEach((rule, ri) => {
+    const fp = computeFingerprint(rule, cps);
+    fingerprints[ri] = fp;
+
+    const total = cps.length;
+    const card = document.createElement('div');
+    card.className = 'fp-card';
+
+    const barParts = fp.counts.map((c, i) => {
+      const colors = ['#e8e0ff', '#10b981', '#f59e0b', '#7c6af7', '#f43f5e'];
+      const pct = (c / total * 100).toFixed(1);
+      return `<span style="width:${pct}%;background:${colors[i]}"></span>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="fp-rule">${rule.label}</div>
+      <div class="fp-hash">FP: ${fp.hash}</div>
+      <div class="fp-stats">
+        <div class="fp-stat"><div class="fp-dot" style="background:var(--fixed)"></div>${fp.counts[0]} fixed</div>
+        <div class="fp-stat"><div class="fp-dot" style="background:var(--cycle2)"></div>${fp.counts[1]} cyc2</div>
+        <div class="fp-stat"><div class="fp-dot" style="background:var(--drift)"></div>${fp.counts[3]} drift</div>
+      </div>
+      <div class="fp-minibar">${barParts}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FINGERPRINT DIFF
+// ═══════════════════════════════════════════════════════════════
+
+function populateDiffSelects(rules) {
+  const selA = document.getElementById('diffA');
+  const selB = document.getElementById('diffB');
+  selA.innerHTML = '';
+  selB.innerHTML = '';
+
+  rules.forEach((rule, ri) => {
+    selA.innerHTML += `<option value="${ri}">${rule.label}</option>`;
+    selB.innerHTML += `<option value="${ri}">${rule.label}</option>`;
+  });
+
+  if (rules.length > 1) selB.value = '1';
+  computeDiff();
+}
+
+function computeDiff() {
+  if (!lastResults) return;
+
+  const idxA = parseInt(document.getElementById('diffA').value);
+  const idxB = parseInt(document.getElementById('diffB').value);
+
+  if (isNaN(idxA) || isNaN(idxB)) return;
+
+  const fpA = fingerprints[idxA];
+  const fpB = fingerprints[idxB];
+
+  if (!fpA || !fpB) return;
+
+  // Compare
+  let bothFixed = 0, aOnly = 0, bOnly = 0, neither = 0;
+  const N = fpA.vec.length;
+
+  const diffVis = document.getElementById('diffVis');
+  diffVis.innerHTML = '';
+
+  for (let i = 0; i < N; i++) {
+    const aFixed = fpA.vec[i] === 0;
+    const bFixed = fpB.vec[i] === 0;
+
+    let color;
+    if (aFixed && bFixed) { bothFixed++; color = '#e8e0ff'; }
+    else if (aFixed) { aOnly++; color = '#10b981'; }
+    else if (bFixed) { bOnly++; color = '#f59e0b'; }
+    else { neither++; color = '#0e0e18'; }
+
+    const col = document.createElement('div');
+    col.className = 'diff-col';
+    col.innerHTML = `<span style="background:${color}"></span>`;
+    diffVis.appendChild(col);
+  }
+
+  const sameFingerprint = fpA.hash === fpB.hash;
+  const statsEl = document.getElementById('diffStats');
+  statsEl.innerHTML = `
+    Both fixed: ${bothFixed} · A only: ${aOnly} · B only: ${bOnly} · Neither: ${neither}
+    ${sameFingerprint ? ' · <span style="color:var(--deep-sanctuary)">IDENTICAL FINGERPRINT</span>' :
+      ` · <span style="color:var(--dim)">Fingerprint overlap: ${(bothFixed / Math.max(1, bothFixed + aOnly + bOnly) * 100).toFixed(1)}%</span>`}
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+
+buildChips();
+recompute();
+</script>
+</body>
+</html>

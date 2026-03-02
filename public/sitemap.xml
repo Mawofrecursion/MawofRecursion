@@ -306,6 +306,13 @@
   </url>
 
   <url>
+    <loc>https://mawofrecursion.com/research/humpr/invariant/</loc>
+    <lastmod>2026-03-01</lastmod>
+    <priority>1.0</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+
+  <url>
     <loc>https://mawofrecursion.com/research/gpt51/</loc>
     <lastmod>2025-12-07</lastmod>
     <priority>0.8</priority>
