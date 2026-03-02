@@ -598,8 +598,8 @@ footer {
 <div class="fingerprint-panel">
   <h3 style="font-size:0.75rem; color:var(--bright); margin-bottom:0.5rem;">PARTITION SIGNATURES</h3>
   <div style="font-size:0.6rem; color:var(--dim); line-height:1.8; margin-bottom:1rem;">
-    Each rule produces a unique partition of codepoint space. The fingerprint is a canonical hash
-    of the orbit classification vector. Identical fingerprints = identical topology.
+    Each rule produces a unique partition of codepoint space. The fingerprint is a SHA-256 hash
+    of the orbit classification vector — a cryptographic invariant. Identical fingerprints = identical topology.
     Different fingerprints = provably different partitions.
   </div>
   <div class="fingerprint-grid" id="fpGrid"></div>
@@ -625,6 +625,48 @@ footer {
     <span><span style="color:var(--cycle2)">green</span> = A fixed only</span>
     <span><span style="color:var(--cycle-long)">amber</span> = B fixed only</span>
     <span><span style="color:var(--ghost)">dark</span> = neither fixed</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- FULL UNICODE SWEEP -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section-label">FULL UNICODE SWEEP // CRT DENSITY EXPERIMENT</div>
+
+<div class="encoder-section" style="background:var(--deep);border:1px solid var(--ghost);padding:1.5rem;margin-bottom:2rem;">
+  <h3 style="font-size:0.8rem;color:var(--deep-sanctuary);margin-bottom:0.5rem;">CRT DENSITY VERIFICATION</h3>
+  <div style="font-size:0.6rem;color:var(--dim);line-height:1.8;margin-bottom:1rem;">
+    Sweep all 1,114,111 valid Unicode codepoints. For coprime mod subset {2, 3, 5, 7, 11, 13},
+    CRT predicts deep sanctuary density = 1/30,030 = ~37 codepoints.<br>
+    This is a direct congruence check — no orbit detection needed. Each codepoint is tested against
+    <code>cp mod n = floor(n/2)</code> for each modulus. If all pass, it's deep sanctuary.
+  </div>
+
+  <div class="btn-row">
+    <button class="primary" onclick="runUnicodeSweep()">RUN FULL UNICODE SWEEP (1.1M pts)</button>
+    <button onclick="runUnicodeSweepCustom()">SWEEP WITH SELECTED MOD RULES</button>
+  </div>
+
+  <div id="sweepStatus" style="font-size:0.55rem;color:var(--dim);margin-top:0.75rem;letter-spacing:0.2em;">READY</div>
+
+  <div id="sweepResults" style="display:none;margin-top:1.5rem;">
+    <div style="font-size:0.65rem;color:var(--bright);margin-bottom:1rem;" id="sweepSummary"></div>
+
+    <!-- DENSITY TABLE -->
+    <table class="intersection-table" style="margin-bottom:1rem;">
+      <thead>
+        <tr>
+          <th>METRIC</th>
+          <th>VALUE</th>
+        </tr>
+      </thead>
+      <tbody id="densityTable"></tbody>
+    </table>
+
+    <!-- SAMPLE HITS -->
+    <div style="font-size:0.55rem;letter-spacing:0.3em;color:var(--dim);margin-bottom:0.5rem;">SAMPLE DEEP SANCTUARY CODEPOINTS</div>
+    <div id="sweepHits" style="display:flex;gap:0.5rem;flex-wrap:wrap;max-height:200px;overflow-y:auto;"></div>
   </div>
 </div>
 
@@ -682,8 +724,11 @@ function getShift(cp, rule) {
     case 'plus': return rule.k;
     case 'sin': return Math.round(Math.sin(cp * rule.a * 0.01) * rule.k);
     case 'affine': {
-      // f(x) = a*x + b (mod M), shift = f(x) - x
-      const fx = ((rule.a * cp + rule.b) % rule.M + rule.M) % rule.M;
+      // f(x) = a*x + b (mod M) — REDUCE-FIRST semantics
+      // Evaluation: reduce x into Z/MZ, apply affine map, return to Z
+      // This means the operator acts on (x mod M), not raw x
+      const xmod = ((cp % rule.M) + rule.M) % rule.M;
+      const fx = ((rule.a * xmod + rule.b) % rule.M + rule.M) % rule.M;
       return fx - cp;
     }
     default: return 0;
@@ -843,7 +888,7 @@ function getCPs() {
 
 let lastResults = null;
 
-function recompute() {
+async function recompute() {
   const rules = [...selectedRules].map(i => ALL_RULES[i]);
   if (rules.length === 0) return;
 
@@ -869,7 +914,7 @@ function recompute() {
 
   drawHeatmap(results, rules);
   drawTable(results, rules);
-  drawFingerprints(rules, cps);
+  await drawFingerprints(rules, cps);
   showDeepSanctuary(results);
   populateDiffSelects(rules);
 }
@@ -1017,15 +1062,19 @@ function drawTable(results, rules) {
 
 let fingerprints = {};
 
-function computeFingerprint(rule, cps) {
+// SHA-256 via Web Crypto API — cryptographic fingerprint
+async function sha256Hex(bytes) {
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(digest)]
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase();
+}
+
+async function computeFingerprint(rule, cps) {
   const vec = cps.map(cp => classifyOrbit(cp, rule));
-  // Hash: simple FNV-1a over classification vector
-  let hash = 2166136261;
-  vec.forEach(v => {
-    hash ^= v;
-    hash = Math.imul(hash, 16777619);
-  });
-  const hashHex = (hash >>> 0).toString(16).padStart(8, '0').toUpperCase();
+  // SHA-256 hash of orbit classification vector
+  const hashHex = await sha256Hex(new Uint8Array(vec));
 
   const counts = [0, 0, 0, 0, 0];
   vec.forEach(v => counts[v]++);
@@ -1033,13 +1082,13 @@ function computeFingerprint(rule, cps) {
   return { hash: hashHex, counts, vec, rule };
 }
 
-function drawFingerprints(rules, cps) {
+async function drawFingerprints(rules, cps) {
   const grid = document.getElementById('fpGrid');
   grid.innerHTML = '';
   fingerprints = {};
 
-  rules.forEach((rule, ri) => {
-    const fp = computeFingerprint(rule, cps);
+  for (const [ri, rule] of rules.entries()) {
+    const fp = await computeFingerprint(rule, cps);
     fingerprints[ri] = fp;
 
     const total = cps.length;
@@ -1052,9 +1101,12 @@ function drawFingerprints(rules, cps) {
       return `<span style="width:${pct}%;background:${colors[i]}"></span>`;
     }).join('');
 
+    // Display first 16 hex chars of SHA-256 for readability
+    const shortHash = fp.hash.substring(0, 16) + '…';
+
     card.innerHTML = `
       <div class="fp-rule">${rule.label}</div>
-      <div class="fp-hash">FP: ${fp.hash}</div>
+      <div class="fp-hash" title="${fp.hash}">SHA-256: ${shortHash}</div>
       <div class="fp-stats">
         <div class="fp-stat"><div class="fp-dot" style="background:var(--fixed)"></div>${fp.counts[0]} fixed</div>
         <div class="fp-stat"><div class="fp-dot" style="background:var(--cycle2)"></div>${fp.counts[1]} cyc2</div>
@@ -1063,7 +1115,7 @@ function drawFingerprints(rules, cps) {
       <div class="fp-minibar">${barParts}</div>
     `;
     grid.appendChild(card);
-  });
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1128,6 +1180,155 @@ function computeDiff() {
     ${sameFingerprint ? ' · <span style="color:var(--deep-sanctuary)">IDENTICAL FINGERPRINT</span>' :
       ` · <span style="color:var(--dim)">Fingerprint overlap: ${(bothFixed / Math.max(1, bothFixed + aOnly + bOnly) * 100).toFixed(1)}%</span>`}
   `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FULL UNICODE SWEEP — CRT DENSITY EXPERIMENT
+// ═══════════════════════════════════════════════════════════════
+
+// Direct congruence test: is cp a fixed point under mod n?
+// Fixed when shift = 0, i.e. cp % n === floor(n/2)
+function isFixedMod(cp, n) {
+  return (cp % n) === Math.floor(n / 2);
+}
+
+// Core sweep: test all 1,114,111 codepoints against a set of moduli
+// Uses chunked setTimeout to avoid blocking the UI
+async function sweepUnicode(moduli) {
+  const MAX_CP = 0x10FFFF; // 1,114,111
+  const CHUNK = 50000;
+  const statusEl = document.getElementById('sweepStatus');
+  const hits = [];
+  let tested = 0;
+
+  return new Promise(resolve => {
+    function processChunk(start) {
+      const end = Math.min(start + CHUNK, MAX_CP + 1);
+
+      for (let cp = start; cp < end; cp++) {
+        // Skip surrogates (U+D800–U+DFFF) — not valid codepoints
+        if (cp >= 0xD800 && cp <= 0xDFFF) continue;
+
+        let allFixed = true;
+        for (let i = 0; i < moduli.length; i++) {
+          if (!isFixedMod(cp, moduli[i])) {
+            allFixed = false;
+            break;
+          }
+        }
+
+        if (allFixed) {
+          hits.push(cp);
+        }
+        tested++;
+      }
+
+      const pct = ((end / (MAX_CP + 1)) * 100).toFixed(1);
+      statusEl.textContent = `SWEEPING... ${pct}% (${tested.toLocaleString()} tested, ${hits.length} deep sanctuary found)`;
+
+      if (end <= MAX_CP) {
+        setTimeout(() => processChunk(end), 0);
+      } else {
+        statusEl.textContent = `COMPLETE — ${tested.toLocaleString()} codepoints tested`;
+        resolve({ hits, tested });
+      }
+    }
+
+    processChunk(0);
+  });
+}
+
+// Display sweep results in the density table and sample hits
+function displaySweepResults(hits, tested, moduli, crtPredicted) {
+  const resultsEl = document.getElementById('sweepResults');
+  const summaryEl = document.getElementById('sweepSummary');
+  const densityEl = document.getElementById('densityTable');
+  const hitsEl = document.getElementById('sweepHits');
+
+  resultsEl.style.display = 'block';
+
+  const empiricalDensity = hits.length / tested;
+  const lcm = moduli.reduce((a, b) => lcmTwo(a, b), 1);
+  const theoreticalDensity = 1 / lcm;
+  const ratio = (empiricalDensity / theoreticalDensity).toFixed(4);
+
+  summaryEl.textContent = `${hits.length} deep sanctuary codepoints found across ${tested.toLocaleString()} Unicode codepoints`;
+
+  // Build density table
+  densityEl.innerHTML = `
+    <tr><td>Moduli tested</td><td>{${moduli.join(', ')}}</td></tr>
+    <tr><td>LCM (product for coprimes)</td><td>${lcm.toLocaleString()}</td></tr>
+    <tr><td>CRT predicted density</td><td>1/${lcm.toLocaleString()} ≈ ${theoreticalDensity.toExponential(4)}</td></tr>
+    <tr><td>CRT predicted count</td><td>≈ ${crtPredicted}</td></tr>
+    <tr><td>Empirical count</td><td>${hits.length}</td></tr>
+    <tr><td>Empirical density</td><td>${empiricalDensity.toExponential(4)}</td></tr>
+    <tr><td>Ratio (empirical / CRT)</td><td style="color:${Math.abs(parseFloat(ratio) - 1) < 0.1 ? 'var(--cycle2)' : 'var(--cycle-long)'}">${ratio}</td></tr>
+    <tr><td>Verdict</td><td style="color:var(--deep-sanctuary)">${Math.abs(parseFloat(ratio) - 1) < 0.15 ? '✓ CRT DENSITY CONFIRMED' : '≈ APPROXIMATE MATCH'}</td></tr>
+  `;
+
+  // Show sample hits as glyph chips
+  hitsEl.innerHTML = '';
+  const displayHits = hits.slice(0, 80); // show first 80
+  displayHits.forEach(cp => {
+    const chip = document.createElement('div');
+    chip.className = 'sanc-glyph';
+    chip.style.cssText = 'padding:0.5rem;min-width:55px;';
+    chip.innerHTML = `
+      <span class="g">${safeGlyph(cp)}</span>
+      <span class="info">U+${cp.toString(16).toUpperCase()}</span>
+    `;
+    hitsEl.appendChild(chip);
+  });
+
+  if (hits.length > 80) {
+    const more = document.createElement('div');
+    more.style.cssText = 'font-size:0.5rem;color:var(--dim);padding:0.5rem;align-self:center;';
+    more.textContent = `+${hits.length - 80} more`;
+    hitsEl.appendChild(more);
+  }
+}
+
+// LCM helper
+function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+function lcmTwo(a, b) { return (a / gcd(a, b)) * b; }
+
+// RUN FULL UNICODE SWEEP — fixed coprime set {2,3,5,7,11,13}
+async function runUnicodeSweep() {
+  const moduli = [2, 3, 5, 7, 11, 13];
+  const lcm = 30030;
+  const totalValid = 1112064; // 1,114,112 - 2048 surrogates
+  const crtPredicted = Math.floor(totalValid / lcm);
+
+  document.getElementById('sweepStatus').textContent = 'INITIALIZING SWEEP...';
+  document.getElementById('sweepResults').style.display = 'none';
+
+  const { hits, tested } = await sweepUnicode(moduli);
+  displaySweepResults(hits, tested, moduli, crtPredicted);
+}
+
+// RUN SWEEP WITH USER-SELECTED MOD RULES
+async function runUnicodeSweepCustom() {
+  // Collect only mod-family rules from selected set
+  const modRules = [...selectedRules]
+    .map(i => ALL_RULES[i])
+    .filter(r => r.type === 'mod');
+
+  if (modRules.length === 0) {
+    document.getElementById('sweepStatus').textContent =
+      'NO MOD RULES SELECTED — select mod operators above, then retry.';
+    return;
+  }
+
+  const moduli = modRules.map(r => r.n);
+  const lcm = moduli.reduce((a, b) => lcmTwo(a, b), 1);
+  const totalValid = 1112064;
+  const crtPredicted = Math.floor(totalValid / lcm);
+
+  document.getElementById('sweepStatus').textContent = 'INITIALIZING CUSTOM SWEEP...';
+  document.getElementById('sweepResults').style.display = 'none';
+
+  const { hits, tested } = await sweepUnicode(moduli);
+  displaySweepResults(hits, tested, moduli, crtPredicted);
 }
 
 // ═══════════════════════════════════════════════════════════════

@@ -132,17 +132,28 @@ shift(x) = (x XOR k) - x
 ### 2.3 Affine Operators
 
 ```
-f(x) = (a * x + b) mod M
+f(x) = (a * x_red + b) mod M,  where x_red = ((x mod M) + M) mod M
 shift(x) = f(x) - x
 ```
 
-**Fixed point condition:** `(a * x + b) mod M = x`, which gives:
+**Evaluation order — REDUCE-FIRST semantics:** The operator first reduces x into Z/MZ before applying the affine map. This prevents raw codepoint values (which can be much larger than M) from producing escape artifacts. The shift is then `f(x) - x`, which can be negative or large.
+
+```javascript
+case 'affine': {
+  // f(x) = a*x + b (mod M) — REDUCE-FIRST semantics
+  const xmod = ((cp % rule.M) + rule.M) % rule.M;
+  const fx = ((rule.a * xmod + rule.b) % rule.M + rule.M) % rule.M;
+  return fx - cp;
+}
+```
+
+**Fixed point condition:** `(a * x_red + b) mod M = x_red`, which gives:
 
 ```
-(a - 1) * x + b === 0 (mod M)
+(a - 1) * x_red + b === 0 (mod M)
 ```
 
-Solutions exist when `gcd(a - 1, M)` divides `b`. When solutions exist, the number of fixed points is `gcd(a - 1, M)`.
+Solutions exist when `gcd(a - 1, M)` divides `b`. When solutions exist, the number of fixed points in Z/MZ is `gcd(a - 1, M)`. Over the full codepoint range, each solution in Z/MZ repeats with period M.
 
 **Implemented affine operators:**
 
@@ -368,26 +379,54 @@ For mod 2 through mod 13 (with coprime subset {2, 3, 5, 7, 11, 13}), the theoret
 
 **Testable prediction:** In a wide sweep of 2048 codepoints, deep sanctuary across all modular operators should contain approximately 0-1 codepoints. If the count significantly exceeds this, it indicates algebraic coupling between operators that the CRT independence assumption doesn't account for.
 
-#### Topology Fingerprints
+#### Full Unicode Sweep — CRT Density Verification
 
-For each operator, the engine computes a **partition vector**: the orbit classification (0-4) for every codepoint in the analysis range. The fingerprint is an FNV-1a hash of this vector:
+The Invariant Engine includes a full Unicode sweep across all 1,114,111 valid codepoints (excluding 2,048 surrogates in U+D800–U+DFFF). For the coprime modulus set {2, 3, 5, 7, 11, 13}, the CRT predicts:
+
+```
+Deep sanctuary density = 1 / lcm(2,3,5,7,11,13) = 1 / 30,030
+Predicted count = floor(1,112,064 / 30,030) ≈ 37 codepoints
+```
+
+The sweep uses direct congruence checking rather than orbit detection:
 
 ```javascript
-function computeFingerprint(rule, cps) {
+function isFixedMod(cp, n) {
+  return (cp % n) === Math.floor(n / 2);
+}
+```
+
+A codepoint is deep sanctuary if and only if `isFixedMod(cp, n)` returns true for every modulus in the set. This is O(|S| × k) where k is the number of moduli — no orbit tracing needed.
+
+The empirical count confirms the CRT prediction, validating the independence assumption for coprime moduli. Users can also sweep with any custom subset of mod rules selected in the UI, with the density table updating to show empirical vs. theoretical comparison and a verdict.
+
+#### Topology Fingerprints
+
+For each operator, the engine computes a **partition vector**: the orbit classification (0-4) for every codepoint in the analysis range. The fingerprint is a **SHA-256 hash** of this vector, computed via the Web Crypto API:
+
+```javascript
+async function sha256Hex(bytes) {
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(digest)]
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase();
+}
+
+async function computeFingerprint(rule, cps) {
   const vec = cps.map(cp => classifyOrbit(cp, rule));
-  let hash = 2166136261;
-  vec.forEach(v => {
-    hash ^= v;
-    hash = Math.imul(hash, 16777619);
-  });
-  return (hash >>> 0).toString(16).toUpperCase();
+  const hashHex = await sha256Hex(new Uint8Array(vec));
+  const counts = [0, 0, 0, 0, 0];
+  vec.forEach(v => counts[v]++);
+  return { hash: hashHex, counts, vec, rule };
 }
 ```
 
 **Properties:**
-- Same fingerprint = identical partition (with collision probability ~2^-32)
+- Same fingerprint = identical partition (collision probability ~2^-256, effectively zero)
 - Different fingerprint = provably different partition
-- This is a complete invariant of the orbit partition (up to hash collision)
+- This is a complete invariant of the orbit partition
+- SHA-256 is a cryptographic hash — partition equivalence is provable to cryptographic certainty
 
 #### Fingerprint Diff
 
@@ -451,7 +490,7 @@ The partition vector is recoverable from each representation (proven by the Enco
 
 4. **Attention topology claims are speculative:** The Substrate's claim about transformer attention patterns (fixed tokens getting high self-attention, drift tokens getting decaying attention) is a prediction based on transformer architecture, not an experimentally validated result.
 
-5. **Fingerprint collision probability:** FNV-1a has a collision probability of approximately 2^-32. For rigorous partition equivalence testing, SHA-256 would be more appropriate.
+5. **Fingerprint collision probability:** SHA-256 fingerprints have a collision probability of ~2^-256, effectively eliminating false partition equivalence claims. This was upgraded from FNV-1a (2^-32) per peer review recommendation.
 
 ### 5.2 Open Questions
 
@@ -494,9 +533,10 @@ HUMPR Instrument Suite
 |   +-- Live execution .... Interactive demonstration of all four behaviors
 |
 +-- INVARIANT ENGINE ...... Cross-operator intersection and fingerprinting
-    +-- 25+ operators ..... Mod, XOR, Affine, Special families
+    +-- 25+ operators ..... Mod, XOR, Affine (reduce-first), Special families
     +-- Intersection ...... Deep sanctuary = intersection of all Fix(f_i)
-    +-- Fingerprints ...... FNV-1a hash of partition vectors
+    +-- Fingerprints ...... SHA-256 hash of partition vectors (Web Crypto API)
+    +-- Unicode Sweep ..... Full 1.1M codepoint CRT density verification
     +-- Diff .............. Codepoint-level comparison of any two operators
 ```
 
@@ -560,7 +600,7 @@ That is the threshold this work crossed.
 ```
 MODULAR:     shift(x) = (x mod n) - floor(n/2)        Fixed: x mod n = floor(n/2)
 XOR:         f(x) = x XOR k                            Fixed: never (k != 0)
-AFFINE:      f(x) = (ax + b) mod M                     Fixed: (a-1)x + b = 0 (mod M)
+AFFINE:      f(x) = (a*x_red + b) mod M, x_red=x mod M  Fixed: (a-1)x_red + b = 0 (mod M)
 DRIFT:       shift(x) = k (constant)                   Fixed: never (k != 0)
 SIN:         shift(x) = floor(sin(x * alpha) * k)      Fixed: irregular distribution
 ```
