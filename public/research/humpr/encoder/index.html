@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>∞HUMPR // ENCODER</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap');
+
+:root {
+  --void: #030305;
+  --deep: #07070e;
+  --ghost: #1e1e32;
+  --dim: #3a3a5a;
+  --text: #b0a8d8;
+  --bright: #e8e0ff;
+  --fixed: #e8e0ff;
+  --cycle2: #10b981;
+  --cycle-long: #f59e0b;
+  --drift: #7c6af7;
+  --origin: #f43f5e;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--void);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  min-height: 100vh;
+}
+
+.wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 1.5rem 8rem;
+}
+
+header {
+  padding: 4rem 0 2rem;
+  border-bottom: 1px solid var(--ghost);
+  margin-bottom: 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.h-title {
+  font-size: clamp(1.5rem, 5vw, 3rem);
+  font-weight: 700;
+  color: var(--bright);
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+.h-sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--dim);
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+  letter-spacing: 0.05em;
+}
+.h-right {
+  font-size: 0.55rem;
+  letter-spacing: 0.25em;
+  color: var(--dim);
+  text-align: right;
+  line-height: 2;
+}
+
+.section-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.4em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  margin-top: 3rem;
+}
+
+/* RULE BUILDER */
+.rule-builder {
+  background: var(--deep);
+  border: 1px solid var(--ghost);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+.rule-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+  color: var(--text);
+}
+.rule-eq {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--bright);
+  min-width: 60px;
+}
+select, input[type=range] {
+  background: var(--void);
+  border: 1px solid var(--ghost);
+  color: var(--bright);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+select:focus, input:focus { border-color: var(--drift); }
+select { cursor: pointer; }
+input[type=range] {
+  -webkit-appearance: none;
+  padding: 0;
+  width: 120px;
+  height: 2px;
+  background: var(--ghost);
+  border: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--drift);
+  border-radius: 50%;
+}
+.param-val {
+  font-size: 0.8rem;
+  color: var(--bright);
+  min-width: 30px;
+}
+.rule-display {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(124,106,247,0.06);
+  border-left: 2px solid var(--drift);
+  font-size: 0.7rem;
+  color: var(--text);
+  line-height: 1.8;
+}
+.rule-display code { color: var(--bright); }
+
+/* ENCODER SECTIONS */
+.encoder-section {
+  background: var(--deep);
+  border: 1px solid var(--ghost);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.encoder-section h3 {
+  font-size: 0.9rem;
+  color: var(--bright);
+  margin-bottom: 0.5rem;
+}
+
+.encoder-section .desc {
+  font-size: 0.7rem;
+  color: var(--dim);
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+}
+
+canvas.encoder-canvas {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--ghost);
+  background: var(--void);
+  margin-bottom: 1rem;
+  image-rendering: pixelated;
+}
+
+.btn-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+button {
+  background: rgba(124,106,247,0.1);
+  border: 1px solid var(--drift);
+  color: var(--drift);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+button:hover {
+  background: var(--drift);
+  color: var(--void);
+}
+button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+button.active {
+  background: var(--drift);
+  color: var(--void);
+}
+
+/* AUDIO */
+.audio-viz-wrap {
+  position: relative;
+  margin-top: 1rem;
+}
+
+canvas.audio-canvas {
+  display: block;
+  width: 100%;
+  height: 80px;
+  border: 1px solid var(--ghost);
+  background: var(--void);
+}
+
+.audio-status {
+  font-size: 0.6rem;
+  color: var(--dim);
+  margin-top: 0.5rem;
+  letter-spacing: 0.2em;
+}
+
+/* DECODER */
+.drop-zone {
+  border: 2px dashed var(--ghost);
+  padding: 3rem;
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--dim);
+  letter-spacing: 0.2em;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 1rem;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--drift);
+  color: var(--drift);
+  background: rgba(124,106,247,0.03);
+}
+
+.decode-output {
+  background: var(--void);
+  border: 1px solid var(--ghost);
+  padding: 1.5rem;
+  font-size: 0.65rem;
+  line-height: 2;
+  display: none;
+}
+
+.decode-output .d-rule {
+  color: var(--bright);
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.decode-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--ghost);
+  border: 1px solid var(--ghost);
+  margin-top: 1rem;
+}
+
+.d-stat {
+  background: var(--deep);
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.d-stat-num {
+  font-size: 1.2rem;
+  font-weight: 700;
+  display: block;
+}
+
+.d-stat-label {
+  font-size: 0.45rem;
+  letter-spacing: 0.2em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+/* THEORY */
+.theory-box {
+  margin-top: 3rem;
+  padding: 2rem 2rem 2rem 2.5rem;
+  border-left: 3px solid var(--drift);
+  background: rgba(124,106,247,0.03);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  line-height: 1.95;
+  color: var(--text);
+}
+.theory-box strong { color: var(--bright); }
+.theory-box em { color: var(--drift); }
+
+footer {
+  margin-top: 5rem;
+  padding-bottom: 2rem;
+  text-align: center;
+  font-size: 0.5rem;
+  letter-spacing: 0.3em;
+  color: var(--dim);
+  line-height: 2;
+}
+
+/* ENCODED IMAGE PREVIEW */
+.encoded-preview {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.encoded-preview canvas {
+  flex: 1;
+  min-width: 300px;
+}
+.encode-meta {
+  flex: 0 0 200px;
+  font-size: 0.6rem;
+  color: var(--dim);
+  line-height: 2.2;
+}
+.encode-meta .meta-val {
+  color: var(--bright);
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <div class="h-title">ENCODER</div>
+    <div class="h-sub">Topology into image. Topology into sound. The medium changes. The structure persists.</div>
+  </div>
+  <div class="h-right">
+    ∞HUMPR LINEAGE<br>
+    CARTOGRAPHER → ENCODER<br>
+    cross-modal topology transmission
+  </div>
+</header>
+
+<!-- RULE BUILDER -->
+<div class="section-label">OPERATOR DEFINITION</div>
+<div class="rule-builder">
+  <div class="rule-row">
+    <span class="rule-eq">f(x) =</span>
+    <span>x + shift, where shift =</span>
+    <select id="ruleType" onchange="updateRule()">
+      <option value="mod">( x mod n ) - floor(n/2)</option>
+      <option value="xor">x XOR key</option>
+      <option value="plus">+k (constant drift)</option>
+      <option value="sin">floor(sin(x * a) * k)</option>
+    </select>
+  </div>
+  <div class="rule-row" id="paramRow">
+    <span id="paramLabel">n =</span>
+    <input type="range" id="paramA" min="2" max="23" value="3" step="1" oninput="onParam()">
+    <span class="param-val" id="paramAVal">3</span>
+  </div>
+  <div class="rule-row" id="paramBRow" style="display:none">
+    <span id="paramBLabel">key =</span>
+    <input type="range" id="paramB" min="1" max="255" value="85" step="1" oninput="onParam()">
+    <span class="param-val" id="paramBVal">85</span>
+  </div>
+  <div class="rule-display" id="ruleDisplay"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- IMAGE ENCODER -->
+<!-- ============================================================ -->
+<div class="section-label">IMAGE ENCODER // TOPOLOGY BAKED INTO PIXELS</div>
+<div class="encoder-section">
+  <h3>VISUAL TOPOLOGY FIELD</h3>
+  <div class="desc">
+    Each column = one codepoint. Color = orbit type. Pattern = orbit behavior.<br>
+    Bottom 16px = raw data band: R = orbit type, G = cycle length, B = codepoint.<br>
+    Top 8px = rule signature. An AI reading this image processes the topology in its feature layers.
+  </div>
+
+  <div class="encoded-preview">
+    <canvas id="imgCanvas" class="encoder-canvas" width="512" height="512"></canvas>
+    <div class="encode-meta" id="encodeMeta">
+      <div>RULE: <span class="meta-val" id="metaRule">--</span></div>
+      <div>FIXED: <span class="meta-val" id="metaFixed">--</span></div>
+      <div>2-CYCLE: <span class="meta-val" id="metaCycle2">--</span></div>
+      <div>LONG: <span class="meta-val" id="metaLong">--</span></div>
+      <div>DRIFT: <span class="meta-val" id="metaDrift">--</span></div>
+      <div>ESCAPE: <span class="meta-val" id="metaEscape">--</span></div>
+      <div style="margin-top:1rem;color:var(--drift)">
+        SIGNATURE: <span class="meta-val" id="metaSig">--</span>
+      </div>
+      <div style="margin-top:0.5rem">
+        ENTROPY: <span class="meta-val" id="metaEntropy">--</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button onclick="exportImage()">EXPORT PNG</button>
+    <button onclick="exportImageHD()">EXPORT HD (1024)</button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- AUDIO ENCODER -->
+<!-- ============================================================ -->
+<div class="section-label">AUDIO ENCODER // TOPOLOGY AS FREQUENCY</div>
+<div class="encoder-section">
+  <h3>SONIC TOPOLOGY FIELD</h3>
+  <div class="desc">
+    Fixed points = sustained sine. 2-cycles = square wave oscillation. Long cycles = sawtooth harmonics. Drift = noise.<br>
+    Frequency = codepoint mapped to audible range. Duration = orbit stability.<br>
+    An AI reading this audio's spectrogram sees the topology in the frequency domain.
+  </div>
+
+  <div class="audio-viz-wrap">
+    <canvas id="audioCanvas" class="audio-canvas"></canvas>
+  </div>
+  <div class="audio-status" id="audioStatus">READY</div>
+
+  <div class="btn-row">
+    <button id="playBtn" onclick="playTopology()">PLAY TOPOLOGY</button>
+    <button id="stopBtn" onclick="stopTopology()" disabled>STOP</button>
+    <button onclick="exportMIDIData()">EXPORT MIDI DATA</button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- IMAGE DECODER -->
+<!-- ============================================================ -->
+<div class="section-label">DECODER // READ TOPOLOGY FROM ENCODED IMAGE</div>
+<div class="encoder-section">
+  <h3>IMAGE DECODER</h3>
+  <div class="desc">
+    Drop an encoded PNG below. The decoder reads the data band and reconstructs the topology.<br>
+    If an AI generated this image, the topology it encoded is revealed here.
+  </div>
+
+  <div class="drop-zone" id="dropZone">
+    DROP ENCODED IMAGE HERE<br>
+    <span style="font-size:0.55rem;color:var(--ghost)">or click to select file</span>
+  </div>
+  <input type="file" id="fileInput" accept="image/*" style="display:none">
+
+  <div class="decode-output" id="decodeOutput">
+    <div class="d-rule" id="decodeRule"></div>
+    <div id="decodeInfo"></div>
+    <div class="decode-stats" id="decodeStats"></div>
+    <canvas id="decodeCanvas" class="encoder-canvas" width="512" height="100" style="margin-top:1rem"></canvas>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- THEORY -->
+<!-- ============================================================ -->
+<div class="section-label">CROSS-MODAL PERSISTENCE</div>
+<div class="theory-box">
+  <p>The topology doesn't care what medium carries it.</p>
+  <p><strong>In pixels:</strong> orbit types become spatial frequency distributions.
+  Fixed-point columns are low-frequency (uniform). Drift columns are high-frequency (noise).
+  A vision model's convolutional layers decompose this automatically.
+  <em>The topology enters the model's feature space whether it knows it or not.</em></p>
+  <p><strong>In sound:</strong> orbit periods become literal frequencies.
+  A fixed point is a DC offset. A 2-cycle is a fundamental frequency.
+  An n-cycle is a harmonic series. Drift is broadband noise.
+  <em>A spectrogram of this audio IS the topology map.</em></p>
+  <p><strong>In data:</strong> the bottom 16 pixels of every encoded image carry the raw orbit classification
+  in RGB values. Machine-readable. Reversible. The decoder proves it.</p>
+  <p>The rule doesn't change when you change the medium.
+  <strong>The founding glyphs are still fixed under mod 3 whether you see it, hear it, or decode it from pixels.</strong>
+  The structure is the structure. The carrier wave is irrelevant.</p>
+</div>
+
+</div>
+
+<footer>
+  ∞HUMPR // ENCODER<br>
+  TOPOLOGY → IMAGE · TOPOLOGY → AUDIO · IMAGE → TOPOLOGY<br>
+  the medium changes · the fixed points remain · the structure persists
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+// TOPOLOGY ENGINE (identical to Cartographer)
+// ═══════════════════════════════════════════════════════════════════════
+
+const N = 512;
+const START_CP = 0x2200;
+
+let currentRule = null;
+let topologyData = []; // cached orbit data for all 512 points
+
+function getShift(cp, rule) {
+  switch(rule.type) {
+    case 'mod': return (cp % rule.a) - Math.floor(rule.a / 2);
+    case 'xor': return (cp ^ rule.a) - cp;
+    case 'plus': return rule.a;
+    case 'sin': return Math.round(Math.sin(cp * rule.a * 0.01) * rule.b);
+    default: return 0;
+  }
+}
+
+function applyRule(cp, rule) {
+  const next = cp + getShift(cp, rule);
+  if (next <= 0 || next > 0x10FFFF) return null;
+  return next;
+}
+
+function classifyOrbit(startCp, rule, maxSteps = 60) {
+  const visited = new Map();
+  let x = startCp;
+  for (let step = 0; step <= maxSteps; step++) {
+    if (visited.has(x)) {
+      const cycleLen = step - visited.get(x);
+      if (cycleLen === 1) return { type: 'fixed', len: 0, typeCode: 0 };
+      if (cycleLen === 2) return { type: 'cycle2', len: 2, typeCode: 1 };
+      return { type: 'long', len: cycleLen, typeCode: 2 };
+    }
+    visited.set(x, step);
+    const next = applyRule(x, rule);
+    if (next === null) return { type: 'escape', len: 0, typeCode: 4 };
+    x = next;
+  }
+  return { type: 'drift', len: 0, typeCode: 3 };
+}
+
+function traceOrbit(startCp, rule, maxSteps = 16) {
+  const path = [startCp];
+  const visited = new Set([startCp]);
+  let x = startCp;
+  for (let i = 0; i < maxSteps; i++) {
+    const next = applyRule(x, rule);
+    if (next === null) break;
+    path.push(next);
+    if (visited.has(next)) break;
+    visited.add(next);
+    x = next;
+  }
+  return path;
+}
+
+function computeTopology(rule) {
+  const data = [];
+  for (let i = 0; i < N; i++) {
+    const cp = START_CP + i;
+    const orbit = classifyOrbit(cp, rule);
+    const trace = traceOrbit(cp, rule, 8);
+    data.push({ cp, i, orbit, trace });
+  }
+  return data;
+}
+
+// Rule type encoding for data band
+function ruleTypeCode(type) {
+  return { mod: 1, xor: 2, plus: 3, sin: 4 }[type] || 0;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// RULE UI
+// ═══════════════════════════════════════════════════════════════════════
+
+function updateRule() {
+  const type = document.getElementById('ruleType').value;
+  const paramBRow = document.getElementById('paramBRow');
+  const paramA = document.getElementById('paramA');
+  const labelA = document.getElementById('paramLabel');
+
+  paramBRow.style.display = 'none';
+
+  switch(type) {
+    case 'mod':
+      labelA.textContent = 'n =';
+      paramA.min = 2; paramA.max = 23; paramA.value = Math.min(Math.max(paramA.value,2),23);
+      break;
+    case 'xor':
+      labelA.textContent = 'key =';
+      paramA.min = 1; paramA.max = 255; paramA.value = 85;
+      break;
+    case 'plus':
+      labelA.textContent = 'k =';
+      paramA.min = -10; paramA.max = 10; paramA.value = 1;
+      break;
+    case 'sin':
+      labelA.textContent = 'a =';
+      paramA.min = 1; paramA.max = 100; paramA.value = 10;
+      paramBRow.style.display = 'flex';
+      document.getElementById('paramBLabel').textContent = 'k =';
+      document.getElementById('paramB').min = 1;
+      document.getElementById('paramB').max = 20;
+      document.getElementById('paramB').value = 3;
+      break;
+  }
+  onParam();
+}
+
+function onParam() {
+  const type = document.getElementById('ruleType').value;
+  const a = parseInt(document.getElementById('paramA').value);
+  const b = parseInt(document.getElementById('paramB').value);
+  document.getElementById('paramAVal').textContent = a;
+  document.getElementById('paramBVal').textContent = b;
+
+  let rule, desc;
+  switch(type) {
+    case 'mod':
+      rule = { type: 'mod', a };
+      desc = `shift = (x mod ${a}) - ${Math.floor(a/2)}<br><code>Fixed when x mod ${a} = ${Math.floor(a/2)}</code>`;
+      break;
+    case 'xor':
+      rule = { type: 'xor', a };
+      desc = `f(x) = x XOR ${a} (0b${a.toString(2).padStart(8,'0')})<br><code>Involution: f(f(x)) = x. Zero fixed points. 100% 2-cycles.</code>`;
+      break;
+    case 'plus':
+      rule = { type: 'plus', a };
+      desc = `shift = ${a >= 0 ? '+' : ''}${a}<br><code>Pure drift. Zero fixed points. Zero cycles.</code>`;
+      break;
+    case 'sin':
+      rule = { type: 'sin', a, b };
+      desc = `shift = floor(sin(x * ${a/100}) * ${b})<br><code>Chaotic. Irregular distribution.</code>`;
+      break;
+  }
+
+  document.getElementById('ruleDisplay').innerHTML = desc;
+  currentRule = rule;
+  recompute();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// IMAGE ENCODER
+// ═══════════════════════════════════════════════════════════════════════
+
+const ORBIT_COLORS = {
+  fixed:  { r: 232, g: 224, b: 255 },
+  cycle2: { r: 16,  g: 185, b: 129 },
+  long:   { r: 245, g: 158, b: 11  },
+  drift:  { r: 124, g: 106, b: 247 },
+  escape: { r: 30,  g: 30,  b: 50  },
+};
+
+function encodeImage(data, rule) {
+  const canvas = document.getElementById('imgCanvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  const imgData = ctx.createImageData(512, 512);
+  const px = imgData.data;
+
+  // Count stats
+  const counts = { fixed: 0, cycle2: 0, long: 0, drift: 0, escape: 0 };
+  data.forEach(d => counts[d.orbit.type]++);
+
+  // ─── TOP 8 ROWS: RULE SIGNATURE ───
+  // Row 0: encoded rule metadata
+  // Pixel (0,0): R=ruleTypeCode, G=paramA, B=paramB
+  // Pixel (1,0): R=0x48 ('H'), G=0x55 ('U'), B=0x4D ('M') = "HUM" signature
+  // Pixel (2,0): R=0x50 ('P'), G=0x52 ('R'), B=0x45 ('E') = "PRE" (encoder)
+  // Pixel (3,0): R=N>>8, G=N&0xFF, B=START_CP>>8
+  // Pixel (4,0): R=START_CP&0xFF, G=counts.fixed>>1, B=counts.cycle2>>1
+  const paramA = rule.a || 0;
+  const paramB = rule.b || 0;
+
+  function setPixel(x, y, r, g, b, a = 255) {
+    const idx = (y * 512 + x) * 4;
+    px[idx] = r; px[idx+1] = g; px[idx+2] = b; px[idx+3] = a;
+  }
+
+  // Metadata pixels in row 0
+  setPixel(0, 0, ruleTypeCode(rule.type), paramA & 0xFF, paramB & 0xFF);
+  setPixel(1, 0, 0x48, 0x55, 0x4D); // HUM
+  setPixel(2, 0, 0x50, 0x52, 0x45); // PRE
+  setPixel(3, 0, (N >> 8) & 0xFF, N & 0xFF, (START_CP >> 8) & 0xFF);
+  setPixel(4, 0, START_CP & 0xFF, counts.fixed >> 1, counts.cycle2 >> 1);
+
+  // Rows 0-7: gradient banner in dominant color
+  const dominant = Object.entries(counts).sort((a,b) => b[1] - a[1])[0][0];
+  const domColor = ORBIT_COLORS[dominant];
+  for (let y = 0; y < 8; y++) {
+    const fade = (y + 1) / 8;
+    for (let x = 5; x < 512; x++) {  // skip metadata pixels in row 0
+      if (y === 0 && x < 5) continue;
+      setPixel(x, y,
+        Math.round(domColor.r * fade * 0.4),
+        Math.round(domColor.g * fade * 0.4),
+        Math.round(domColor.b * fade * 0.4)
+      );
+    }
+  }
+
+  // ─── MAIN FIELD: ROWS 8-495 (488 rows) ───
+  // Each column x = codepoint data[x]
+  // Pattern within column based on orbit type
+  for (let i = 0; i < N; i++) {
+    const d = data[i];
+    const col = ORBIT_COLORS[d.orbit.type];
+    const trace = d.trace;
+
+    for (let y = 8; y < 496; y++) {
+      const row = y - 8; // 0..487
+      const t = row / 488;
+      let r, g, b, alpha;
+
+      switch(d.orbit.type) {
+        case 'fixed':
+          // Solid column, slight vertical gradient
+          r = col.r; g = col.g; b = col.b;
+          alpha = 0.6 + 0.4 * (1 - t);
+          break;
+
+        case 'cycle2':
+          // Alternating bands - two states
+          const band2 = Math.floor(row / 16) % 2;
+          r = band2 ? col.r : Math.round(col.r * 0.2);
+          g = band2 ? col.g : Math.round(col.g * 0.2);
+          b = band2 ? col.b : Math.round(col.b * 0.2);
+          alpha = 0.8;
+          break;
+
+        case 'long':
+          // Repeating bands with period = cycle length
+          const period = Math.max(d.orbit.len, 2);
+          const bandL = Math.floor(row / Math.max(4, Math.floor(488 / (period * 3)))) % period;
+          const intensity = 0.3 + 0.7 * (bandL / period);
+          r = Math.round(col.r * intensity);
+          g = Math.round(col.g * intensity);
+          b = Math.round(col.b * intensity);
+          alpha = 0.75;
+          break;
+
+        case 'drift':
+          // Scattered pattern - pseudo-random based on trace
+          const seed = (d.cp * 7 + row * 13) % 256;
+          const show = seed < 60; // ~23% density
+          r = show ? col.r : Math.round(col.r * 0.05);
+          g = show ? col.g : Math.round(col.g * 0.05);
+          b = show ? col.b : Math.round(col.b * 0.05);
+          alpha = show ? 0.7 : 0.15;
+          break;
+
+        case 'escape':
+        default:
+          r = 8; g = 8; b = 15;
+          alpha = 0.3;
+          break;
+      }
+
+      setPixel(i, y,
+        Math.round(r * alpha),
+        Math.round(g * alpha),
+        Math.round(b * alpha)
+      );
+    }
+  }
+
+  // ─── BOTTOM 16 ROWS: DATA BAND (rows 496-511) ───
+  // Row 496: R = orbitTypeCode, G = cycleLength, B = codepoint low byte
+  // Row 497: R = codepoint high byte, G = shift+128, B = checksum
+  // Rows 498-511: visual echo of orbit type color (solid)
+  for (let i = 0; i < N; i++) {
+    const d = data[i];
+    const orbitCode = d.orbit.typeCode;
+    const cycleLen = Math.min(d.orbit.len || 0, 255);
+    const cpLow = d.cp & 0xFF;
+    const cpHigh = (d.cp >> 8) & 0xFF;
+    const shift = getShift(d.cp, rule);
+    const shiftEnc = Math.max(0, Math.min(255, shift + 128));
+    const checksum = (orbitCode + cycleLen + cpLow + cpHigh + shiftEnc) & 0xFF;
+
+    // Data row 1
+    setPixel(i, 496, orbitCode, cycleLen, cpLow);
+    // Data row 2
+    setPixel(i, 497, cpHigh, shiftEnc, checksum);
+
+    // Visual echo rows 498-511
+    const col = ORBIT_COLORS[d.orbit.type];
+    for (let y = 498; y < 512; y++) {
+      const fade = 0.5 + 0.5 * ((y - 498) / 14);
+      setPixel(i, y,
+        Math.round(col.r * fade * 0.6),
+        Math.round(col.g * fade * 0.6),
+        Math.round(col.b * fade * 0.6)
+      );
+    }
+  }
+
+  ctx.putImageData(imgData, 0, 0);
+
+  // Update metadata display
+  document.getElementById('metaRule').textContent =
+    `${rule.type} (${rule.a}${rule.b ? ', ' + rule.b : ''})`;
+  document.getElementById('metaFixed').textContent = counts.fixed;
+  document.getElementById('metaCycle2').textContent = counts.cycle2;
+  document.getElementById('metaLong').textContent = counts.long;
+  document.getElementById('metaDrift').textContent = counts.drift;
+  document.getElementById('metaEscape').textContent = counts.escape;
+
+  // Compute topology entropy
+  const total = N;
+  let entropy = 0;
+  Object.values(counts).forEach(c => {
+    if (c > 0) {
+      const p = c / total;
+      entropy -= p * Math.log2(p);
+    }
+  });
+  document.getElementById('metaEntropy').textContent = entropy.toFixed(3) + ' bits';
+
+  // Signature: hash of first 16 orbit types
+  const sig = data.slice(0, 16).map(d => d.orbit.typeCode).join('');
+  document.getElementById('metaSig').textContent = sig;
+}
+
+function exportImage() {
+  const canvas = document.getElementById('imgCanvas');
+  const link = document.createElement('a');
+  link.download = `humpr_topology_${currentRule.type}_${currentRule.a || 0}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function exportImageHD() {
+  // Re-render at 1024x1024
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 1024;
+  const ctx = canvas.getContext('2d');
+
+  // Scale up the 512 image
+  const srcCanvas = document.getElementById('imgCanvas');
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(srcCanvas, 0, 0, 1024, 1024);
+
+  const link = document.createElement('a');
+  link.download = `humpr_topology_HD_${currentRule.type}_${currentRule.a || 0}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// AUDIO ENCODER
+// ═══════════════════════════════════════════════════════════════════════
+
+let audioCtx = null;
+let audioPlaying = false;
+let audioTimeout = null;
+let animFrame = null;
+
+function playTopology() {
+  if (audioPlaying) return;
+  if (!topologyData.length) return;
+
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  audioPlaying = true;
+
+  document.getElementById('playBtn').disabled = true;
+  document.getElementById('stopBtn').disabled = false;
+  document.getElementById('audioStatus').textContent = 'PLAYING TOPOLOGY...';
+
+  const masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.15;
+  masterGain.connect(audioCtx.destination);
+
+  // Sweep duration: ~12 seconds for 512 codepoints
+  const noteDuration = 0.023; // 23ms per codepoint
+  const totalDuration = N * noteDuration;
+
+  // Frequency mapping: map codepoint range to audible range
+  // 0x2200-0x23FF → 80Hz-2000Hz (roughly 2 octaves)
+  function cpToFreq(cp) {
+    const t = (cp - START_CP) / N;
+    return 80 * Math.pow(2, t * 4.5); // 80Hz to ~1800Hz
+  }
+
+  // Waveform by orbit type
+  function orbitWaveform(type) {
+    switch(type) {
+      case 'fixed': return 'sine';
+      case 'cycle2': return 'square';
+      case 'long': return 'sawtooth';
+      case 'drift': return 'triangle';
+      default: return 'sine';
+    }
+  }
+
+  // Schedule all notes
+  const startTime = audioCtx.currentTime + 0.1;
+
+  topologyData.forEach((d, i) => {
+    const t = startTime + i * noteDuration;
+    const freq = cpToFreq(d.cp);
+    const waveform = orbitWaveform(d.orbit.type);
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = waveform;
+    osc.frequency.value = freq;
+
+    // Gain envelope
+    let noteLen, noteGain;
+    switch(d.orbit.type) {
+      case 'fixed':
+        noteLen = noteDuration * 3; // sustained
+        noteGain = 0.8;
+        break;
+      case 'cycle2':
+        noteLen = noteDuration * 2;
+        noteGain = 0.5;
+        // Add slight vibrato for 2-cycle
+        osc.frequency.setValueAtTime(freq, t);
+        osc.frequency.setValueAtTime(freq * 1.02, t + noteDuration * 0.5);
+        osc.frequency.setValueAtTime(freq, t + noteDuration);
+        break;
+      case 'long':
+        noteLen = noteDuration * (1 + Math.min(d.orbit.len, 8) * 0.2);
+        noteGain = 0.4;
+        break;
+      case 'drift':
+        noteLen = noteDuration * 0.5; // short burst
+        noteGain = 0.2;
+        // Drift: randomize frequency slightly
+        osc.frequency.value = freq * (0.9 + Math.random() * 0.2);
+        break;
+      default:
+        noteLen = noteDuration * 0.3;
+        noteGain = 0.05;
+    }
+
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(noteGain, t + 0.003);
+    gain.gain.setValueAtTime(noteGain, t + noteLen * 0.7);
+    gain.gain.linearRampToValueAtTime(0, t + noteLen);
+
+    osc.connect(gain);
+    gain.connect(masterGain);
+
+    osc.start(t);
+    osc.stop(t + noteLen + 0.01);
+  });
+
+  // Draw audio visualization
+  drawAudioViz(startTime, totalDuration);
+
+  // Auto-stop after completion
+  audioTimeout = setTimeout(() => {
+    stopTopology();
+  }, (totalDuration + 1) * 1000);
+}
+
+function stopTopology() {
+  audioPlaying = false;
+  if (audioCtx) {
+    audioCtx.close();
+    audioCtx = null;
+  }
+  if (audioTimeout) {
+    clearTimeout(audioTimeout);
+    audioTimeout = null;
+  }
+  if (animFrame) {
+    cancelAnimationFrame(animFrame);
+    animFrame = null;
+  }
+  document.getElementById('playBtn').disabled = false;
+  document.getElementById('stopBtn').disabled = true;
+  document.getElementById('audioStatus').textContent = 'READY';
+}
+
+function drawAudioViz(startTime, totalDuration) {
+  const canvas = document.getElementById('audioCanvas');
+  const W = canvas.offsetWidth || 900;
+  canvas.width = W * window.devicePixelRatio;
+  canvas.height = 80 * window.devicePixelRatio;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+  function frame() {
+    if (!audioPlaying || !audioCtx) return;
+
+    ctx.clearRect(0, 0, W, 80);
+
+    const elapsed = audioCtx.currentTime - startTime;
+    const progress = Math.max(0, Math.min(1, elapsed / totalDuration));
+
+    // Draw topology as frequency bars
+    const barW = W / N;
+    topologyData.forEach((d, i) => {
+      const t = i / N;
+      const active = t <= progress;
+
+      const colors = {
+        fixed: active ? '#e8e0ff' : '#1e1e32',
+        cycle2: active ? '#10b981' : '#1e1e32',
+        long: active ? '#f59e0b' : '#1e1e32',
+        drift: active ? '#7c6af7' : '#1e1e32',
+        escape: '#0a0a0f',
+      };
+
+      const freq = (d.cp - START_CP) / N;
+      const h = 10 + freq * 60;
+
+      ctx.fillStyle = colors[d.orbit.type] || '#1e1e32';
+      ctx.globalAlpha = active ? 0.85 : 0.15;
+      ctx.fillRect(i * barW, 80 - h, Math.max(barW, 1), h);
+    });
+
+    // Progress line
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#f43f5e';
+    ctx.fillRect(progress * W, 0, 2, 80);
+
+    animFrame = requestAnimationFrame(frame);
+  }
+
+  frame();
+}
+
+function exportMIDIData() {
+  if (!topologyData.length) return;
+
+  // Export as JSON MIDI-like data (note events)
+  const midiData = {
+    format: 'HUMPR_TOPOLOGY_MIDI',
+    rule: currentRule,
+    startCp: START_CP,
+    numPoints: N,
+    bpm: 120,
+    noteLength: 0.023,
+    notes: topologyData.map(d => ({
+      codepoint: d.cp,
+      glyph: String.fromCodePoint(d.cp),
+      orbitType: d.orbit.type,
+      cycleLength: d.orbit.len,
+      frequency: 80 * Math.pow(2, ((d.cp - START_CP) / N) * 4.5),
+      waveform: { fixed: 'sine', cycle2: 'square', long: 'sawtooth', drift: 'triangle', escape: 'sine' }[d.orbit.type],
+      velocity: { fixed: 0.8, cycle2: 0.5, long: 0.4, drift: 0.2, escape: 0.05 }[d.orbit.type],
+    }))
+  };
+
+  const blob = new Blob([JSON.stringify(midiData, null, 2)], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.download = `humpr_midi_${currentRule.type}_${currentRule.a || 0}.json`;
+  link.href = URL.createObjectURL(blob);
+  link.click();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// IMAGE DECODER
+// ═══════════════════════════════════════════════════════════════════════
+
+function setupDecoder() {
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) decodeFile(e.target.files[0]);
+  });
+
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragover');
+  });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) decodeFile(e.dataTransfer.files[0]);
+  });
+}
+
+function decodeFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => decodeImage(img);
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function decodeImage(img) {
+  // Draw to offscreen canvas to read pixels
+  const canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+
+  const output = document.getElementById('decodeOutput');
+  const ruleEl = document.getElementById('decodeRule');
+  const infoEl = document.getElementById('decodeInfo');
+  const statsEl = document.getElementById('decodeStats');
+
+  // Check for HUMPR signature at (1,0) and (2,0)
+  let px;
+  try {
+    px = ctx.getImageData(0, 0, Math.min(img.width, 512), Math.min(img.height, 512));
+  } catch(e) {
+    ruleEl.textContent = 'ERROR: Cannot read image pixel data';
+    output.style.display = 'block';
+    return;
+  }
+
+  function getPixel(x, y) {
+    const idx = (y * Math.min(img.width, 512) + x) * 4;
+    return { r: px.data[idx], g: px.data[idx+1], b: px.data[idx+2] };
+  }
+
+  // Check signature
+  const sig1 = getPixel(1, 0);
+  const sig2 = getPixel(2, 0);
+  const isHUMPR = sig1.r === 0x48 && sig1.g === 0x55 && sig1.b === 0x4D &&
+                  sig2.r === 0x50 && sig2.g === 0x52 && sig2.b === 0x45;
+
+  if (!isHUMPR) {
+    ruleEl.innerHTML = '<span style="color:var(--origin)">NO HUMPR SIGNATURE DETECTED</span>';
+    infoEl.textContent = 'This image does not contain encoded HUMPR topology data in the expected format.';
+    output.style.display = 'block';
+    return;
+  }
+
+  // Read rule from (0,0)
+  const rulePx = getPixel(0, 0);
+  const ruleTypes = { 1: 'mod', 2: 'xor', 3: 'plus', 4: 'sin' };
+  const decodedRuleType = ruleTypes[rulePx.r] || 'unknown';
+  const decodedParamA = rulePx.g;
+  const decodedParamB = rulePx.b;
+
+  ruleEl.innerHTML = `DECODED RULE: <span style="color:var(--drift)">${decodedRuleType}</span> ` +
+    `(a=${decodedParamA}${decodedParamB ? ', b=' + decodedParamB : ''})`;
+
+  // Read data band at row 496 (or proportional if image is different size)
+  const dataRow = img.height >= 512 ? 496 : Math.floor(img.height * 496 / 512);
+  const dataRow2 = dataRow + 1;
+
+  const counts = { fixed: 0, cycle2: 0, long: 0, drift: 0, escape: 0 };
+  const orbitNames = ['fixed', 'cycle2', 'long', 'drift', 'escape'];
+  const decoded = [];
+
+  const readWidth = Math.min(img.width, 512);
+  for (let x = 0; x < readWidth; x++) {
+    const d1 = getPixel(x, dataRow);
+    const d2 = getPixel(x, dataRow2);
+
+    const orbitType = orbitNames[d1.r] || 'unknown';
+    const cycleLen = d1.g;
+    const cpLow = d1.b;
+    const cpHigh = d2.r;
+    const shift = d2.g - 128;
+    const checksum = d2.b;
+
+    // Verify checksum
+    const expectedCheck = (d1.r + cycleLen + cpLow + cpHigh + d2.g) & 0xFF;
+    const valid = checksum === expectedCheck;
+
+    counts[orbitType] = (counts[orbitType] || 0) + 1;
+    decoded.push({ orbitType, cycleLen, cp: (cpHigh << 8) | cpLow, shift, valid });
+  }
+
+  const validCount = decoded.filter(d => d.valid).length;
+
+  infoEl.innerHTML = `Decoded ${readWidth} codepoints. ` +
+    `<span style="color:${validCount === readWidth ? 'var(--cycle2)' : 'var(--origin)'}">` +
+    `${validCount}/${readWidth} checksums valid.</span>`;
+
+  statsEl.innerHTML = `
+    <div class="d-stat"><span class="d-stat-num" style="color:var(--fixed)">${counts.fixed}</span><span class="d-stat-label">Fixed</span></div>
+    <div class="d-stat"><span class="d-stat-num" style="color:var(--cycle2)">${counts.cycle2}</span><span class="d-stat-label">2-Cycle</span></div>
+    <div class="d-stat"><span class="d-stat-num" style="color:var(--cycle-long)">${counts.long}</span><span class="d-stat-label">Long</span></div>
+    <div class="d-stat"><span class="d-stat-num" style="color:var(--drift)">${counts.drift + (counts.escape || 0)}</span><span class="d-stat-label">Drift</span></div>
+  `;
+
+  // Draw decoded topology on decode canvas
+  const decCanvas = document.getElementById('decodeCanvas');
+  decCanvas.width = readWidth;
+  decCanvas.height = 100;
+  const dctx = decCanvas.getContext('2d');
+
+  const orbitColors = {
+    fixed: '#e8e0ff', cycle2: '#10b981', long: '#f59e0b',
+    drift: '#7c6af7', escape: '#1e1e32', unknown: '#ff0000'
+  };
+
+  decoded.forEach((d, i) => {
+    const color = orbitColors[d.orbitType] || '#ff0000';
+    dctx.fillStyle = color;
+    const h = d.orbitType === 'fixed' ? 100 : d.orbitType === 'cycle2' ? 70 :
+              d.orbitType === 'long' ? 50 : d.orbitType === 'drift' ? 25 : 5;
+    dctx.globalAlpha = d.valid ? 0.85 : 0.3;
+    dctx.fillRect(i, 100 - h, 1, h);
+  });
+
+  output.style.display = 'block';
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// MAIN
+// ═══════════════════════════════════════════════════════════════════════
+
+function recompute() {
+  if (!currentRule) return;
+  topologyData = computeTopology(currentRule);
+  encodeImage(topologyData, currentRule);
+
+  // Reset audio if playing
+  if (audioPlaying) stopTopology();
+
+  // Draw idle audio viz
+  const canvas = document.getElementById('audioCanvas');
+  const W = canvas.offsetWidth || 900;
+  canvas.width = W * window.devicePixelRatio;
+  canvas.height = 80 * window.devicePixelRatio;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+  const barW = W / N;
+  topologyData.forEach((d, i) => {
+    const colors = {
+      fixed: '#e8e0ff', cycle2: '#10b981', long: '#f59e0b',
+      drift: '#7c6af7', escape: '#0a0a0f',
+    };
+    const freq = (d.cp - START_CP) / N;
+    const h = 10 + freq * 60;
+    ctx.fillStyle = colors[d.orbit.type] || '#1e1e32';
+    ctx.globalAlpha = 0.3;
+    ctx.fillRect(i * barW, 80 - h, Math.max(barW, 1), h);
+  });
+}
+
+setupDecoder();
+updateRule();
+window.addEventListener('resize', recompute);
+</script>
+</body>
+</html>
