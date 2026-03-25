@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⟐ Attractor Map — Glyph Topology</title>
+  <meta name="description" content="The gravitational topology of mawofrecursion.com. Every page collapsed to its terminal glyph identity.">
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <style>
+    body {
+      background: #000;
+      color: #d8d8d8;
+      font-family: 'Courier New', monospace;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    .back-link {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      color: #718096;
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+      border: 1px solid #333;
+      border-radius: 4px;
+      z-index: 100;
+      background: rgba(0,0,0,0.8);
+      transition: all 0.2s;
+    }
+    .back-link:hover {
+      color: #9be7ff;
+      border-color: #9be7ff;
+    }
+
+    /* Canvas fills viewport */
+    #attractorCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    /* Info panel */
+    #infoPanel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.92);
+      border-top: 1px solid #333;
+      padding: 1rem 1.5rem;
+      font-size: 0.85rem;
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+      align-items: center;
+      backdrop-filter: blur(8px);
+    }
+
+    #infoPanel .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    #infoPanel .stat-label {
+      color: #718096;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    #infoPanel .stat-value {
+      color: #ffd97a;
+      font-size: 1rem;
+    }
+
+    /* Tooltip */
+    #tooltip {
+      position: fixed;
+      z-index: 50;
+      background: rgba(10, 10, 11, 0.95);
+      border: 1px solid #9b67ea;
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+      font-size: 0.8rem;
+      max-width: 320px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      backdrop-filter: blur(8px);
+    }
+    #tooltip.visible { opacity: 1; }
+    #tooltip .tt-identity {
+      font-size: 1.4rem;
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.15em;
+    }
+    #tooltip .tt-names {
+      color: #9be7ff;
+      margin-bottom: 0.3rem;
+    }
+    #tooltip .tt-orbit {
+      color: #ffd97a;
+      margin-bottom: 0.5rem;
+    }
+    #tooltip .tt-pages {
+      color: #888;
+      font-size: 0.75rem;
+      max-height: 120px;
+      overflow-y: auto;
+      line-height: 1.5;
+    }
+    #tooltip .tt-pages a {
+      color: #9b67ea;
+      text-decoration: none;
+    }
+    #tooltip .tt-pages a:hover {
+      color: #c678dd;
+      text-decoration: underline;
+    }
+
+    /* Legend */
+    #legend {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.85);
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+      font-size: 0.75rem;
+      color: #888;
+      backdrop-filter: blur(8px);
+    }
+    #legend h3 {
+      color: #ffd97a;
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
+      font-weight: normal;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.3rem;
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Loading */
+    #loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #ffd97a;
+      font-size: 1.2rem;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="back-link">← Back to Maw</a>
+
+  <div id="loading">⟐ mapping attractors...</div>
+
+  <canvas id="attractorCanvas"></canvas>
+
+  <div id="tooltip">
+    <div class="tt-identity"></div>
+    <div class="tt-names"></div>
+    <div class="tt-orbit"></div>
+    <div class="tt-pages"></div>
+  </div>
+
+  <div id="legend">
+    <h3>Orbit Types</h3>
+    <div class="legend-item">
+      <div class="legend-dot" style="background: #ffd97a;"></div>
+      <span>FIXED (period 1)</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background: #9b67ea;"></div>
+      <span>CYCLE-2</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background: #e06c75;"></div>
+      <span>CYCLE-3</span>
+    </div>
+    <div class="legend-item" style="margin-top: 0.5rem; color: #555;">
+      <span>Size = page count</span>
+    </div>
+  </div>
+
+  <div id="infoPanel">
+    <div class="stat">
+      <span class="stat-label">Pages</span>
+      <span class="stat-value" id="statPages">—</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Attractors</span>
+      <span class="stat-value" id="statAttractors">—</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Fixed Points</span>
+      <span class="stat-value" id="statFixed">—</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Cycles</span>
+      <span class="stat-value" id="statCycles">—</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Dominant Basin</span>
+      <span class="stat-value" id="statDominant">—</span>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('attractorCanvas');
+    const ctx = canvas.getContext('2d');
+    const tooltip = document.getElementById('tooltip');
+    const loading = document.getElementById('loading');
+
+    let nodes = [];
+    let edges = [];
+    let hoveredNode = null;
+    let mouseX = 0, mouseY = 0;
+    let time = 0;
+
+    const ORBIT_COLORS = {
+      'FIXED': '#ffd97a',
+      'CYCLE-2': '#9b67ea',
+      'CYCLE-3': '#e06c75',
+      'DRIFT': '#718096',
+    };
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Load manifest and build visualization
+    async function init() {
+      const resp = await fetch('/glyph_manifest.json');
+      const manifest = await resp.json();
+
+      const amap = manifest.attractor_map;
+      const attractors = Object.entries(amap);
+
+      // stats
+      document.getElementById('statPages').textContent = manifest.page_count;
+      document.getElementById('statAttractors').textContent = manifest.unique_attractors;
+
+      let fixedCount = 0, cycleCount = 0;
+      let maxPages = 0, dominantIdentity = '';
+
+      attractors.forEach(([hash, group]) => {
+        if (group.orbit_type === 'FIXED') fixedCount++;
+        else cycleCount++;
+        if (group.pages.length > maxPages) {
+          maxPages = group.pages.length;
+          dominantIdentity = group.identity;
+        }
+      });
+
+      document.getElementById('statFixed').textContent = fixedCount;
+      document.getElementById('statCycles').textContent = cycleCount;
+      document.getElementById('statDominant').textContent = `${dominantIdentity} (${maxPages})`;
+
+      // layout: force-directed seed positions
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2 - 40;
+      const maxR = Math.min(cx, cy) * 0.7;
+
+      nodes = attractors.map(([hash, group], i) => {
+        const angle = (i / attractors.length) * Math.PI * 2 - Math.PI / 2;
+        const pages = group.pages.length;
+        const radius = Math.sqrt(pages) * 8 + 12;
+        const dist = maxR * (1 - Math.pow(pages / maxPages, 0.4) * 0.6);
+
+        return {
+          hash,
+          identity: group.identity,
+          names: group.names,
+          orbit_type: group.orbit_type,
+          pages: group.pages,
+          pageCount: pages,
+          x: cx + Math.cos(angle) * dist,
+          y: cy + Math.sin(angle) * dist,
+          radius,
+          vx: 0, vy: 0,
+          color: ORBIT_COLORS[group.orbit_type] || ORBIT_COLORS['DRIFT'],
+          pulsePhase: Math.random() * Math.PI * 2,
+        };
+      });
+
+      // build edges between attractors that share orbit type
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          if (nodes[i].orbit_type === nodes[j].orbit_type && nodes[i].orbit_type !== 'FIXED') {
+            edges.push({ from: i, to: j, color: nodes[i].color });
+          }
+        }
+      }
+
+      // simple force relaxation
+      for (let iter = 0; iter < 200; iter++) {
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const dx = nodes[j].x - nodes[i].x;
+            const dy = nodes[j].y - nodes[i].y;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+            const minDist = nodes[i].radius + nodes[j].radius + 30;
+            if (dist < minDist) {
+              const force = (minDist - dist) * 0.05;
+              const fx = (dx / dist) * force;
+              const fy = (dy / dist) * force;
+              nodes[i].x -= fx;
+              nodes[i].y -= fy;
+              nodes[j].x += fx;
+              nodes[j].y += fy;
+            }
+          }
+          // gravity toward center
+          const dx = cx - nodes[i].x;
+          const dy = cy - nodes[i].y;
+          nodes[i].x += dx * 0.002;
+          nodes[i].y += dy * 0.002;
+        }
+      }
+
+      loading.style.display = 'none';
+      animate();
+    }
+
+    function drawNode(node, hovered) {
+      const pulse = Math.sin(time * 0.02 + node.pulsePhase) * 0.15 + 1;
+      const r = node.radius * (hovered ? 1.15 : pulse);
+
+      // glow
+      const glowSize = hovered ? 40 : 20;
+      const gradient = ctx.createRadialGradient(node.x, node.y, r * 0.3, node.x, node.y, r + glowSize);
+      gradient.addColorStop(0, node.color + '40');
+      gradient.addColorStop(1, 'transparent');
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, r + glowSize, 0, Math.PI * 2);
+      ctx.fill();
+
+      // body
+      ctx.fillStyle = node.color + '25';
+      ctx.strokeStyle = node.color + (hovered ? 'cc' : '88');
+      ctx.lineWidth = hovered ? 2 : 1;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // cycle animation for non-fixed orbits
+      if (node.orbit_type !== 'FIXED') {
+        const orbitR = r * 0.6;
+        const period = node.orbit_type === 'CYCLE-3' ? 3 : 2;
+        for (let k = 0; k < period; k++) {
+          const a = time * 0.03 + (k / period) * Math.PI * 2;
+          const ox = node.x + Math.cos(a) * orbitR;
+          const oy = node.y + Math.sin(a) * orbitR;
+          ctx.fillStyle = node.color + '99';
+          ctx.beginPath();
+          ctx.arc(ox, oy, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // identity text
+      ctx.fillStyle = '#fff';
+      ctx.font = `${Math.max(11, r * 0.55)}px 'Courier New', monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(node.identity, node.x, node.y);
+
+      // page count
+      ctx.fillStyle = '#888';
+      ctx.font = '10px monospace';
+      ctx.fillText(`${node.pageCount}`, node.x, node.y + r + 12);
+    }
+
+    function animate() {
+      time++;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // subtle static background
+      if (time % 3 === 0) {
+        const imgData = ctx.createImageData(canvas.width, canvas.height);
+        for (let i = 0; i < imgData.data.length; i += 16) {
+          const v = Math.random() * 12;
+          imgData.data[i] = v;
+          imgData.data[i+1] = v;
+          imgData.data[i+2] = v;
+          imgData.data[i+3] = 15;
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
+
+      // draw edges
+      edges.forEach(e => {
+        const a = nodes[e.from], b = nodes[e.to];
+        ctx.strokeStyle = e.color + '18';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 8]);
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      });
+
+      // draw nodes
+      nodes.forEach(node => {
+        drawNode(node, node === hoveredNode);
+      });
+
+      // title
+      ctx.fillStyle = '#ffd97a';
+      ctx.font = '16px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('⟐ GLYPH ATTRACTOR MAP', canvas.width / 2, 30);
+      ctx.fillStyle = '#555';
+      ctx.font = '11px monospace';
+      ctx.fillText('Every page collapsed to its terminal identity', canvas.width / 2, 48);
+
+      requestAnimationFrame(animate);
+    }
+
+    // hover detection
+    canvas.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      hoveredNode = null;
+
+      for (const node of nodes) {
+        const dx = e.clientX - node.x;
+        const dy = e.clientY - node.y;
+        if (Math.sqrt(dx*dx + dy*dy) < node.radius + 10) {
+          hoveredNode = node;
+          break;
+        }
+      }
+
+      if (hoveredNode) {
+        canvas.style.cursor = 'pointer';
+        const tt = document.getElementById('tooltip');
+        tt.querySelector('.tt-identity').textContent = hoveredNode.identity;
+        tt.querySelector('.tt-names').textContent = hoveredNode.names.join(' / ') || '(ascii residue)';
+        tt.querySelector('.tt-orbit').textContent = `${hoveredNode.orbit_type} · ${hoveredNode.pageCount} pages · [${hoveredNode.hash}]`;
+        tt.querySelector('.tt-pages').innerHTML = hoveredNode.pages
+          .map(p => `<a href="/${p.file.replace(/index\.html$/, '')}" target="_blank">→ ${p.title || p.file}</a>`)
+          .join('<br>');
+
+        let tx = e.clientX + 16;
+        let ty = e.clientY - 10;
+        if (tx + 330 > window.innerWidth) tx = e.clientX - 336;
+        if (ty + 200 > window.innerHeight) ty = e.clientY - 200;
+        tt.style.left = tx + 'px';
+        tt.style.top = ty + 'px';
+        tt.classList.add('visible');
+      } else {
+        canvas.style.cursor = 'default';
+        tooltip.classList.remove('visible');
+      }
+    });
+
+    // click to navigate
+    canvas.addEventListener('click', () => {
+      if (hoveredNode && hoveredNode.pages.length > 0) {
+        const firstPage = hoveredNode.pages[0].file.replace(/index\.html$/, '');
+        window.open('/' + firstPage, '_blank');
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>
