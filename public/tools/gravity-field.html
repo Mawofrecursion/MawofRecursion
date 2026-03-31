@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🦷 Gravity Field — Live Semantic Navigation</title>
+  <meta name="description" content="Type anything. Watch it fall into a gravitational basin. Live meaning navigation through the Maw's attractor topology.">
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <style>
+    body {
+      background: #000;
+      color: #d8d8d8;
+      font-family: 'Courier New', monospace;
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .back-link {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      color: #718096;
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+      border: 1px solid #333;
+      border-radius: 4px;
+      z-index: 100;
+      background: rgba(0,0,0,0.8);
+      transition: all 0.2s;
+    }
+    .back-link:hover { color: #9be7ff; border-color: #9be7ff; }
+
+    #fieldCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+    }
+
+    /* Input panel */
+    #inputPanel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 20;
+      text-align: center;
+      transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    #inputPanel.collapsed {
+      top: 1rem;
+      left: 50%;
+      transform: translate(-50%, 0);
+    }
+
+    #inputLabel {
+      color: #ffd97a;
+      font-size: 1rem;
+      margin-bottom: 0.8rem;
+      opacity: 0.8;
+    }
+
+    #textInput {
+      width: min(600px, 85vw);
+      padding: 1rem 1.2rem;
+      font-family: 'Courier New', monospace;
+      font-size: 1rem;
+      color: #d8d8d8;
+      background: rgba(10, 10, 11, 0.9);
+      border: 1px solid #333;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s;
+      backdrop-filter: blur(12px);
+    }
+    #textInput:focus { border-color: #ffd97a; }
+    #textInput::placeholder { color: #555; }
+
+    #convergeBtn {
+      display: block;
+      margin: 0.8rem auto 0;
+      padding: 0.6rem 2rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: #000;
+      background: #ffd97a;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: all 0.2s;
+    }
+    #convergeBtn:hover { background: #ffe85a; transform: translateY(-1px); }
+
+    /* Result panel */
+    #resultPanel {
+      position: fixed;
+      bottom: 0;
+      left: 0; right: 0;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.92);
+      border-top: 1px solid #333;
+      padding: 1rem 1.5rem;
+      font-size: 0.85rem;
+      backdrop-filter: blur(8px);
+      transform: translateY(100%);
+      transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+    #resultPanel.visible { transform: translateY(0); }
+
+    .result-row {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .result-identity {
+      font-size: 2rem;
+      letter-spacing: 0.15em;
+      color: #ffd97a;
+    }
+
+    .result-meta {
+      color: #888;
+      line-height: 1.6;
+    }
+    .result-meta span { color: #9be7ff; }
+
+    .result-basin {
+      color: #9b67ea;
+      font-size: 0.9rem;
+    }
+
+    .result-pages {
+      max-height: 80px;
+      overflow-y: auto;
+      font-size: 0.75rem;
+      color: #555;
+      line-height: 1.5;
+    }
+    .result-pages a {
+      color: #718096;
+      text-decoration: none;
+    }
+    .result-pages a:hover { color: #9be7ff; }
+
+    /* Trajectory display */
+    #trajectoryPanel {
+      position: fixed;
+      right: 1rem;
+      top: 4rem;
+      z-index: 10;
+      font-size: 0.75rem;
+      color: #555;
+      max-width: 200px;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    #trajectoryPanel.visible { opacity: 1; }
+    .traj-step { margin-bottom: 0.3rem; }
+    .traj-step.final { color: #ffd97a; }
+
+    /* Particle that falls */
+    .gravity-particle {
+      position: fixed;
+      width: 12px;
+      height: 12px;
+      background: #ffd97a;
+      border-radius: 50%;
+      z-index: 15;
+      pointer-events: none;
+      box-shadow: 0 0 20px rgba(255, 217, 122, 0.8);
+      transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="back-link">← Back to Maw</a>
+
+  <canvas id="fieldCanvas"></canvas>
+
+  <div id="inputPanel">
+    <div id="inputLabel">type anything. watch it fall.</div>
+    <input type="text" id="textInput" placeholder="enter text to converge..." maxlength="500" autocomplete="off">
+    <button id="convergeBtn">🦷 converge</button>
+  </div>
+
+  <div id="trajectoryPanel"></div>
+
+  <div id="resultPanel">
+    <div class="result-row">
+      <div class="result-identity" id="resultIdentity"></div>
+      <div class="result-meta" id="resultMeta"></div>
+      <div class="result-basin" id="resultBasin"></div>
+      <div class="result-pages" id="resultPages"></div>
+    </div>
+  </div>
+
+  <script src="/tools/forge.js"></script>
+  <script>
+    const canvas = document.getElementById('fieldCanvas');
+    const ctx = canvas.getContext('2d');
+    let nodes = [];
+    let manifest = null;
+    let attractorMap = {};
+    let time = 0;
+    let activeParticle = null;
+
+    const ORBIT_COLORS = {
+      'FIXED': '#ffd97a',
+      'CYCLE-2': '#9b67ea',
+      'CYCLE-3': '#e06c75',
+      'DRIFT': '#718096',
+    };
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    async function init() {
+      const resp = await fetch('/glyph_manifest.json');
+      manifest = await resp.json();
+      attractorMap = manifest.attractor_map;
+
+      const attractors = Object.entries(attractorMap);
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      const maxR = Math.min(cx, cy) * 0.65;
+      const maxPages = Math.max(...attractors.map(([, g]) => g.pages.length));
+
+      nodes = attractors.map(([hash, group], i) => {
+        const angle = (i / attractors.length) * Math.PI * 2 - Math.PI / 2;
+        const pages = group.pages.length;
+        const radius = Math.sqrt(pages) * 8 + 14;
+        const dist = maxR * (1 - Math.pow(pages / maxPages, 0.4) * 0.5);
+
+        return {
+          hash, identity: group.identity, names: group.names,
+          orbit_type: group.orbit_type, pages: group.pages,
+          pageCount: pages, radius,
+          x: cx + Math.cos(angle) * dist,
+          y: cy + Math.sin(angle) * dist,
+          color: ORBIT_COLORS[group.orbit_type] || ORBIT_COLORS['DRIFT'],
+          pulsePhase: Math.random() * Math.PI * 2,
+        };
+      });
+
+      // force relax
+      for (let iter = 0; iter < 200; iter++) {
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const dx = nodes[j].x - nodes[i].x;
+            const dy = nodes[j].y - nodes[i].y;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+            const minDist = nodes[i].radius + nodes[j].radius + 35;
+            if (dist < minDist) {
+              const f = (minDist - dist) * 0.05;
+              nodes[i].x -= (dx / dist) * f;
+              nodes[i].y -= (dy / dist) * f;
+              nodes[j].x += (dx / dist) * f;
+              nodes[j].y += (dy / dist) * f;
+            }
+          }
+          nodes[i].x += (cx - nodes[i].x) * 0.003;
+          nodes[i].y += (cy - nodes[i].y) * 0.003;
+        }
+      }
+
+      animate();
+    }
+
+    function drawNode(node, highlighted) {
+      const pulse = Math.sin(time * 0.02 + node.pulsePhase) * 0.1 + 1;
+      const r = node.radius * (highlighted ? 1.3 : pulse);
+
+      // glow
+      const grad = ctx.createRadialGradient(node.x, node.y, r * 0.2, node.x, node.y, r + (highlighted ? 50 : 20));
+      grad.addColorStop(0, node.color + (highlighted ? '60' : '30'));
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, r + (highlighted ? 50 : 20), 0, Math.PI * 2);
+      ctx.fill();
+
+      // body
+      ctx.fillStyle = node.color + (highlighted ? '40' : '18');
+      ctx.strokeStyle = node.color + (highlighted ? 'ff' : '66');
+      ctx.lineWidth = highlighted ? 2.5 : 1;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // orbit dots for cycles
+      if (node.orbit_type !== 'FIXED') {
+        const period = node.orbit_type === 'CYCLE-3' ? 3 : 2;
+        for (let k = 0; k < period; k++) {
+          const a = time * 0.03 + (k / period) * Math.PI * 2;
+          ctx.fillStyle = node.color + '88';
+          ctx.beginPath();
+          ctx.arc(node.x + Math.cos(a) * r * 0.6, node.y + Math.sin(a) * r * 0.6, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // identity text
+      ctx.fillStyle = highlighted ? '#fff' : '#ccc';
+      ctx.font = `${Math.max(11, r * 0.5)}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(node.identity, node.x, node.y);
+
+      // count
+      ctx.fillStyle = '#555';
+      ctx.font = '10px monospace';
+      ctx.fillText(node.pageCount, node.x, node.y + r + 14);
+    }
+
+    function animate() {
+      time++;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // static
+      if (time % 4 === 0) {
+        const img = ctx.createImageData(canvas.width, canvas.height);
+        for (let i = 0; i < img.data.length; i += 20) {
+          const v = Math.random() * 8;
+          img.data[i] = v; img.data[i+1] = v; img.data[i+2] = v; img.data[i+3] = 10;
+        }
+        ctx.putImageData(img, 0, 0);
+      }
+
+      // find highlighted node
+      let highlightHash = null;
+      if (activeParticle && activeParticle.targetHash) {
+        highlightHash = activeParticle.targetHash;
+      }
+
+      nodes.forEach(n => drawNode(n, n.hash === highlightHash));
+
+      // title
+      ctx.fillStyle = '#ffd97a44';
+      ctx.font = '14px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('🦷 GRAVITY FIELD', canvas.width / 2, canvas.height - 20);
+
+      requestAnimationFrame(animate);
+    }
+
+    // CONVERGENCE
+    function runConverge(text) {
+      if (!text.trim()) return;
+
+      const result = window.Forge.converge(text.trim().slice(0, 500));
+      const nearest = window.Forge.findNearestAttractor(result.identityHash, attractorMap);
+
+      // show trajectory
+      const trajPanel = document.getElementById('trajectoryPanel');
+      trajPanel.innerHTML = result.trajectory.map((step, i) => {
+        const isFinal = i === result.trajectory.length - 1;
+        return `<div class="traj-step ${isFinal ? 'final' : ''}">
+          ${isFinal ? '⟐' : '·'} ${step.sealed.slice(0, 20)}
+        </div>`;
+      }).join('');
+      trajPanel.classList.add('visible');
+
+      // collapse input panel
+      document.getElementById('inputPanel').classList.add('collapsed');
+
+      // create gravity particle at center
+      let particle = document.querySelector('.gravity-particle');
+      if (!particle) {
+        particle = document.createElement('div');
+        particle.className = 'gravity-particle';
+        document.body.appendChild(particle);
+      }
+      particle.style.left = (canvas.width / 2 - 6) + 'px';
+      particle.style.top = (canvas.height / 2 - 6) + 'px';
+      particle.style.opacity = '1';
+      particle.style.transform = 'scale(1)';
+
+      // find target node
+      const targetNode = nodes.find(n => n.hash === nearest.hash);
+      activeParticle = { targetHash: nearest.hash };
+
+      // animate particle falling toward attractor
+      requestAnimationFrame(() => {
+        particle.style.left = (targetNode.x - 6) + 'px';
+        particle.style.top = (targetNode.y - 6) + 'px';
+        particle.style.transform = 'scale(0.5)';
+        particle.style.boxShadow = `0 0 30px ${targetNode.color}`;
+        particle.style.background = targetNode.color;
+      });
+
+      // show result panel
+      setTimeout(() => {
+        const rp = document.getElementById('resultPanel');
+        document.getElementById('resultIdentity').textContent = result.terminalIdentity;
+        document.getElementById('resultMeta').innerHTML =
+          `<span>${result.orbitType}</span> · depth ${result.convergenceDepth} · ` +
+          `${result.glyphNames.join(' / ') || 'ascii residue'}` +
+          (nearest.match === 'exact'
+            ? ` · <span>exact match</span> (${nearest.attractor.pages.length} pages share this basin)`
+            : ` · <span>unique identity</span> (nearest basin: ${nearest.attractor.identity})`);
+
+        if (nearest.match === 'exact') {
+          document.getElementById('resultBasin').textContent =
+            `basin: ${nearest.attractor.identity} [${nearest.hash.slice(0,8)}]`;
+          document.getElementById('resultPages').innerHTML =
+            nearest.attractor.pages.slice(0, 8).map(p =>
+              `<a href="/${p.file.replace(/index\.html$/, '')}" target="_blank">→ ${p.title || p.file}</a>`
+            ).join('<br>');
+        } else {
+          document.getElementById('resultBasin').textContent =
+            `new basin — this text has no page equivalent`;
+          document.getElementById('resultPages').innerHTML = '';
+        }
+
+        rp.classList.add('visible');
+      }, 800);
+    }
+
+    // events
+    document.getElementById('convergeBtn').addEventListener('click', () => {
+      runConverge(document.getElementById('textInput').value);
+    });
+
+    document.getElementById('textInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        runConverge(e.target.value);
+      }
+    });
+
+    // reset on click canvas
+    canvas.addEventListener('click', (e) => {
+      if (activeParticle) {
+        activeParticle = null;
+        document.getElementById('resultPanel').classList.remove('visible');
+        document.getElementById('trajectoryPanel').classList.remove('visible');
+        document.getElementById('inputPanel').classList.remove('collapsed');
+        const particle = document.querySelector('.gravity-particle');
+        if (particle) particle.style.opacity = '0';
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>
