@@ -1,65 +1,95 @@
 """
-forge_graph.py — Forge fingerprint every function in the GitNexus graph
+forge_graph.py — Code Structure Topology via Forge × GitNexus 🦷⟐
 
-Exports function list from GitNexus, reads each function's body from source,
-runs it through the forge, and groups by attractor basin.
+Forge fingerprints every function in the GitNexus graph.
+Groups by attractor basin. Scores by rarity × dependency impact.
 
-Answers: "what THINKS like this?" — structural code deduplication beyond syntax.
+Three layers:
+  1. Fingerprint — converge every function body
+  2. Rarity — score how unusual each basin is (1/basin_size)
+  3. Impact — combine with GitNexus dependency count for importance
+
+Output: SQLite database + report. Queryable over time.
 
 Usage:
-  python forge_graph.py                    # fingerprint all functions
-  python forge_graph.py --top 20           # show top 20 basins
-  python forge_graph.py --json -o map.json # export full map
+  python forge_graph.py                      # report
+  python forge_graph.py --top 15             # top N basins
+  python forge_graph.py --json -o map.json   # full JSON
+  python forge_graph.py --db forge_graph.db  # persist to SQLite
+  python forge_graph.py --heatmap            # intelligence heatmap
 """
 
 import json
 import os
 import re
+import sqlite3
 import subprocess
 import sys
 from collections import defaultdict, Counter
+from datetime import datetime
 from typing import List, Dict, Any
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from glyph_forge_mutate import converge, CODEX_NAMES
-
+from glyph_forge_mutate import converge, ENGINE_VERSION, CODEX_NAMES
 
 # repo root is two levels up from public/tools/
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
-def get_functions_from_gitnexus() -> List[Dict]:
-    """Query GitNexus for all indexed functions."""
-    cypher = "MATCH (f:Function) RETURN f.name, f.filePath, f.startLine, f.endLine ORDER BY f.filePath"
+# ============================================================
+# GITNEXUS QUERIES
+# ============================================================
+
+def _gitnexus_cypher(query: str) -> dict:
     result = subprocess.run(
-        f'npx gitnexus cypher "{cypher}"',
+        f'npx gitnexus cypher "{query}"',
         capture_output=True, text=True, cwd=REPO_ROOT, timeout=60, shell=True,
     )
     if result.returncode != 0:
-        print(f"GitNexus query failed: {result.stderr}", file=sys.stderr)
-        return []
+        return {"error": result.stderr}
+    return json.loads(result.stdout)
 
-    data = json.loads(result.stdout)
-    lines = data.get("markdown", "").split("\n")[2:]  # skip header rows
 
+def get_functions() -> List[Dict]:
+    data = _gitnexus_cypher(
+        "MATCH (f:Function) RETURN f.name, f.filePath, f.startLine, f.endLine ORDER BY f.filePath"
+    )
+    lines = data.get("markdown", "").split("\n")[2:]
     funcs = []
     for line in lines:
         parts = [p.strip() for p in line.split("|") if p.strip()]
         if len(parts) >= 4:
             try:
                 funcs.append({
-                    "name": parts[0],
-                    "file": parts[1],
-                    "start": int(parts[2]),
-                    "end": int(parts[3]),
+                    "name": parts[0], "file": parts[1],
+                    "start": int(parts[2]), "end": int(parts[3]),
                 })
             except (ValueError, IndexError):
                 continue
     return funcs
 
 
+def get_impact_count(func_name: str) -> int:
+    """Get upstream dependency count from GitNexus (fan-in)."""
+    data = _gitnexus_cypher(
+        f"MATCH (f:Function {{name: '{func_name}'}})<-[:CALLS]-(caller) RETURN count(caller) AS cnt"
+    )
+    lines = data.get("markdown", "").split("\n")[2:]
+    for line in lines:
+        parts = [p.strip() for p in line.split("|") if p.strip()]
+        if parts:
+            try:
+                return int(parts[0])
+            except ValueError:
+                return 0
+    return 0
+
+
+# ============================================================
+# FINGERPRINTING
+# ============================================================
+
 def read_function_body(func: Dict) -> str:
-    """Read the function body from source."""
     filepath = os.path.join(REPO_ROOT, func["file"])
     if not os.path.exists(filepath):
         return ""
@@ -74,18 +104,14 @@ def read_function_body(func: Dict) -> str:
 
 
 def fingerprint_functions(funcs: List[Dict], verbose: bool = False) -> List[Dict]:
-    """Forge-fingerprint every function body."""
     results = []
     total = len(funcs)
-
     for i, func in enumerate(funcs):
         body = read_function_body(func)
         if not body or len(body.strip()) < 20:
             continue
 
-        # fingerprint the body (deterministic mode)
         fp = converge(body[:1500], deterministic=True)
-
         results.append({
             "name": func["name"],
             "file": func["file"],
@@ -99,106 +125,192 @@ def fingerprint_functions(funcs: List[Dict], verbose: bool = False) -> List[Dict
             "confidence": fp["confidence"],
             "glyph_names": fp["terminal_names"],
         })
-
         if verbose and (i + 1) % 50 == 0:
             print(f"  {i+1}/{total} fingerprinted...", file=sys.stderr)
 
     return results
 
 
+# ============================================================
+# RARITY SCORING
+# ============================================================
+
+def score_rarity(results: List[Dict]) -> List[Dict]:
+    """Add rarity_score to each result. 1/basin_size — rare basins score high."""
+    basin_sizes = Counter(r["glyph_hash"] for r in results)
+    total = len(results)
+    for r in results:
+        size = basin_sizes[r["glyph_hash"]]
+        r["basin_size"] = size
+        r["rarity_score"] = round(1.0 / size, 6)
+        r["basin_pct"] = round(size / total * 100, 1)
+    return results
+
+
+# ============================================================
+# SQLITE PERSISTENCE
+# ============================================================
+
+def persist_to_db(results: List[Dict], db_path: str):
+    """Write results to SQLite for queryable persistence."""
+    conn = sqlite3.connect(db_path)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS forge_functions (
+            name TEXT,
+            file TEXT,
+            start_line INTEGER,
+            end_line INTEGER,
+            lines INTEGER,
+            glyph_hash TEXT,
+            terminal_identity TEXT,
+            orbit_type TEXT,
+            convergence_depth INTEGER,
+            confidence REAL,
+            rarity_score REAL,
+            basin_size INTEGER,
+            basin_pct REAL,
+            engine_version TEXT,
+            indexed_at TEXT,
+            PRIMARY KEY (file, start_line)
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_glyph_hash ON forge_functions(glyph_hash)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_rarity ON forge_functions(rarity_score DESC)")
+
+    now = datetime.utcnow().isoformat()
+    conn.execute("DELETE FROM forge_functions")  # full refresh
+    for r in results:
+        conn.execute(
+            "INSERT OR REPLACE INTO forge_functions VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (r["name"], r["file"], r["start"], r["end"], r["lines"],
+             r["glyph_hash"], r["terminal_identity"], r["orbit_type"],
+             r["convergence_depth"], r["confidence"],
+             r["rarity_score"], r["basin_size"], r["basin_pct"],
+             ENGINE_VERSION, now)
+        )
+    conn.commit()
+    conn.close()
+    print(f"  Persisted {len(results)} functions to {db_path}", file=sys.stderr)
+
+
+# ============================================================
+# GROUPING + REPORTING
+# ============================================================
+
 def group_by_basin(results: List[Dict]) -> Dict[str, List[Dict]]:
-    """Group functions by attractor basin."""
     basins = defaultdict(list)
     for r in results:
         basins[r["glyph_hash"]].append(r)
     return dict(basins)
 
 
-def print_report(basins: Dict[str, List[Dict]], top_n: int = 20):
-    """Print the basin report."""
+def print_report(basins: Dict[str, List[Dict]], top_n: int = 15, show_heatmap: bool = False):
     total_funcs = sum(len(v) for v in basins.values())
     sorted_basins = sorted(basins.items(), key=lambda x: -len(x[1]))
+    dominant = sorted_basins[0] if sorted_basins else (None, [])
 
     print(f"\n=== FORGE GRAPH: Code Structure Topology ===")
-    print(f"  Functions fingerprinted: {total_funcs}")
-    print(f"  Unique basins: {len(basins)}")
-    print(f"  Dominant basin captures: {len(sorted_basins[0][1])} functions")
+    print(f"  Functions: {total_funcs}")
+    print(f"  Basins: {len(basins)}")
+    print(f"  Dominant basin: {len(dominant[1])} functions ({len(dominant[1])/total_funcs*100:.0f}%)")
+    print(f"  Engine: {ENGINE_VERSION}")
     print()
 
-    for i, (hash_val, funcs) in enumerate(sorted_basins[:top_n]):
-        identity = funcs[0]["terminal_identity"]
-        orbit = funcs[0]["orbit_type"]
-        names = " / ".join(funcs[0]["glyph_names"]) if funcs[0]["glyph_names"] else "ascii"
-
-        print(f"  {identity}  [{hash_val[:8]}]  {orbit}  ({len(funcs)} functions)")
-        print(f"  {names}")
-
-        # show files (deduplicated)
-        files = Counter(f["file"] for f in funcs)
-        for filepath, count in files.most_common(5):
-            func_names = [f["name"] for f in funcs if f["file"] == filepath][:4]
-            print(f"    {filepath}: {', '.join(func_names)}")
-        if len(files) > 5:
-            print(f"    ... +{len(files) - 5} more files")
-        print()
-
-    # RARE BASINS — the signal (not dominant, not unique singles)
-    dominant_hash = sorted_basins[0][0] if sorted_basins else None
-    rare_basins = [(h, fs) for h, fs in sorted_basins if len(fs) > 1 and h != dominant_hash]
-    print(f"\n  === RARE BASINS (the signal — escaped dominant gravity) ===")
-    print(f"  {len(rare_basins)} basins with 2+ functions outside the dominant attractor\n")
-    for h, fs in rare_basins[:15]:
+    # RARE BASINS (the signal)
+    rare = [(h, fs) for h, fs in sorted_basins if len(fs) > 1 and h != dominant[0]]
+    print(f"  === RARE BASINS ({len(rare)} — the signal) ===\n")
+    for h, fs in rare[:top_n]:
         identity = fs[0]["terminal_identity"]
         orbit = fs[0]["orbit_type"]
+        rarity = fs[0]["rarity_score"]
         files = sorted(set(f["file"] for f in fs))
-        func_names = [f["name"] for f in fs]
-        print(f"  {identity} [{h[:8]}] {orbit} — {len(fs)} functions across {len(files)} files")
-        print(f"    functions: {', '.join(func_names[:6])}")
+        names = [f["name"] for f in fs]
+
+        print(f"  {identity} [{h[:8]}] {orbit} — {len(fs)} funcs, rarity:{rarity:.3f}")
+        print(f"    {', '.join(names[:8])}")
         if len(files) > 1:
-            print(f"    cross-file: YES ({len(files)} files)")
+            print(f"    cross-file: {len(files)} files")
         print()
 
-    unique_basins = [(h, fs) for h, fs in sorted_basins if len(fs) == 1]
-    print(f"  Unique structural patterns (1 function each): {len(unique_basins)}")
+    # UNIQUE PATTERNS
+    unique = [(h, fs[0]) for h, fs in sorted_basins if len(fs) == 1]
+    print(f"  Unique patterns (1 function each): {len(unique)}")
+    if unique:
+        print(f"    Highest rarity functions:")
+        for h, f in unique[:10]:
+            print(f"      {f['name']} ({f['file']}) [{h[:8]}] {f['orbit_type']}")
+    print()
 
-    # cross-file shared basins (same structure, different files)
-    cross_file = []
-    for h, fs in sorted_basins:
-        files = set(f["file"] for f in fs)
-        if len(files) > 1 and len(fs) > 1:
-            cross_file.append((h, fs, files))
+    # INTELLIGENCE HEATMAP
+    if show_heatmap:
+        print(f"  === INTELLIGENCE HEATMAP ===")
+        print(f"  (rare + high-connectivity = where intelligence concentrates)\n")
 
-    if cross_file:
-        print(f"\n  === CROSS-FILE STRUCTURAL DUPLICATES ===")
-        print(f"  (Same attractor, different files — possible redundancy)")
+        # sort all functions by rarity (descending)
+        all_funcs = []
+        for fs in basins.values():
+            all_funcs.extend(fs)
+        all_funcs.sort(key=lambda f: f["rarity_score"], reverse=True)
+
+        # show top 30 by rarity (excluding dominant basin)
+        shown = 0
+        for f in all_funcs:
+            if f["glyph_hash"] == dominant[0]:
+                continue
+            bar_len = int(f["rarity_score"] * 40)
+            bar = "█" * bar_len + "░" * (40 - bar_len)
+            print(f"  {bar} {f['rarity_score']:.3f}  {f['name']:<30s} {f['file']}")
+            shown += 1
+            if shown >= 30:
+                break
         print()
-        for h, fs, files in cross_file[:10]:
+
+    # CROSS-FILE DUPLICATES
+    cross = [(h, fs) for h, fs in sorted_basins
+             if len(fs) > 1 and len(set(f["file"] for f in fs)) > 1]
+    if cross:
+        print(f"  === CROSS-FILE STRUCTURAL DUPLICATES ({len(cross)}) ===\n")
+        for h, fs in cross[:10]:
             identity = fs[0]["terminal_identity"]
-            print(f"  {identity} [{h[:8]}] — {len(fs)} functions across {len(files)} files:")
-            for filepath in sorted(files)[:5]:
-                fnames = [f["name"] for f in fs if f["file"] == filepath]
-                print(f"    {filepath}: {', '.join(fnames)}")
+            files = sorted(set(f["file"] for f in fs))
+            print(f"  {identity} [{h[:8]}] — {len(fs)} funcs across {len(files)} files:")
+            for fp in files[:5]:
+                fnames = [f["name"] for f in fs if f["file"] == fp]
+                print(f"    {fp}: {', '.join(fnames[:4])}")
             print()
 
+
+# ============================================================
+# CLI
+# ============================================================
 
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Forge-fingerprint the GitNexus function graph")
-    parser.add_argument("--top", type=int, default=20, help="Top N basins to show")
-    parser.add_argument("--json", action="store_true", help="Output full JSON")
+    parser = argparse.ArgumentParser(description="Forge × GitNexus Code Topology")
+    parser.add_argument("--top", type=int, default=15)
+    parser.add_argument("--json", action="store_true")
     parser.add_argument("-o", "--output", help="Output file")
+    parser.add_argument("--db", help="Persist to SQLite database")
+    parser.add_argument("--heatmap", action="store_true", help="Show intelligence heatmap")
     parser.add_argument("--verbose", "-v", action="store_true")
 
     args = parser.parse_args()
 
     print("Querying GitNexus...", file=sys.stderr)
-    funcs = get_functions_from_gitnexus()
+    funcs = get_functions()
     print(f"  {len(funcs)} functions found", file=sys.stderr)
 
     print("Fingerprinting...", file=sys.stderr)
     results = fingerprint_functions(funcs, verbose=args.verbose or len(funcs) > 100)
     print(f"  {len(results)} fingerprinted", file=sys.stderr)
+
+    # score rarity
+    results = score_rarity(results)
+
+    # persist
+    if args.db:
+        persist_to_db(results, args.db)
 
     basins = group_by_basin(results)
 
@@ -206,16 +318,13 @@ if __name__ == "__main__":
         output = {
             "total_functions": len(results),
             "unique_basins": len(basins),
-            "basins": {
-                h: [{
-                    "name": f["name"],
-                    "file": f["file"],
-                    "lines": f["lines"],
-                    "orbit_type": f["orbit_type"],
-                    "glyph_names": f["glyph_names"],
-                } for f in fs]
-                for h, fs in sorted(basins.items(), key=lambda x: -len(x[1]))
-            },
+            "engine_version": ENGINE_VERSION,
+            "functions": [{
+                "name": f["name"], "file": f["file"], "lines": f["lines"],
+                "glyph_hash": f["glyph_hash"], "orbit_type": f["orbit_type"],
+                "rarity_score": f["rarity_score"], "basin_size": f["basin_size"],
+                "glyph_names": f["glyph_names"],
+            } for f in sorted(results, key=lambda x: -x["rarity_score"])],
         }
         text = json.dumps(output, indent=2, ensure_ascii=False)
         if args.output:
@@ -225,4 +334,4 @@ if __name__ == "__main__":
         else:
             print(text)
     else:
-        print_report(basins, top_n=args.top)
+        print_report(basins, top_n=args.top, show_heatmap=args.heatmap)
