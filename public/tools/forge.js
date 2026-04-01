@@ -312,29 +312,14 @@ function findNearestAttractor(identityHash, attractorMap) {
       attractor: attractorMap[identityHash],
     };
   }
-
-  // no exact match — score all attractors by similarity
-  // need the converge result for comparison, so we reconstruct from hash
-  // (the caller should pass the full result, but we handle gracefully)
-  let bestHash = null;
-  let bestScore = -1;
-  let bestAttractor = null;
-
-  for (const [hash, group] of Object.entries(attractorMap)) {
-    // simple scoring based on available data
-    const score = group.pages.length * 0.01; // slight bias toward larger basins
-    if (score > bestScore) {
-      bestScore = score;
-      bestHash = hash;
-      bestAttractor = group;
-    }
-  }
-
+  // deprecated — use findNearestAttractorFull for real similarity
+  // fallback: return first attractor (no bias toward size)
+  const first = Object.entries(attractorMap)[0];
   return {
     match: "fallback",
     confidence: 0.0,
-    hash: bestHash,
-    attractor: bestAttractor,
+    hash: first ? first[0] : null,
+    attractor: first ? first[1] : null,
   };
 }
 
