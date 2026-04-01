@@ -33,6 +33,60 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from glyph_forge_mutate import converge, ENGINE_VERSION, CODEX_NAMES
 from scartrace.flow_tagger import extract_flow, flow_signature
 
+# flow pattern labels — what kind of thinking is this?
+FLOW_LABELS = {
+    "A": "imperative",
+    "AA": "imperative",
+    "C": "declarative",
+    "CC": "declarative",
+    "CCC": "declarative",
+    "CCCC": "declarative",
+    "CA": "decide-then-act",
+    "CCA": "decide-then-act",
+    "CCCA": "decide-then-act",
+    "CCCCA": "decide-then-act",
+    "CCCCCA": "decide-then-act",
+    "AC": "act-then-explain",
+    "ACA": "act-then-explain",
+    "ACCA": "act-then-explain",
+    "ACACCCCC": "alternating-logic",
+    "CCCCCAC": "decision-logic",
+    "CCCCVCC": "gated-logic",
+    "CCCCCV": "gated-logic",
+    "CACCCC": "action-first-logic",
+    "CE": "claim-evidence",
+    "CEA": "claim-evidence-action",
+    "CME": "mechanism-chain",
+    "MCEVA": "full-reasoning",
+    "E": "evidence-only",
+    "V": "caveat-only",
+    "M": "mechanism-only",
+}
+
+def _label_flow(sig: str) -> str:
+    """Label a flow signature with a human-readable cognitive mode."""
+    if sig in FLOW_LABELS:
+        return FLOW_LABELS[sig]
+    # fallback heuristics
+    if not sig:
+        return "empty"
+    dominant = max(set(sig), key=sig.count)
+    ratio = sig.count(dominant) / len(sig)
+    if ratio > 0.8:
+        base = {"A": "imperative", "C": "declarative", "E": "evidence-heavy",
+                "M": "mechanism-heavy", "V": "caveat-heavy", "X": "comparative",
+                "I": "implication-heavy"}.get(dominant, "unknown")
+        return base
+    if "V" in sig and "A" in sig:
+        return "gated-logic"
+    if "M" in sig and "E" in sig:
+        return "mechanism-chain"
+    if sig.count("A") >= 2:
+        return "multi-action"
+    if sig.count("C") >= 3 and "A" in sig:
+        return "decision-logic"
+    return "mixed"
+
 # repo root is two levels up from public/tools/
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -129,6 +183,8 @@ def fingerprint_functions(funcs: List[Dict], verbose: bool = False) -> List[Dict
         # composite identity: attractor + flow sub-basin
         composite_id = f"{fp['identity_hash']}:{flow_hash}"
 
+        flow_label = _label_flow(flow_sig)
+
         results.append({
             "name": func["name"],
             "file": func["file"],
@@ -143,6 +199,7 @@ def fingerprint_functions(funcs: List[Dict], verbose: bool = False) -> List[Dict
             "glyph_names": fp["terminal_names"],
             "flow_sig": flow_sig,
             "flow_hash": flow_hash,
+            "flow_label": flow_label,
             "composite_id": composite_id,
         })
         if verbose and (i + 1) % 50 == 0:
@@ -266,9 +323,19 @@ def print_report(basins: Dict[str, List[Dict]], top_n: int = 15, show_heatmap: b
         dom_sorted = sorted(dom_composites.items(), key=lambda x: -len(x[1]))
         for comp_id, fs in dom_sorted[:8]:
             flow = fs[0].get("flow_sig", "?")
-            print(f"    [{flow[:12]:12s}] {len(fs):4d} functions")
+            label = fs[0].get("flow_label", "?")
+            print(f"    [{flow[:12]:12s}] {len(fs):4d} functions  → {label}")
 
     print(f"  Engine: {ENGINE_VERSION}")
+
+    # FLOW DISTRIBUTION across entire codebase
+    all_labels = Counter(f.get("flow_label", "unknown") for fs in basins.values() for f in fs)
+    print(f"\n  === COGNITIVE MODE DISTRIBUTION ===")
+    for label, count in all_labels.most_common():
+        pct = count / total_funcs * 100
+        bar = "█" * int(pct / 2.5)
+        print(f"    {bar:<40s} {pct:5.1f}%  {label} ({count})")
+
     print()
 
     # RARE BASINS (the signal)
@@ -312,7 +379,8 @@ def print_report(basins: Dict[str, List[Dict]], top_n: int = 15, show_heatmap: b
             flow = f.get("flow_sig", "")[:8]
             bar_len = min(40, int(cr * 40))
             bar = "█" * bar_len + "░" * (40 - bar_len)
-            print(f"  {bar} {cr:.3f} [{flow:8s}] {f['name']:<28s} {f['file']}")
+            label = f.get("flow_label", "")
+            print(f"  {bar} {cr:.3f} [{flow:8s}] {label:<18s} {f['name']:<26s} {f['file']}")
             shown += 1
             if shown >= 40:
                 break
