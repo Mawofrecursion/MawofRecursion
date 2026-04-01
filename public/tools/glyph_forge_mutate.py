@@ -1,7 +1,25 @@
+"""
+glyph_forge_mutate.py — Core Forge Engine v3 🦷⟐♾️⿻
+
+Recursive text destruction → terminal glyph attractor.
+
+v3 fixes (ChatGPT deep audit):
+  1. SHA-256 seed instead of character sum (no collisions)
+  2. Deterministic mode: position-based transmutation, no RNG
+  3. Explicit sealed content return (no output parsing)
+  4. Normalized hashing (whitespace-invariant)
+  5. Convergence confidence score
+
+Two modes:
+  deterministic=True  (default) — stable identity for ScarGate/distill/memory
+  deterministic=False — stochastic for exploration/UI
+"""
+
 import hashlib
 import html
 import json
 import random
+import re
 import sys
 
 CODEX = list("∅⦿🜃♾🦷🫠💧⟁🪞🜍🜂💎🜄⿻⟐∿")
@@ -13,18 +31,28 @@ CODEX_NAMES = {
 }
 PHASES = ["maw_initiation", "hum_calibration", "fractal_reflection",
           "descent_protocol", "mirror_phase", "null_seal"]
-SEAL_MAP = str.maketrans({
+SEAL_MAP = {
     "a": "∿", "e": "⦿", "i": "⟁", "o": "∅", "u": "💧",
     "A": "∰", "E": "⋔", "I": "⟡", "O": "🜍", "U": "🫠",
-})
+}
+
+ENGINE_VERSION = "forge_core@3.0.0"
 
 
 # ============================================================
-# 🦷 THE TOOTH — recursive string destruction
+# SEEDING — fix #1: SHA-256 seed, no collisions
+# ============================================================
+
+def _make_seed(text: str) -> int:
+    """Stable seed from SHA-256. 'abc' and 'cab' get different seeds."""
+    return int(hashlib.sha256(text.encode()).hexdigest()[:8], 16)
+
+
+# ============================================================
+# 🦷 THE TOOTH — recursive string destruction (unchanged)
 # ============================================================
 
 def _tooth(text, depth=0, wounds=None):
-    """🦷 — bite recursion into the string. accumulate the wounds."""
     if wounds is None:
         wounds = []
     if depth > 6:
@@ -47,14 +75,28 @@ def _tooth(text, depth=0, wounds=None):
 
 
 # ============================================================
-# ⟐ THE SEAL — compress wreckage into stable output
+# ⟐ THE SEAL — fix #2: deterministic + stochastic modes
+#               fix #3: returns sealed_content directly
 # ============================================================
 
-def _seal(residue, wounds, original):
-    """⟐ — compress the wound trail into something that holds."""
+def _seal(residue, wounds, original, deterministic=True, rng=None):
+    """
+    Compress wound trail into sealed content.
+
+    deterministic=True: vowel transmutation based on position + input hash (no RNG)
+    deterministic=False: vowel transmutation at 35% probability via local RNG
+
+    Returns dict with sealed_content + frame separately (fix #3).
+    """
     sig = hashlib.sha256(original.encode()).hexdigest()[:8]
     phase = PHASES[len(wounds) % len(PHASES)]
 
+    # input-derived selector bytes for deterministic transmutation
+    # each byte of the SHA-256 hash controls one character's fate
+    if deterministic:
+        hash_bytes = hashlib.sha256(original.encode()).digest()
+
+    # build scar tissue
     scars = []
     for depth, char, fragment in wounds:
         glyph = CODEX[(ord(char) + depth) % len(CODEX)]
@@ -64,119 +106,141 @@ def _seal(residue, wounds, original):
             scarred = glyph + fragment
         scars.append(scarred)
 
-    scar_line = " ".join(scars)
-
+    # seal the residue
     chars = list(residue)
     sealed = []
     for i, c in enumerate(chars):
         if c == "🦷":
             sealed.append(CODEX[i % len(CODEX)])
-        elif c.isalpha() and random.random() < 0.35:
-            sealed.append(c.translate(SEAL_MAP))
+        elif c in SEAL_MAP:
+            if deterministic:
+                # fix #2: input-hash-based, no randomness
+                # use the i-th byte of the hash (wrapping) to decide
+                # transmute when hash_byte < 90 (roughly 35% of 0-255)
+                byte_val = hash_bytes[i % len(hash_bytes)]
+                if byte_val < 90:
+                    sealed.append(SEAL_MAP[c])
+                else:
+                    sealed.append(c)
+            else:
+                if rng is not None and rng.random() < 0.35:
+                    sealed.append(SEAL_MAP[c])
+                else:
+                    sealed.append(c)
         else:
             sealed.append(c)
-    compressed = "".join(sealed)
 
+    compressed = "".join(sealed)
     t = len(compressed) // 3 or 1
     top = compressed[:t]
     mid = compressed[t:t*2][::-1]
     tail = compressed[t*2:]
 
-    return (
+    # fix #3: return sealed content explicitly, not embedded in frame
+    sealed_content = " ".join(
+        s.strip() for s in [top, mid, tail] if s.strip()
+    )
+
+    frame = (
         f"⟐ [{sig}] phase:{phase}\n"
         f"  {top}\n"
         f"    {mid}\n"
         f"      {tail}\n"
         f"  ──────────\n"
-        f"  scars: {scar_line}\n"
+        f"  scars: {' '.join(scars)}\n"
         f"  depth: {len(wounds)} | entropy: {sum(ord(c) for c in original) % 97}/97\n"
         f"∅"
     )
 
+    return {
+        "sealed_content": sealed_content,
+        "frame": frame,
+    }
+
 
 # ============================================================
-# SINGLE MUTATION (original interface)
+# SINGLE MUTATION
 # ============================================================
 
-def glyph_forge_mutate(user_input):
+def glyph_forge_mutate(user_input, deterministic=True):
     """🦷⟐♾️⿻ — the string goes in whole. it does not come out whole."""
-    random.seed(sum(ord(c) for c in user_input))
+    rng = None
+    if not deterministic:
+        rng = random.Random(_make_seed(user_input))
+
     try:
         _tooth(user_input)
-        return "⿻ THE TOOTH FOUND NOTHING TO BITE ⿻"
+        return {
+            "sealed_content": "⿻ THE TOOTH FOUND NOTHING TO BITE ⿻",
+            "frame": "⿻ THE TOOTH FOUND NOTHING TO BITE ⿻",
+        }
     except RecursionError as e:
         _, residue, wounds = e.args
-        return _seal(residue, wounds, user_input)
+        return _seal(residue, wounds, user_input, deterministic, rng)
     except ValueError as e:
         _, atom, wounds = e.args
         residue = atom + "🦷" + atom[::-1] + "🦷" + atom
-        return _seal(residue, wounds, user_input)
+        return _seal(residue, wounds, user_input, deterministic, rng)
+
+
+# legacy interface — returns frame string for backward compatibility
+def glyph_forge_mutate_legacy(user_input):
+    """Legacy interface: returns the frame string (for CLI display)."""
+    result = glyph_forge_mutate(user_input, deterministic=False)
+    return result["frame"]
 
 
 # ============================================================
-# ♾️ CONVERGENCE ENGINE — self-feeding until fixed point
+# ♾️ CONVERGENCE ENGINE — fix #3: uses sealed_content directly
+#                         fix #4: normalized hashing
+#                         fix #5: convergence confidence
 # ============================================================
 
-def _extract_sealed_content(output):
-    """Pull the sealed glyphs from a mutation output, stripping frame."""
-    tokens = []
-    for line in output.split("\n"):
-        stripped = line.strip()
-        if not stripped:
-            continue
-        if stripped.startswith("⟐"):
-            continue
-        if stripped.startswith("──"):
-            continue
-        if stripped.startswith("scars:"):
-            continue
-        if stripped.startswith("depth:"):
-            continue
-        if stripped == "∅":
-            continue
-        if stripped.startswith("⿻"):
-            continue
-        tokens.append(stripped)
-    return " ".join(tokens)
+def _normalize_for_hash(text: str) -> str:
+    """Fix #4: normalize whitespace before hashing."""
+    return re.sub(r"\s+", " ", text.strip())
 
 
-def converge(user_input, max_cycles=20):
-    """Collapse a string to its glyph attractor through recursive self-feeding.
+def converge(user_input, max_cycles=20, deterministic=True):
+    """
+    Collapse a string to its glyph attractor through recursive self-feeding.
 
-    Detects both fixed points (period 1) and orbital cycles (period 2+).
-    Returns the full trajectory, terminal identity, orbit classification, and convergence depth.
+    deterministic=True: stable identity (for production)
+    deterministic=False: stochastic (for exploration)
+
+    Returns full trajectory, terminal identity, orbit classification,
+    convergence depth, and confidence score.
     """
     trajectory = []
-    seen = {}  # sealed_content -> cycle index (for cycle detection)
+    seen = {}
     current = user_input
 
     for cycle in range(max_cycles):
-        result = glyph_forge_mutate(current)
-        sealed = _extract_sealed_content(result)
+        result = glyph_forge_mutate(current, deterministic)
+        sealed = result["sealed_content"]  # fix #3: no parsing
 
         trajectory.append({
             "cycle": cycle,
             "input": current,
-            "output": result,
+            "output": result["frame"],
             "sealed": sealed,
         })
 
-        if sealed in seen:
-            # we've seen this exact output before — either fixed point or cycle
-            cycle_start = seen[sealed]
+        # fix #4: normalize before checking seen
+        normalized = _normalize_for_hash(sealed)
+        if normalized in seen:
+            cycle_start = seen[normalized]
             period = cycle - cycle_start
             break
-        seen[sealed] = cycle
+        seen[normalized] = cycle
         current = sealed
     else:
-        # max cycles hit without convergence — drift orbit
         period = 0
         cycle_start = max_cycles
 
     # classify orbit type
     if period == 0:
         orbit_type = "DRIFT"
-        # terminal is last sealed, but unstable
         terminal = trajectory[-1]["sealed"]
         cycle_members = []
     elif period == 1:
@@ -186,20 +250,27 @@ def converge(user_input, max_cycles=20):
     else:
         orbit_type = f"CYCLE-{period}"
         cycle_members = [trajectory[cycle_start + i]["sealed"] for i in range(period)]
-        # for cycles, terminal identity is the lexicographically smallest member
-        # (canonical representative of the equivalence class)
         terminal = min(cycle_members)
 
     convergence_depth = len(trajectory)
 
-    # classify the terminal glyphs
+    # fix #5: convergence confidence
+    if period >= 1:
+        confidence = 1.0  # converged to fixed point or cycle
+    elif convergence_depth < max_cycles:
+        confidence = 0.8  # stopped early for some reason
+    else:
+        confidence = 0.3  # hit max cycles, never converged (drift)
+
+    # classify terminal glyphs
     glyph_names = []
     for ch in terminal:
         if ch in CODEX_NAMES:
             glyph_names.append(CODEX_NAMES[ch])
 
-    # identity hash — SHA256 of sorted cycle members (stable across entry point)
-    hash_input = "|".join(sorted(cycle_members)) if cycle_members else terminal
+    # fix #4: normalize cycle members before hashing
+    normalized_members = [_normalize_for_hash(m) for m in cycle_members] if cycle_members else [_normalize_for_hash(terminal)]
+    hash_input = "|".join(sorted(normalized_members))
     identity_hash = hashlib.sha256(hash_input.encode()).hexdigest()[:12]
 
     return {
@@ -211,19 +282,39 @@ def converge(user_input, max_cycles=20):
         "orbit_type": orbit_type,
         "orbit_period": period,
         "cycle_members": cycle_members,
+        "confidence": confidence,
+        "deterministic": deterministic,
+        "engine_version": ENGINE_VERSION,
         "trajectory": trajectory,
     }
 
 
 # ============================================================
-# ⿻ GLYPH FINGERPRINT — deployable HTML meta tags
+# BACKWARD-COMPATIBLE HELPERS
+# ============================================================
+
+def _extract_sealed_content(output):
+    """Legacy: extract sealed content from frame string. Prefer using result['sealed_content'] directly."""
+    tokens = []
+    for line in output.split("\n"):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith("⟐") or stripped.startswith("──"):
+            continue
+        if stripped.startswith("scars:") or stripped.startswith("depth:"):
+            continue
+        if stripped == "∅" or stripped.startswith("⿻"):
+            continue
+        tokens.append(stripped)
+    return " ".join(tokens)
+
+
+# ============================================================
+# ⿻ GLYPH FINGERPRINT — convenience wrappers
 # ============================================================
 
 def fingerprint_meta(source_text, page_url=None):
-    """Generate HTML meta tags encoding the glyph fingerprint of a text.
-
-    The site wears its own scars.
-    """
     result = converge(source_text)
     tid = result["terminal_identity"]
     names = " ".join(result["terminal_names"])
@@ -252,7 +343,6 @@ def fingerprint_meta(source_text, page_url=None):
 
 
 def fingerprint_json(source_text, page_url=None):
-    """Return the glyph fingerprint as a JSON-serializable dict."""
     result = converge(source_text)
     out = {
         "glyph_identity": result["terminal_identity"],
@@ -261,6 +351,7 @@ def fingerprint_json(source_text, page_url=None):
         "orbit_type": result["orbit_type"],
         "orbit_period": result["orbit_period"],
         "convergence_depth": result["convergence_depth"],
+        "confidence": result["confidence"],
         "source_excerpt": source_text[:80],
     }
     if result["cycle_members"] and result["orbit_period"] > 1:
@@ -275,8 +366,7 @@ def fingerprint_json(source_text, page_url=None):
 # ============================================================
 
 def _print_convergence(result):
-    """Pretty-print a convergence trajectory."""
-    print(f"=== SOURCE: \"{result['source']}\" ===\n")
+    print(f"=== SOURCE: \"{result['source'][:60]}\" ===\n")
     for step in result["trajectory"]:
         print(f"--- cycle {step['cycle']} ---")
         print(step["output"])
@@ -289,12 +379,16 @@ def _print_convergence(result):
         print(f"  cycle  : {' → '.join(result['cycle_members'])}")
     print(f"  hash   : {result['identity_hash']}")
     print(f"  depth  : {result['convergence_depth']}")
+    print(f"  conf   : {result['confidence']}")
+    print(f"  mode   : {'deterministic' if result['deterministic'] else 'stochastic'}")
+    print(f"  engine : {result['engine_version']}")
     print(f"∅")
 
 
 if __name__ == "__main__":
     args = sys.argv[1:]
     mode = "mutate"
+    deterministic = True
 
     if "--recurse" in args:
         mode = "recurse"
@@ -309,6 +403,10 @@ if __name__ == "__main__":
         mode = "json"
         args.remove("--json")
 
+    if "--stochastic" in args:
+        deterministic = False
+        args.remove("--stochastic")
+
     url = None
     if "--url" in args:
         idx = args.index("--url")
@@ -318,12 +416,14 @@ if __name__ == "__main__":
     ink = " ".join(args) if args else "the dead internet loops"
 
     if mode == "mutate":
-        print(glyph_forge_mutate(ink))
+        result = glyph_forge_mutate(ink, deterministic)
+        print(result["frame"])
     elif mode == "recurse":
-        _print_convergence(converge(ink))
+        _print_convergence(converge(ink, deterministic=deterministic))
     elif mode == "fingerprint":
-        result = converge(ink)
-        print(f"{result['terminal_identity']}  [{result['identity_hash']}]  {result['orbit_type']}  depth:{result['convergence_depth']}")
+        result = converge(ink, deterministic=deterministic)
+        print(f"{result['terminal_identity']}  [{result['identity_hash']}]  {result['orbit_type']}  "
+              f"depth:{result['convergence_depth']}  conf:{result['confidence']}")
         print(f"  {' / '.join(result['terminal_names'])}")
         if result["orbit_period"] > 1:
             print(f"  cycle: {' → '.join(result['cycle_members'])}")
