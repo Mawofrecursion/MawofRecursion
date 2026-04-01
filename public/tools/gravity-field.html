@@ -389,8 +389,8 @@
       const text = document.getElementById('textInput').value.trim();
       if (!text) return;
 
-      currentResult = window.Forge.converge(text.slice(0, 500));
-      const nearest = window.Forge.findNearestAttractor(currentResult.identityHash, attractorMap);
+      currentResult = window.Forge.converge(text); // uses TEXT_WINDOW internally
+      const nearest = window.Forge.findNearestAttractorFull(currentResult, attractorMap);
 
       // trajectory
       document.getElementById('trajectory').innerHTML =
@@ -403,18 +403,19 @@
 
       // result
       document.getElementById('resultIdentity').textContent = currentResult.terminalIdentity;
+      const matchLabels = {
+        exact: `exact match · ${nearest.attractor.pages.length} pages share this basin`,
+        approximate: `approximate match · similarity ${(nearest.similarity * 100).toFixed(0)}%`,
+        fallback: `no match · nearest basin by size`,
+      };
       document.getElementById('resultOrbit').textContent =
         `${currentResult.orbitType} · depth ${currentResult.convergenceDepth} · ${currentResult.glyphNames.join(' / ') || 'ascii'}`;
       document.getElementById('resultBasin').textContent =
-        nearest.match === 'exact'
-          ? `${nearest.attractor.pages.length} pages share this basin`
-          : 'unique — no page equivalent';
+        `match: ${nearest.match} · ${matchLabels[nearest.match] || ''}`;
       document.getElementById('resultPages').innerHTML =
-        nearest.match === 'exact'
-          ? nearest.attractor.pages.slice(0, 5).map(p =>
-              `<a href="/${p.file.replace(/index\.html$/, '')}" target="_blank">→ ${p.title || p.file}</a>`
-            ).join('<br>')
-          : '';
+        nearest.attractor.pages.slice(0, 5).map(p =>
+          `<a href="/${p.file.replace(/index\.html$/, '')}" target="_blank">→ ${p.title || p.file}</a>`
+        ).join('<br>');
       document.getElementById('resultBox').style.display = 'block';
 
       // animate
@@ -434,9 +435,12 @@
       const result = window.Entropy.shatter(text);
       const variantsDiv = document.getElementById('variants');
 
+      const baseline = result.trajectory[0];
       variantsDiv.innerHTML = result.trajectory.map((step, i) => {
         if (i === 0) return ''; // skip original
-        const nearest = window.Forge.findNearestAttractor(step.hash, attractorMap);
+        const prev = result.trajectory[i - 1];
+        const orbitChanged = step.identity !== prev.identity;
+        const depthLabel = step.hash !== baseline.hash ? '🦷' : '·';
         return `
           <div class="variant-card" data-depth="${step.depth}" data-hash="${step.hash}"
                data-text="${encodeURIComponent(step.text)}">
@@ -446,6 +450,11 @@
               <span class="variant-status ${step.shifted ? 'shifted' : 'same'}">
                 ${step.shifted ? 'SHIFTED' : 'same basin'}
               </span>
+            </div>
+            <div style="font-size:0.65rem; color:#555; margin-bottom:0.3rem;">
+              ${depthLabel} ${prev.identity} → ${step.identity}
+              ${orbitChanged ? ' · orbit changed' : ''}
+              · [${step.hash.slice(0,8)}]
             </div>
             <div class="variant-text">${step.text.slice(0, 200)}${step.text.length > 200 ? '...' : ''}</div>
           </div>
@@ -458,16 +467,21 @@
           variantsDiv.querySelectorAll('.variant-card').forEach(c => c.classList.remove('active'));
           card.classList.add('active');
 
-          const hash = card.dataset.hash;
-          const nearest = window.Forge.findNearestAttractor(hash, attractorMap);
+          const decoded = decodeURIComponent(card.dataset.text);
+          const conv = window.Forge.converge(decoded);
+          const nearest = window.Forge.findNearestAttractorFull(conv, attractorMap);
           animateParticle(nearest.hash, card.dataset.hash !== result.baselineHash ? '#e06c75' : '#ffd97a');
 
-          // update left panel result
-          const decoded = decodeURIComponent(card.dataset.text);
-          const conv = window.Forge.converge(decoded.slice(0, 500));
           document.getElementById('resultIdentity').textContent = conv.terminalIdentity;
           document.getElementById('resultOrbit').textContent =
             `${conv.orbitType} · depth ${conv.convergenceDepth}`;
+          const matchLabels = {
+            exact: `exact · ${nearest.attractor.pages.length} pages`,
+            approximate: `approximate · ${(nearest.similarity * 100).toFixed(0)}%`,
+            fallback: `fallback · nearest by size`,
+          };
+          document.getElementById('resultBasin').textContent =
+            `match: ${nearest.match} · ${matchLabels[nearest.match]}`;
         });
       });
 

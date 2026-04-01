@@ -316,7 +316,7 @@ const NUCLEAR_PASSES = [
 function shatter(inputText, maxDepth) {
   if (!maxDepth) maxDepth = 6;
   const rand = _rng(_charSum(inputText));
-  const baseline = window.Forge.converge(inputText.slice(0, 1500));
+  const baseline = window.Forge.converge(inputText);
   const baselineHash = baseline.identityHash;
 
   const trajectory = [{
@@ -337,7 +337,7 @@ function shatter(inputText, maxDepth) {
     }
     current = cleanup(current);
 
-    const result = window.Forge.converge(current.slice(0, 1500));
+    const result = window.Forge.converge(current);
     const shifted = result.identityHash !== baselineHash;
 
     trajectory.push({
