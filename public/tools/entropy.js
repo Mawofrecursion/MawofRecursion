@@ -315,7 +315,9 @@ const NUCLEAR_PASSES = [
  */
 function shatter(inputText, maxDepth) {
   if (!maxDepth) maxDepth = 6;
-  const rand = _rng(_charSum(inputText));
+  // stable seed from SHA-256 instead of charSum (fix: prevents collisions)
+  const seed = parseInt(window.Forge.sha256Hex12(inputText).slice(0, 8), 16);
+  const rand = _rng(seed);
   const baseline = window.Forge.converge(inputText);
   const baselineHash = baseline.identityHash;
 

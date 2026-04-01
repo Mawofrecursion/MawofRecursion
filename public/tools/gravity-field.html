@@ -343,9 +343,9 @@
     function animate() {
       time++;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (time % 5 === 0) {
+      if (time % 30 === 0) {
         const img = ctx.createImageData(canvas.width, canvas.height);
-        for (let i = 0; i < img.data.length; i += 24) {
+        for (let i = 0; i < img.data.length; i += 32) {
           const v = Math.random() * 6;
           img.data[i] = v; img.data[i+1] = v; img.data[i+2] = v; img.data[i+3] = 8;
         }
@@ -363,7 +363,6 @@
       const targetNode = nodes.find(n => n.hash === targetHash);
       if (!targetNode) return;
 
-      const rect = panel.getBoundingClientRect();
       particle.style.left = (canvas.width / 2 - 6) + 'px';
       particle.style.top = (canvas.height / 2 - 6) + 'px';
       particle.style.opacity = '1';

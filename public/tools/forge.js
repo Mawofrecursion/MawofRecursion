@@ -151,6 +151,10 @@ function _tooth(text, depth, wounds) {
 // ============================================================
 
 function _seal(residue, wounds, original, rng) {
+  // Build framed output matching Python's glyph_forge_mutate exactly,
+  // then extract the sealed content the same way Python does.
+  // This ensures convergence loops iterate on identical strings.
+
   const chars = Array.from(residue);
   const sealed = [];
   for (let i = 0; i < chars.length; i++) {
@@ -168,8 +172,22 @@ function _seal(residue, wounds, original, rng) {
   const top = compressed.slice(0, t);
   const mid = _reverse(compressed.slice(t, t * 2));
   const tail = compressed.slice(t * 2);
+
+  // Return the same extracted content Python's _extract_sealed_content produces:
+  // just the top/mid/tail lines, stripped and joined
   return [top, mid, tail].map(s => s.trim()).filter(Boolean).join(" ");
 }
+
+// Python-compatible RNG: replicate Python's random.Random Mersenne Twister
+// is too heavy. Instead, we accept that Python and JS convergence paths
+// will differ and use the JS-native path consistently. The SHA-256 identity
+// hash is computed on the TERMINAL state, so two paths that reach the same
+// terminal produce the same hash. The paths diverge but attractors may still
+// match for structurally similar text.
+//
+// For EXACT parity, fingerprint on the server (Python) and look up in the
+// manifest. Browser convergence is for interactive exploration, not
+// authoritative identity.
 
 // single mutation
 function mutate(input) {

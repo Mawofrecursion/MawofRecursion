@@ -26,6 +26,7 @@ Usage:
   cat long_chat.txt | python distill.py -
 """
 
+import hashlib
 import json
 import os
 import re
@@ -35,11 +36,40 @@ from typing import List, Dict, Any, Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from glyph_forge_mutate import converge
-from scartrace.chunker import chunk_document
-from scartrace.flow_tagger import (
-    extract_flow, flow_signature, extract_flow_detailed,
-)
+# Fix #1: Graceful degradation if forge is missing
+_HAS_FORGE = False
+try:
+    from glyph_forge_mutate import converge
+    _HAS_FORGE = True
+except ImportError:
+    def converge(text):
+        """Fallback: SHA-256 hash when forge is unavailable."""
+        h = hashlib.sha256(text[:1200].encode()).hexdigest()[:12]
+        return {
+            "identity_hash": h,
+            "terminal_identity": f"[{h[:8]}]",
+            "orbit_type": "UNKNOWN",
+            "orbit_period": 0,
+            "convergence_depth": 0,
+            "terminal_names": [],
+            "cycle_members": [],
+            "trajectory": [],
+        }
+
+try:
+    from scartrace.chunker import chunk_document
+    from scartrace.flow_tagger import extract_flow, flow_signature, extract_flow_detailed
+except ImportError:
+    print("WARNING: scartrace not found. Install it alongside distill.py", file=sys.stderr)
+    sys.exit(1)
+
+
+STOP = {"this", "that", "with", "from", "have", "been", "they",
+        "will", "your", "their", "also", "more", "most", "some",
+        "just", "very", "about", "into", "than", "then", "what",
+        "when", "where", "which", "while", "these", "those", "each",
+        "does", "could", "would", "should", "other", "after", "before",
+        "being", "both", "same", "such", "only", "over", "here", "there"}
 
 
 # ============================================================
@@ -57,14 +87,19 @@ def orient(text: str, doc_id: str = "doc") -> Dict[str, Any]:
 
 # ============================================================
 # PHASE 2: BITE — fingerprint + flow tag every chunk
+# Fix #3: fingerprint head + mid + tail, not just head
 # ============================================================
 
-STOP = {"this", "that", "with", "from", "have", "been", "they",
-        "will", "your", "their", "also", "more", "most", "some",
-        "just", "very", "about", "into", "than", "then", "what",
-        "when", "where", "which", "while", "these", "those", "each",
-        "does", "could", "would", "should", "other", "after", "before",
-        "being", "both", "same", "such", "only", "over", "here", "there"}
+def _sample_for_fingerprint(text: str, max_chars: int = 1200) -> str:
+    """Sample head + middle + tail for fingerprinting, not just the opening."""
+    if len(text) <= max_chars:
+        return text
+    third = max_chars // 3
+    head = text[:third]
+    mid_start = max(0, len(text) // 2 - third // 2)
+    mid = text[mid_start:mid_start + third]
+    tail = text[-third:]
+    return head + " | " + mid + " | " + tail
 
 
 def bite(chunks: List[Dict]) -> List[Dict]:
@@ -72,10 +107,11 @@ def bite(chunks: List[Dict]) -> List[Dict]:
     for chunk in chunks:
         text = chunk["text"]
 
-        # forge
-        result = converge(text[:1200])
+        # forge fingerprint on sampled text (fix #3)
+        sample = _sample_for_fingerprint(text)
+        result = converge(sample)
 
-        # flow
+        # flow extraction
         flow = extract_flow_detailed(text)
         tags = [f[0] for f in flow]
         sig = flow_signature(tags)
@@ -85,7 +121,7 @@ def bite(chunks: List[Dict]) -> List[Dict]:
         terms = [w for w in words if w not in STOP]
         top_terms = [t for t, _ in Counter(terms).most_common(10)]
 
-        # supporting quotes — sentences with mechanism/evidence/action tags
+        # supporting quotes — mechanism/evidence/action sentences
         quotes = [
             sent for tag, sent in flow
             if tag in ("mechanism", "evidence", "action") and len(sent) > 20
@@ -109,6 +145,7 @@ def bite(chunks: List[Dict]) -> List[Dict]:
 
 # ============================================================
 # PHASE 3: DIGEST — merge shared attractors with provenance
+# Fix #2: keep all chunks' text in the merged unit for recall
 # ============================================================
 
 def digest(bitten_chunks: List[Dict]) -> tuple:
@@ -129,24 +166,28 @@ def digest(bitten_chunks: List[Dict]) -> tuple:
                 "source_char_ranges": [f"{c['char_start']}-{c['char_end']}"],
                 "source_sections": [c.get("section_title") or "(body)"],
                 "all_quotes": c["supporting_quotes"],
+                "alternate_texts": [],
             })
             continue
 
         merge_count += len(group) - 1
 
-        # pick best representative: richest non-claim flow
+        # pick best representative: richest non-claim flow + longest
         group.sort(key=lambda c: (
             sum(1 for t in c["flow_tags"] if t != "claim"),
             c["word_count"],
         ), reverse=True)
         best = group[0]
 
-        # collect provenance from all merged chunks
+        # collect provenance + alternate texts from all merged chunks
         all_chunk_ids = [c["chunk_id"] for c in group]
         all_ranges = [f"{c['char_start']}-{c['char_end']}" for c in group]
         all_sections = sorted(set(c.get("section_title") or "(body)" for c in group))
         all_terms = set()
         all_quotes = []
+        # fix #2: keep alternate texts so nothing is silently lost
+        alternate_texts = [c["text"][:300] for c in group[1:]]
+
         for c in group:
             all_terms.update(c["top_terms"])
             all_quotes.extend(c["supporting_quotes"])
@@ -159,6 +200,7 @@ def digest(bitten_chunks: List[Dict]) -> tuple:
             "source_sections": all_sections,
             "merged_terms": sorted(all_terms)[:15],
             "all_quotes": all_quotes[:8],
+            "alternate_texts": alternate_texts,
         })
 
     digested.sort(key=lambda c: c.get("char_start", 0))
@@ -167,6 +209,7 @@ def digest(bitten_chunks: List[Dict]) -> tuple:
 
 # ============================================================
 # PHASE 4: DISTILL — strip filler, compress
+# Fix #4: re-sort by original position after priority filtering
 # ============================================================
 
 FILLER = [
@@ -186,13 +229,17 @@ def _strip_filler(text: str) -> str:
 
 
 def _prioritize_sentences(flow_detailed: List, max_sentences: int = 8) -> List:
+    """Keep most valuable sentences, then RE-SORT by original position (fix #4)."""
     priority = {
         "mechanism": 6, "evidence": 5, "action": 4,
         "comparison": 3, "implication": 3, "caveat": 2, "claim": 1,
     }
-    scored = [(priority.get(tag, 0), tag, sent) for tag, sent in flow_detailed]
-    scored.sort(key=lambda x: x[0], reverse=True)
-    return [(tag, sent) for _, tag, sent in scored[:max_sentences]]
+    indexed = [(i, priority.get(tag, 0), tag, sent) for i, (tag, sent) in enumerate(flow_detailed)]
+    indexed.sort(key=lambda x: x[1], reverse=True)
+    kept = indexed[:max_sentences]
+    # re-sort by original position to preserve coherence
+    kept.sort(key=lambda x: x[0])
+    return [(tag, sent) for _, _, tag, sent in kept]
 
 
 def distill(digested_chunks: List[Dict], aggressive: bool = False) -> List[Dict]:
@@ -210,7 +257,6 @@ def distill(digested_chunks: List[Dict], aggressive: bool = False) -> List[Dict]
             tags = chunk.get("flow_tags", [])
             sig = chunk.get("flow_signature", "")
 
-        # pick best supporting quotes (mechanism/evidence preferred)
         quotes = chunk.get("all_quotes", chunk.get("supporting_quotes", []))
 
         units.append({
@@ -228,6 +274,7 @@ def distill(digested_chunks: List[Dict], aggressive: bool = False) -> List[Dict]
             "supporting_quotes": quotes[:4],
             "merged_from": chunk.get("merged_from", 1),
             "merged_sections": chunk.get("source_sections", []),
+            "alternate_texts": chunk.get("alternate_texts", []),
             "word_count": len(re.findall(r'\w+', text)),
         })
 
@@ -236,13 +283,14 @@ def distill(digested_chunks: List[Dict], aggressive: bool = False) -> List[Dict]
 
 # ============================================================
 # PHASE 5: SEAL — output with full provenance
+# Fix #5: cap attractor list at 20
 # ============================================================
 
 def seal_json(units: List[Dict], raw_chunks: List[Dict],
               doc_id: str, stats: Dict) -> str:
-    """Full memory object: raw chunks + distilled units + stats."""
     return json.dumps({
         "doc_id": doc_id,
+        "engine": "forge" if _HAS_FORGE else "sha256_fallback",
         "stats": stats,
         "distilled_units": units,
         "raw_chunks": [
@@ -267,7 +315,8 @@ def seal_markdown(units: List[Dict], doc_id: str, stats: Dict) -> str:
         f"({stats['compression_pct']}% compression)*  ",
         f"*{stats['original_chunks']} chunks → {stats['distilled_units']} units "
         f"({stats['merged']} merged as redundant)*  ",
-        f"*{stats['unique_attractors']} unique structural attractors*",
+        f"*{stats['unique_attractors']} unique structural attractors*  ",
+        f"*engine: {'forge' if _HAS_FORGE else 'sha256 fallback'}*",
         "",
         "---",
         "",
@@ -280,7 +329,7 @@ def seal_markdown(units: List[Dict], doc_id: str, stats: Dict) -> str:
             lines.append(f"## {current_section}")
             lines.append("")
 
-        merged = f" *(merged {unit['merged_from']}x from: {', '.join(unit['merged_sections'])})*" if unit["merged_from"] > 1 else ""
+        merged = f" *(merged {unit['merged_from']}x)*" if unit["merged_from"] > 1 else ""
         lines.append(f"### `{unit['unit_id']}` [{unit['flow_sig']}]{merged}")
         lines.append("")
         lines.append(unit["distilled_text"])
@@ -292,13 +341,26 @@ def seal_markdown(units: List[Dict], doc_id: str, stats: Dict) -> str:
                 lines.append(f"> {q[:150]}")
             lines.append("")
 
+        if unit["alternate_texts"]:
+            lines.append(f"*Also covers ({unit['merged_from'] - 1} merged):*")
+            for alt in unit["alternate_texts"][:2]:
+                lines.append(f"  - {alt[:100]}...")
+            lines.append("")
+
         if unit["key_terms"]:
             lines.append(f"*terms: {', '.join(unit['key_terms'][:8])}*  ")
             lines.append(f"*attractor: {unit['terminal_identity']} [{unit['glyph_hash'][:8]}] {unit['orbit_type']}*")
             lines.append("")
 
+    # fix #5: cap attractor footer at 20
+    all_attractors = sorted(set(u['terminal_identity'] for u in units))
+    if len(all_attractors) > 20:
+        footer = ", ".join(all_attractors[:20]) + f" (+{len(all_attractors) - 20} more)"
+    else:
+        footer = ", ".join(all_attractors)
+
     lines.append("---")
-    lines.append(f"*attractors: {', '.join(set(u['terminal_identity'] for u in units))}*")
+    lines.append(f"*attractors: {footer}*")
     lines.append("∅")
 
     return "\n".join(lines)
@@ -316,20 +378,12 @@ def distill_text(
 ) -> str:
     original_words = len(re.findall(r'\w+', text))
 
-    # Phase 1
     oriented = orient(text, doc_id)
     raw_chunks = oriented["chunks"]
-
-    # Phase 2
     bitten = bite(raw_chunks)
-
-    # Phase 3
     digested, merge_count = digest(bitten)
-
-    # Phase 4
     units = distill(digested, aggressive=aggressive)
 
-    # Stats
     distilled_words = sum(u["word_count"] for u in units)
     unique_attractors = len(set(u["glyph_hash"] for u in units))
 
@@ -343,7 +397,6 @@ def distill_text(
         "unique_attractors": unique_attractors,
     }
 
-    # Phase 5
     if output_format == "json":
         return seal_json(units, raw_chunks, doc_id, stats)
     else:
