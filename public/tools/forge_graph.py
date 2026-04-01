@@ -142,7 +142,22 @@ def print_report(basins: Dict[str, List[Dict]], top_n: int = 20):
             print(f"    ... +{len(files) - 5} more files")
         print()
 
-    # interesting: functions in small basins (unique structural patterns)
+    # RARE BASINS — the signal (not dominant, not unique singles)
+    dominant_hash = sorted_basins[0][0] if sorted_basins else None
+    rare_basins = [(h, fs) for h, fs in sorted_basins if len(fs) > 1 and h != dominant_hash]
+    print(f"\n  === RARE BASINS (the signal — escaped dominant gravity) ===")
+    print(f"  {len(rare_basins)} basins with 2+ functions outside the dominant attractor\n")
+    for h, fs in rare_basins[:15]:
+        identity = fs[0]["terminal_identity"]
+        orbit = fs[0]["orbit_type"]
+        files = sorted(set(f["file"] for f in fs))
+        func_names = [f["name"] for f in fs]
+        print(f"  {identity} [{h[:8]}] {orbit} — {len(fs)} functions across {len(files)} files")
+        print(f"    functions: {', '.join(func_names[:6])}")
+        if len(files) > 1:
+            print(f"    cross-file: YES ({len(files)} files)")
+        print()
+
     unique_basins = [(h, fs) for h, fs in sorted_basins if len(fs) == 1]
     print(f"  Unique structural patterns (1 function each): {len(unique_basins)}")
 
