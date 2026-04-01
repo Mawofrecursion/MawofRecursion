@@ -96,7 +96,10 @@
     }
     .result-identity { font-size: 1.6rem; letter-spacing: 0.15em; color: #ffd97a; margin-bottom: 0.3rem; }
     .result-orbit { color: #9be7ff; font-size: 0.75rem; }
-    .result-basin { color: #9b67ea; font-size: 0.75rem; margin-top: 0.3rem; }
+    .result-basin { font-size: 0.75rem; margin-top: 0.3rem; }
+    .match-exact { color: #98c379; }
+    .match-approximate { color: #ffd97a; }
+    .match-fallback { color: #e06c75; }
     .result-pages { font-size: 0.7rem; color: #444; margin-top: 0.4rem; line-height: 1.5; max-height: 80px; overflow-y: auto; }
     .result-pages a { color: #718096; text-decoration: none; }
     .result-pages a:hover { color: #9be7ff; }
@@ -403,14 +406,15 @@
       // result
       document.getElementById('resultIdentity').textContent = currentResult.terminalIdentity;
       const matchLabels = {
-        exact: `exact match · ${nearest.attractor.pages.length} pages share this basin`,
-        approximate: `approximate match · similarity ${(nearest.similarity * 100).toFixed(0)}%`,
-        fallback: `no match · nearest basin by size`,
+        exact: `exact hash match · ${nearest.attractor.pages.length} pages share this basin`,
+        approximate: `similarity ${(nearest.similarity * 100).toFixed(0)}% · structural approximation`,
+        fallback: `no structural match · routed to nearest basin`,
       };
       document.getElementById('resultOrbit').textContent =
         `${currentResult.orbitType} · depth ${currentResult.convergenceDepth} · ${currentResult.glyphNames.join(' / ') || 'ascii'}`;
-      document.getElementById('resultBasin').textContent =
-        `match: ${nearest.match} · ${matchLabels[nearest.match] || ''}`;
+      const basinEl = document.getElementById('resultBasin');
+      basinEl.className = `result-basin match-${nearest.match}`;
+      basinEl.textContent = matchLabels[nearest.match] || '';
       document.getElementById('resultPages').innerHTML =
         nearest.attractor.pages.slice(0, 5).map(p =>
           `<a href="/${p.file.replace(/index\.html$/, '')}" target="_blank">→ ${p.title || p.file}</a>`
@@ -475,12 +479,13 @@
           document.getElementById('resultOrbit').textContent =
             `${conv.orbitType} · depth ${conv.convergenceDepth}`;
           const matchLabels = {
-            exact: `exact · ${nearest.attractor.pages.length} pages`,
-            approximate: `approximate · ${(nearest.similarity * 100).toFixed(0)}%`,
-            fallback: `fallback · nearest by size`,
+            exact: `exact hash match · ${nearest.attractor.pages.length} pages`,
+            approximate: `similarity ${(nearest.similarity * 100).toFixed(0)}%`,
+            fallback: `no match · nearest basin`,
           };
-          document.getElementById('resultBasin').textContent =
-            `match: ${nearest.match} · ${matchLabels[nearest.match]}`;
+          const basinEl = document.getElementById('resultBasin');
+          basinEl.className = `result-basin match-${nearest.match}`;
+          basinEl.textContent = matchLabels[nearest.match];
         });
       });
 

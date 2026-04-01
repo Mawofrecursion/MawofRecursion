@@ -185,8 +185,8 @@ def digest(bitten_chunks: List[Dict]) -> tuple:
         all_sections = sorted(set(c.get("section_title") or "(body)" for c in group))
         all_terms = set()
         all_quotes = []
-        # fix #2: keep alternate texts so nothing is silently lost
-        alternate_texts = [c["text"][:300] for c in group[1:]]
+        # fix #2: keep alternate texts so nothing is silently lost (capped at 4)
+        alternate_texts = [c["text"][:300] for c in group[1:4]]
 
         for c in group:
             all_terms.update(c["top_terms"])
