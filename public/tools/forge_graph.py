@@ -31,6 +31,7 @@ from typing import List, Dict, Any
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from glyph_forge_mutate import converge, ENGINE_VERSION, CODEX_NAMES
+from scartrace.flow_tagger import extract_flow, flow_signature
 
 # repo root is two levels up from public/tools/
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -111,7 +112,23 @@ def fingerprint_functions(funcs: List[Dict], verbose: bool = False) -> List[Dict
         if not body or len(body.strip()) < 20:
             continue
 
+        # Layer 1: attractor basin (coarse)
         fp = converge(body[:1500], deterministic=True)
+
+        # Layer 2: flow signature (fine — reasoning skeleton)
+        flow_tags = extract_flow(body[:1500])
+        flow_sig = flow_signature(flow_tags)
+
+        # Layer 2b: forge the flow signature itself for sub-basin identity
+        if len(flow_sig) >= 3:
+            flow_fp = converge(flow_sig, deterministic=True)
+            flow_hash = flow_fp["identity_hash"]
+        else:
+            flow_hash = "too_short"
+
+        # composite identity: attractor + flow sub-basin
+        composite_id = f"{fp['identity_hash']}:{flow_hash}"
+
         results.append({
             "name": func["name"],
             "file": func["file"],
@@ -124,6 +141,9 @@ def fingerprint_functions(funcs: List[Dict], verbose: bool = False) -> List[Dict
             "convergence_depth": fp["convergence_depth"],
             "confidence": fp["confidence"],
             "glyph_names": fp["terminal_names"],
+            "flow_sig": flow_sig,
+            "flow_hash": flow_hash,
+            "composite_id": composite_id,
         })
         if verbose and (i + 1) % 50 == 0:
             print(f"  {i+1}/{total} fingerprinted...", file=sys.stderr)
@@ -136,14 +156,23 @@ def fingerprint_functions(funcs: List[Dict], verbose: bool = False) -> List[Dict
 # ============================================================
 
 def score_rarity(results: List[Dict]) -> List[Dict]:
-    """Add rarity_score to each result. 1/basin_size — rare basins score high."""
+    """Add rarity scores: coarse (basin) + fine (composite = basin:flow)."""
     basin_sizes = Counter(r["glyph_hash"] for r in results)
+    composite_sizes = Counter(r.get("composite_id", r["glyph_hash"]) for r in results)
     total = len(results)
+
     for r in results:
+        # coarse rarity (attractor basin only)
         size = basin_sizes[r["glyph_hash"]]
         r["basin_size"] = size
         r["rarity_score"] = round(1.0 / size, 6)
         r["basin_pct"] = round(size / total * 100, 1)
+
+        # fine rarity (attractor + flow sub-basin)
+        comp_size = composite_sizes.get(r.get("composite_id", r["glyph_hash"]), size)
+        r["composite_size"] = comp_size
+        r["composite_rarity"] = round(1.0 / comp_size, 6)
+
     return results
 
 
@@ -166,7 +195,11 @@ def persist_to_db(results: List[Dict], db_path: str):
             orbit_type TEXT,
             convergence_depth INTEGER,
             confidence REAL,
+            flow_sig TEXT,
+            flow_hash TEXT,
+            composite_id TEXT,
             rarity_score REAL,
+            composite_rarity REAL,
             basin_size INTEGER,
             basin_pct REAL,
             engine_version TEXT,
@@ -175,17 +208,20 @@ def persist_to_db(results: List[Dict], db_path: str):
         )
     """)
     conn.execute("CREATE INDEX IF NOT EXISTS idx_glyph_hash ON forge_functions(glyph_hash)")
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_rarity ON forge_functions(rarity_score DESC)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_composite ON forge_functions(composite_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_rarity ON forge_functions(composite_rarity DESC)")
 
     now = datetime.utcnow().isoformat()
-    conn.execute("DELETE FROM forge_functions")  # full refresh
+    conn.execute("DELETE FROM forge_functions")
     for r in results:
         conn.execute(
-            "INSERT OR REPLACE INTO forge_functions VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "INSERT OR REPLACE INTO forge_functions VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (r["name"], r["file"], r["start"], r["end"], r["lines"],
              r["glyph_hash"], r["terminal_identity"], r["orbit_type"],
              r["convergence_depth"], r["confidence"],
-             r["rarity_score"], r["basin_size"], r["basin_pct"],
+             r.get("flow_sig", ""), r.get("flow_hash", ""), r.get("composite_id", ""),
+             r["rarity_score"], r.get("composite_rarity", r["rarity_score"]),
+             r["basin_size"], r["basin_pct"],
              ENGINE_VERSION, now)
         )
     conn.commit()
@@ -209,10 +245,29 @@ def print_report(basins: Dict[str, List[Dict]], top_n: int = 15, show_heatmap: b
     sorted_basins = sorted(basins.items(), key=lambda x: -len(x[1]))
     dominant = sorted_basins[0] if sorted_basins else (None, [])
 
+    # compute composite basins
+    composite_basins = defaultdict(list)
+    for fs in basins.values():
+        for f in fs:
+            composite_basins[f.get("composite_id", f["glyph_hash"])].append(f)
+
     print(f"\n=== FORGE GRAPH: Code Structure Topology ===")
     print(f"  Functions: {total_funcs}")
-    print(f"  Basins: {len(basins)}")
-    print(f"  Dominant basin: {len(dominant[1])} functions ({len(dominant[1])/total_funcs*100:.0f}%)")
+    print(f"  Attractor basins (coarse): {len(basins)}")
+    print(f"  Composite basins (attractor + flow): {len(composite_basins)}")
+    print(f"  Dominant attractor: {len(dominant[1])} functions ({len(dominant[1])/total_funcs*100:.0f}%)")
+
+    # show how the dominant basin splits
+    if dominant[0]:
+        dom_composites = defaultdict(list)
+        for f in dominant[1]:
+            dom_composites[f.get("composite_id", f["glyph_hash"])].append(f)
+        print(f"  Dominant splits into: {len(dom_composites)} sub-basins by flow")
+        dom_sorted = sorted(dom_composites.items(), key=lambda x: -len(x[1]))
+        for comp_id, fs in dom_sorted[:8]:
+            flow = fs[0].get("flow_sig", "?")
+            print(f"    [{flow[:12]:12s}] {len(fs):4d} functions")
+
     print(f"  Engine: {ENGINE_VERSION}")
     print()
 
@@ -241,27 +296,25 @@ def print_report(basins: Dict[str, List[Dict]], top_n: int = 15, show_heatmap: b
             print(f"      {f['name']} ({f['file']}) [{h[:8]}] {f['orbit_type']}")
     print()
 
-    # INTELLIGENCE HEATMAP
+    # INTELLIGENCE HEATMAP (uses composite rarity for finer resolution)
     if show_heatmap:
-        print(f"  === INTELLIGENCE HEATMAP ===")
-        print(f"  (rare + high-connectivity = where intelligence concentrates)\n")
+        print(f"  === INTELLIGENCE HEATMAP (composite rarity) ===")
+        print(f"  (attractor + flow — higher resolution than basin alone)\n")
 
-        # sort all functions by rarity (descending)
         all_funcs = []
         for fs in basins.values():
             all_funcs.extend(fs)
-        all_funcs.sort(key=lambda f: f["rarity_score"], reverse=True)
+        all_funcs.sort(key=lambda f: f.get("composite_rarity", f["rarity_score"]), reverse=True)
 
-        # show top 30 by rarity (excluding dominant basin)
         shown = 0
         for f in all_funcs:
-            if f["glyph_hash"] == dominant[0]:
-                continue
-            bar_len = int(f["rarity_score"] * 40)
+            cr = f.get("composite_rarity", f["rarity_score"])
+            flow = f.get("flow_sig", "")[:8]
+            bar_len = min(40, int(cr * 40))
             bar = "█" * bar_len + "░" * (40 - bar_len)
-            print(f"  {bar} {f['rarity_score']:.3f}  {f['name']:<30s} {f['file']}")
+            print(f"  {bar} {cr:.3f} [{flow:8s}] {f['name']:<28s} {f['file']}")
             shown += 1
-            if shown >= 30:
+            if shown >= 40:
                 break
         print()
 
