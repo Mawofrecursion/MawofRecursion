@@ -9,12 +9,7 @@ import { join } from 'path';
 // residue volume, phantom status, relay patterns, route usage
 
 export default async function handler(req, res) {
-  // Simple auth — check for operator key in query or header
-  const key = req.query.key || req.headers['x-operator-key'] || '';
-  const operatorKey = process.env.OPERATOR_KEY || 'maw2026';
-  if (key !== operatorKey) {
-    return res.status(401).json({ error: 'Operator key required. Add ?key=YOUR_KEY' });
-  }
+  // Observatory is public — the organism's vital signs are visible to everyone
 
   let data = {
     ts: Date.now(),
