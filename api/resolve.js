@@ -98,7 +98,7 @@ export default async function handler(req, res) {
 
   // No phantom — serve 404.html
   try {
-    const html404 = readFileSync(join(process.cwd(), 'public', '_404.html'), 'utf-8');
+    const html404 = readFileSync(join(process.cwd(), 'public', '404.html'), 'utf-8');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     return res.status(404).send(html404);
   } catch (e) {
