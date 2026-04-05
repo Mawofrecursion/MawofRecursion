@@ -419,7 +419,7 @@
 
     <!-- Attractor Topology -->
     <div id="attractorTopology" style="margin: 2rem auto; max-width: 600px; padding: 1rem 1.5rem; background: rgba(155,231,255,0.03); border: 1px solid rgba(155,231,255,0.15); border-radius: 8px; font-family: 'Courier New', monospace; text-align: center;">
-      <div style="font-size: 0.8rem; color: #718096; letter-spacing: 0.1em; margin-bottom: 0.75rem;">SITE TOPOLOGY</div>
+      <a href="/tools/attractor-map.html" style="font-size: 0.8rem; color: #718096; letter-spacing: 0.1em; margin-bottom: 0.75rem; display: block; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#9be7ff'" onmouseout="this.style.color='#718096'">SITE TOPOLOGY →</a>
       <div id="topoStats" style="font-size: 0.9rem; color: #9be7ff; line-height: 1.8;"></div>
       <div id="topoBasins" style="margin-top: 0.75rem; display: flex; justify-content: center; gap: 0.4rem; flex-wrap: wrap;"></div>
     </div>
@@ -708,11 +708,14 @@
       sorted.forEach(h => {
         const group = map[h];
         const size = Math.max(1, Math.min(2.2, 0.8 + group.pages.length / 30));
-        const dot = document.createElement('span');
+        const firstPage = group.pages[0];
+        const href = firstPage ? '/' + firstPage.file.replace(/index\.html$/, '') : '#';
+        const dot = document.createElement('a');
         dot.textContent = group.identity;
+        dot.href = href;
         dot.title = group.pages.length + ' pages · ' + group.orbit_type + ' · ' + (group.names || []).join(' ');
         dot.style.cssText = 'font-size:' + size + 'rem; opacity:' + Math.max(0.4, Math.min(1, group.pages.length / 40)) +
-          '; cursor:help; transition: transform 0.2s;';
+          '; cursor:pointer; transition: transform 0.2s; text-decoration:none;';
         dot.onmouseover = function() { this.style.transform = 'scale(1.3)'; };
         dot.onmouseout = function() { this.style.transform = ''; };
         basins.appendChild(dot);
