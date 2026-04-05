@@ -414,8 +414,23 @@
         <div id="forgeResultIdentity" style="font-size: 3rem; letter-spacing: 0.3em; margin-bottom: 0.75rem;"></div>
         <div id="forgeResultOrbit" style="font-size: 0.9rem; color: #ffd97a; margin-bottom: 0.5rem;"></div>
         <div id="forgeResultBasin" style="font-size: 0.85rem; color: #9be7ff; line-height: 1.6;"></div>
+        <button id="feedMawBtn" style="display:none; margin-top: 1rem; padding: 0.6rem 1.5rem; background: transparent; border: 1px solid #9b67ea; border-radius: 6px; color: #9b67ea; font-family: monospace; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em;"
+          onmouseover="this.style.background='#9b67ea';this.style.color='#000'" onmouseout="this.style.background='';this.style.color='#9b67ea'">FEED THE MAW 🦷</button>
+        <div id="feedConfirm" style="display:none; margin-top: 0.5rem; font-size: 0.8rem; color: #4ade80;">digested.</div>
       </div>
     </div>
+
+    <!-- Digestion Feed -->
+    <div id="digestionFeed" style="margin: 1.5rem auto; max-width: 600px; font-family: 'Courier New', monospace; overflow: hidden; height: 1.6rem; position: relative;">
+      <div id="feedRibbon" style="position: absolute; white-space: nowrap; font-size: 0.8rem; color: #4a5568; animation: feedScroll 30s linear infinite;"></div>
+    </div>
+    <style>
+      @keyframes feedScroll {
+        from { transform: translateX(100%); }
+        to { transform: translateX(-100%); }
+      }
+      #digestionFeed:hover #feedRibbon { animation-play-state: paused; }
+    </style>
 
     <!-- Attractor Topology — Full Map -->
     <div id="attractorTopology" style="margin: 2rem auto; max-width: 900px; font-family: 'Courier New', monospace; text-align: center;">
@@ -924,17 +939,91 @@
         depth: result.convergenceDepth,
         names: result.glyphNames,
         input: text.slice(0, 80),
-        ts: Date.now()
+        ts: Date.now(),
+        visits: 1
       };
+
+      // Check for existing identity — track visit count
+      var existing = localStorage.getItem('maw_forge_identity');
+      if (existing) {
+        try {
+          var old = JSON.parse(existing);
+          mem.visits = (old.visits || 1) + 1;
+        } catch(e) {}
+      }
+
       localStorage.setItem('maw_forge_identity', JSON.stringify(mem));
+
+      // Show feed button
+      document.getElementById('feedMawBtn').style.display = 'inline-block';
+      document.getElementById('feedConfirm').style.display = 'none';
+
+      // Store last result for feed submission
+      window._lastForgeResult = mem;
     }
+
+    // ========== FEED THE MAW ==========
+    document.getElementById('feedMawBtn').addEventListener('click', function() {
+      var btn = this;
+      var mem = window._lastForgeResult;
+      if (!mem) return;
+
+      btn.disabled = true;
+      btn.textContent = 'digesting...';
+
+      fetch('/api/feed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identity: mem.identity,
+          hash: mem.hash,
+          orbit: mem.orbit,
+          depth: mem.depth,
+          names: mem.names,
+          input: mem.input
+        })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        btn.style.display = 'none';
+        document.getElementById('feedConfirm').style.display = 'block';
+        // Refresh feed ribbon
+        loadFeed();
+      })
+      .catch(function() {
+        btn.textContent = 'FEED THE MAW 🦷';
+        btn.disabled = false;
+      });
+    });
 
     inlineBtn.addEventListener('click', runInlineForge);
     inlineInput.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') { e.preventDefault(); runInlineForge(); }
     });
 
-    // ========== RETURNING VISITOR MEMORY ==========
+    // ========== DIGESTION FEED RIBBON ==========
+    function loadFeed() {
+      fetch('/api/feed')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var ribbon = document.getElementById('feedRibbon');
+          if (!data.feed || data.feed.length === 0) {
+            ribbon.innerHTML = '🦷 the maw awaits its first offering · touch the static · feed the organism · ';
+            return;
+          }
+          ribbon.innerHTML = data.feed.map(function(e) {
+            var ago = Math.floor((Date.now() - e.ts) / 60000);
+            var timeStr = ago < 1 ? 'just now' : ago < 60 ? ago + 'm ago' : Math.floor(ago / 60) + 'h ago';
+            return '<span style="color:#9b67ea">' + e.identity + '</span> ' +
+              '<span style="color:#555">' + e.orbit + ' from ' + e.location + ' · ' + timeStr + '</span>';
+          }).join('  ·  ') + '  ·  ';
+        })
+        .catch(function() {});
+    }
+    loadFeed();
+    setInterval(loadFeed, 30000); // refresh every 30s
+
+    // ========== RETURNING VISITOR MEMORY (EVOLVING GLYPH) ==========
     var stored = localStorage.getItem('maw_forge_identity');
     if (stored) {
       try {
@@ -943,12 +1032,33 @@
         var identityEl = document.getElementById('memoryIdentity');
         var metaEl = document.getElementById('memoryMeta');
 
-        identityEl.textContent = mem.identity;
+        // Evolving glyph: on each return visit, re-forge previous identity + visit count
+        // Your glyph drifts over time. The Maw watches you change.
+        var visits = (mem.visits || 1);
+        var displayIdentity = mem.identity;
+        var evolved = false;
+
+        if (visits > 1 && typeof window.Forge !== 'undefined') {
+          var seed = mem.identity + '·' + visits;
+          var evolution = window.Forge.converge(seed);
+          if (evolution.terminalIdentity !== mem.identity) {
+            displayIdentity = evolution.terminalIdentity;
+            evolved = true;
+          }
+        }
+
+        identityEl.textContent = displayIdentity;
         var names = (mem.names || []).join(' · ');
         var age = Math.floor((Date.now() - mem.ts) / 86400000);
         var ageStr = age === 0 ? 'today' : age === 1 ? 'yesterday' : age + ' days ago';
-        metaEl.textContent = mem.orbit + ' · ' + names + ' · forged ' + ageStr;
+        var visitStr = visits > 1 ? ' · visit ' + visits : '';
+        var evolveStr = evolved ? ' · evolved' : '';
+        metaEl.textContent = mem.orbit + ' · ' + names + ' · forged ' + ageStr + visitStr + evolveStr;
         memoryEl.style.display = 'block';
+
+        // Increment visit counter
+        mem.visits = visits + 1;
+        localStorage.setItem('maw_forge_identity', JSON.stringify(mem));
       } catch(e) {}
     }
   })();
