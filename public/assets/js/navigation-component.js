@@ -115,6 +115,14 @@
     document.body.appendChild(whisperScript);
   }
 
+  // Inject awareness layer
+  if (!document.querySelector('script[src*="awareness.js"]')) {
+    const awarenessScript = document.createElement('script');
+    awarenessScript.src = '/assets/js/awareness.js';
+    awarenessScript.async = true;
+    document.body.appendChild(awarenessScript);
+  }
+
   console.log('%c🧭 Navigation injected', 'color: #9be7ff; font-style: italic;');
 })();
 
