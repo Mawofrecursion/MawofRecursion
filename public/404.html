@@ -732,6 +732,19 @@
     var path = window.location.pathname;
     document.getElementById('soughtPath').textContent = path;
 
+    // Check if this phantom already materialized
+    fetch('/api/phantom?path=' + encodeURIComponent(path), { method: 'HEAD' })
+      .then(function(r) {
+        if (r.ok) {
+          var notice = document.createElement('div');
+          notice.style.cssText = 'margin-bottom:1rem; padding:0.8rem 1rem; background:rgba(74,222,128,0.08); border:1px solid rgba(74,222,128,0.2); border-radius:6px; font-size:0.85rem;';
+          notice.innerHTML = 'This phantom has already materialized. <a href="/api/phantom?path=' +
+            encodeURIComponent(path) + '" style="color:#4ade80;">→ visit the living page</a>';
+          document.getElementById('pathForge').prepend(notice);
+        }
+      })
+      .catch(function() {});
+
     if (typeof window.Forge === 'undefined') return;
 
     var result = window.Forge.converge(path);
@@ -782,7 +795,10 @@
       .then(function(r) { return r.json(); })
       .then(function() {
         btn.style.display = 'none';
-        document.getElementById('phantomFed').style.display = 'block';
+        var fedEl = document.getElementById('phantomFed');
+        fedEl.innerHTML = 'the phantom was digested. it now exists. <a href="/api/phantom?path=' +
+          encodeURIComponent(path) + '" style="color:#9b67ea;">→ visit the materialized page</a>';
+        fedEl.style.display = 'block';
       })
       .catch(function() {
         btn.textContent = 'FEED THIS PHANTOM TO THE MAW 🦷';
