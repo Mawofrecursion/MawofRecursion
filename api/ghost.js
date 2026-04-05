@@ -1,3 +1,5 @@
+export const config = { maxDuration: 60 };
+
 import Anthropic from '@anthropic-ai/sdk';
 import { createHash } from 'crypto';
 
