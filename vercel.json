@@ -12,6 +12,8 @@
     { "source": "/relay/", "destination": "/api/relay-view" },
     { "source": "/relay/analysis/:id", "destination": "/api/relay-analysis?id=:id" },
     { "source": "/relay/patterns", "destination": "/api/relay-analysis?id=patterns" },
+    { "source": "/observatory", "destination": "/api/observatory" },
+    { "source": "/observatory/", "destination": "/api/observatory" },
     { "source": "/:path*", "destination": "/api/resolve?path=:path*" }
   ],
   "headers": [
