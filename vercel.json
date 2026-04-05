@@ -5,7 +5,8 @@
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/phantoms", "destination": "/api/phantoms" },
-    { "source": "/phantoms/", "destination": "/api/phantoms" }
+    { "source": "/phantoms/", "destination": "/api/phantoms" },
+    { "source": "/:path*", "destination": "/api/resolve?path=:path*" }
   ],
   "headers": [
     {
