@@ -13,9 +13,21 @@ export default async function handler(req, res) {
   }
 
   if (!phantom) {
-    // HEAD requests just need status
     if (req.method === 'HEAD') return res.status(404).end();
     return res.status(404).json({ error: 'Phantom not yet materialized. Feed it first.' });
+  }
+
+  // Only serve full page for promoted phantoms
+  if (!phantom.promoted) {
+    if (req.method === 'HEAD') return res.status(202).end();
+    return res.status(202).json({
+      status: 'pending',
+      path: phantom.path,
+      feedCount: phantom.feedCount,
+      needed: Math.max(0, 3 - phantom.feedCount),
+      uniqueLocations: (phantom.locations || []).length,
+      message: 'This phantom exists but has not yet earned materialization. Feed it ' + Math.max(0, 3 - phantom.feedCount) + ' more times or from ' + Math.max(0, 2 - (phantom.locations || []).length) + ' more locations.'
+    });
   }
 
   if (req.method === 'HEAD') return res.status(200).end();

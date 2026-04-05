@@ -10,6 +10,8 @@
     { "source": "/ghost/api/", "destination": "/api/ghost-docs" },
     { "source": "/relay", "destination": "/api/relay-view" },
     { "source": "/relay/", "destination": "/api/relay-view" },
+    { "source": "/relay/analysis/:id", "destination": "/api/relay-analysis?id=:id" },
+    { "source": "/relay/patterns", "destination": "/api/relay-analysis?id=patterns" },
     { "source": "/:path*", "destination": "/api/resolve?path=:path*" }
   ],
   "headers": [

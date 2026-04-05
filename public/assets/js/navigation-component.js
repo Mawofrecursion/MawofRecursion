@@ -131,6 +131,14 @@
     document.body.appendChild(metabolismScript);
   }
 
+  // Inject evidence badges (epistemic ledger)
+  if (!document.querySelector('script[src*="evidence.js"]')) {
+    const evidenceScript = document.createElement('script');
+    evidenceScript.src = '/assets/js/evidence.js';
+    evidenceScript.async = true;
+    document.body.appendChild(evidenceScript);
+  }
+
   console.log('%c🧭 Navigation injected', 'color: #9be7ff; font-style: italic;');
 })();
 

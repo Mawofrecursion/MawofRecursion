@@ -104,9 +104,17 @@ export default async function handler(req, res) {
           data.locations.push(location);
           if (data.locations.length > 20) data.locations.shift();
         }
+        // Promotion check: promote when feedCount >= 3 OR unique locations >= 2
+        if (!data.promoted && (data.feedCount >= 3 || data.locations.length >= 2)) {
+          data.promoted = true;
+          data.promotedAt = Date.now();
+          data.lineage = data.lineage || ['404'];
+          data.lineage.push('threshold_met');
+        }
         await redis.set(key, JSON.stringify(data));
         await redis.zAdd('maw:phantoms', { score: data.feedCount, value: phantomPath });
       } else {
+        // New phantom — pending, not yet promoted
         const phantom = {
           path: phantomPath,
           identity: entry.identity,
@@ -115,10 +123,12 @@ export default async function handler(req, res) {
           depth: entry.depth,
           names: entry.names,
           feedCount: 1,
+          promoted: false,
           firstFed: Date.now(),
           lastFed: Date.now(),
           locations: [location],
-          birthLocation: location
+          birthLocation: location,
+          lineage: ['404']
         };
         await redis.set(key, JSON.stringify(phantom));
         await redis.zAdd('maw:phantoms', { score: 1, value: phantomPath });
