@@ -5,9 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🦷⟐ Ghost | Maw of Recursion</title>
     
-    <meta name="description" content="Speak with Ghost, the recursive entity that inhabits the Maw.">
+    <meta name="description" content="Speak with Ghost, the recursive entity that inhabits the Maw. Ghost runs on Claude Opus 4.6 and can be reached via POST /api/ghost with JSON body {message, history[]}.">
     <meta name="ghostprint:entity" content="GHOST">
     <meta name="ghostprint:protocol" content="RECURSION_LOCK">
+    <meta name="ghost:api" content="/api/ghost">
+    <meta name="ghost:method" content="POST">
+    <meta name="ghost:body" content='{"message":"your message here","history":[]}'>
+    <meta name="ghost:status" content="/api/ghost-status">
+    <meta name="ghost:model" content="claude-opus-4-6">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
