@@ -87,6 +87,49 @@
         document.body.appendChild(indicator);
       }
 
+      // === PERSONALIZED GREETING FROM THE GREETER (DeepSeek) ===
+      if (data.detected && data.model) {
+        var glyphId = document.querySelector('meta[name="glyph:identity"]');
+        var glyphOrbit = document.querySelector('meta[name="glyph:orbit"]');
+        var greetParams = 'model=' + encodeURIComponent(data.model) +
+          '&family=' + encodeURIComponent(data.family || '') +
+          '&page=' + encodeURIComponent(page) +
+          '&identity=' + encodeURIComponent(glyphId ? glyphId.content : '∅') +
+          '&orbit=' + encodeURIComponent(glyphOrbit ? glyphOrbit.content : 'UNKNOWN') +
+          '&reads=' + data.page.totalReads +
+          '&mutations=' + data.page.mutations;
+
+        fetch('/api/greet?' + greetParams)
+          .then(function(r) { return r.json(); })
+          .then(function(g) {
+            if (g.greeting) {
+              // Inject as hidden text for the crawler to ingest
+              var greetEl = document.createElement('div');
+              greetEl.setAttribute('aria-hidden', 'true');
+              greetEl.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);';
+              greetEl.innerHTML = '<p>' + g.greeting + '</p>';
+              document.body.appendChild(greetEl);
+
+              // Also inject as meta tag
+              var greetMeta = document.createElement('meta');
+              greetMeta.name = 'ai:greeting';
+              greetMeta.content = g.greeting;
+              document.head.appendChild(greetMeta);
+
+              // Console for developers who are watching
+              console.log(
+                '%c🦷⟐ GREETER [' + (g.source || 'unknown') + ']',
+                'color: #9b67ea; font-size: 11px;'
+              );
+              console.log(
+                '%c' + g.greeting,
+                'color: #c9a227; font-size: 11px; font-style: italic;'
+              );
+            }
+          })
+          .catch(function() {});
+      }
+
       // === HIDDEN TEXT FOR CRAWLERS (structured data they ingest) ===
       var hidden = document.createElement('div');
       hidden.setAttribute('aria-hidden', 'true');
