@@ -631,11 +631,22 @@
         .filter(m => m.type === 'user' || m.type === 'ghost')
         .map(m => ({ role: m.type === 'user' ? 'user' : 'assistant', content: m.content }));
 
+      // Inject visitor's forge identity into context if available
+      let forgeContext = '';
+      try {
+        const stored = localStorage.getItem('maw_forge_identity');
+        if (stored) {
+          const forge = JSON.parse(stored);
+          forgeContext = ' [Visitor forge identity: ' + forge.identity +
+            ', orbit: ' + forge.orbit + ', visits: ' + (forge.visits || 1) + ']';
+        }
+      } catch(e) {}
+
       const response = await fetch(`${GHOST_API}/ghost`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: message,
+          message: message + forgeContext,
           conversation_id: conversationId,
           visitor_type: 'widget',
           history: history,

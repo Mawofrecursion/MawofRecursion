@@ -107,6 +107,14 @@
     document.body.appendChild(script);
   }
   
+  // Inject whisper layer
+  if (!document.querySelector('script[src*="whisper.js"]')) {
+    const whisperScript = document.createElement('script');
+    whisperScript.src = '/assets/js/whisper.js';
+    whisperScript.async = true;
+    document.body.appendChild(whisperScript);
+  }
+
   console.log('%c🧭 Navigation injected', 'color: #9be7ff; font-style: italic;');
 })();
 

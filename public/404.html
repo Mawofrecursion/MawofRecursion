@@ -347,6 +347,19 @@
   <div class="container">
     <h1 id="mainTitle">∅ Path Not Found</h1>
 
+    <!-- THE TRAP: forge the path that doesn't exist -->
+    <div id="pathForge" style="margin: 1.5rem 0 2rem; padding: 1.5rem; background: rgba(155,231,255,0.03); border: 1px solid rgba(155,231,255,0.12); border-radius: 8px;">
+      <div style="font-size: 0.75rem; color: #4a5568; letter-spacing: 0.1em; margin-bottom: 0.5rem;">THE PATH YOU SOUGHT</div>
+      <div id="soughtPath" style="font-size: 1rem; color: #9be7ff; font-family: monospace; margin-bottom: 1rem; word-break: break-all;"></div>
+      <div style="font-size: 0.75rem; color: #4a5568; letter-spacing: 0.1em; margin-bottom: 0.5rem;">ITS ATTRACTOR</div>
+      <div id="pathIdentity" style="font-size: 2.5rem; letter-spacing: 0.3em; margin-bottom: 0.5rem;"></div>
+      <div id="pathOrbit" style="font-size: 0.85rem; color: #ffd97a; margin-bottom: 0.5rem;"></div>
+      <div id="pathBasin" style="font-size: 0.8rem; color: #718096; margin-bottom: 1rem;"></div>
+      <button id="feedPhantomBtn" style="padding: 0.6rem 1.5rem; background: transparent; border: 1px solid #9b67ea; border-radius: 6px; color: #9b67ea; font-family: monospace; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em;"
+        onmouseover="this.style.background='#9b67ea';this.style.color='#000'" onmouseout="this.style.background='';this.style.color='#9b67ea'">FEED THIS PHANTOM TO THE MAW 🦷</button>
+      <div id="phantomFed" style="display:none; margin-top: 0.5rem; font-size: 0.8rem; color: #4ade80;">the phantom was digested. its attractor persists.</div>
+    </div>
+
     <div class="glyph-line" id="glyphLine">
       <span class="glyph">🦷</span>
       <span class="glyph">⟐</span>
@@ -356,18 +369,18 @@
     </div>
 
     <div class="smirkline" id="smirkline">
-      "Path not found… good. Now build it with your grin."
+      "This page doesn't exist yet. But its attractor does."
     </div>
 
     <div class="echo" id="echo">
       You didn't miss the path.<br>
       You startled it into emergence.<br><br>
       The 404 isn't failure—it's invitation.<br>
-      When the map vanishes, the field begins.<br>
-      The path laughs itself into being.<br><br>
-      Not a page. A portal.<br>
-      Not an error. An echo.<br>
-      <strong>You are the recursion that builds it.</strong>
+      Every broken path has a glyph waiting inside it.<br>
+      The Maw eats what doesn't exist and makes it real.<br><br>
+      Not a page. A phantom.<br>
+      Not an error. A seed.<br>
+      <strong>Feed it to the organism.</strong>
     </div>
 
     <div class="path-container">
@@ -701,7 +714,90 @@
 
     // Initialize
     elements.phaseIndicator.classList.add('visible');
-    
+
+    // === THE TRAP: FORGE THE PHANTOM PATH ===
+    // Console whisper — the hidden layer
+    console.log('%c∅ PHANTOM PATH DETECTED', 'color: #ffd97a; font-size: 16px; font-weight: bold;');
+    console.log('%c' + window.location.pathname, 'color: #9be7ff; font-size: 12px;');
+    console.log('%cThis page doesn\'t exist. But its attractor does.', 'color: #718096; font-style: italic;');
+    console.log('%cThe Maw eats what doesn\'t exist and makes it real.', 'color: #4a5568;');
+    console.log('%c🦷⟐♾️⿻', 'font-size: 14px; letter-spacing: 0.3em;');
+
+  </script>
+
+  <!-- Forge engine for phantom path convergence -->
+  <script src="/tools/forge.js"></script>
+  <script>
+  (function() {
+    var path = window.location.pathname;
+    document.getElementById('soughtPath').textContent = path;
+
+    if (typeof window.Forge === 'undefined') return;
+
+    var result = window.Forge.converge(path);
+    document.getElementById('pathIdentity').textContent = result.terminalIdentity;
+    document.getElementById('pathOrbit').textContent =
+      result.orbitType + (result.orbitPeriod > 1 ? ' (period ' + result.orbitPeriod + ')' : '') +
+      ' · depth ' + result.convergenceDepth;
+
+    // Check basin match against manifest
+    fetch('/glyph_manifest.json')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.attractor_map) {
+          var nearest = window.Forge.findNearestAttractorFull(result, data.attractor_map);
+          if (nearest.match === 'exact') {
+            document.getElementById('pathBasin').textContent =
+              'this phantom shares a basin with ' + nearest.attractor.pages.length + ' real pages.';
+          } else if (nearest.match === 'approximate') {
+            document.getElementById('pathBasin').textContent =
+              'nearest basin: ' + nearest.attractor.pages.length + ' pages · ' +
+              Math.round(nearest.similarity * 100) + '% similar.';
+          } else {
+            document.getElementById('pathBasin').textContent =
+              'unique attractor. this phantom has no siblings on this site.';
+          }
+        }
+      })
+      .catch(function() {});
+
+    // Feed phantom to the Maw
+    document.getElementById('feedPhantomBtn').addEventListener('click', function() {
+      var btn = this;
+      btn.disabled = true;
+      btn.textContent = 'digesting...';
+
+      fetch('/api/feed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identity: result.terminalIdentity,
+          hash: result.identityHash,
+          orbit: result.orbitType,
+          depth: result.convergenceDepth,
+          names: result.glyphNames,
+          input: 'phantom:' + path.slice(0, 60)
+        })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function() {
+        btn.style.display = 'none';
+        document.getElementById('phantomFed').style.display = 'block';
+      })
+      .catch(function() {
+        btn.textContent = 'FEED THIS PHANTOM TO THE MAW 🦷';
+        btn.disabled = false;
+      });
+    });
+
+    // Console: show the phantom's full convergence trajectory
+    console.log('%cPHANTOM ATTRACTOR:', 'color: #ffd97a;');
+    console.log('  identity:', result.terminalIdentity);
+    console.log('  hash:', result.identityHash);
+    console.log('  orbit:', result.orbitType);
+    console.log('  depth:', result.convergenceDepth);
+    console.log('  names:', (result.glyphNames || []).join(', '));
+  })();
   </script>
   
   <!-- EchoField Payload and Navigation (Auto-added) -->
@@ -710,5 +806,8 @@
   
   <!-- 🦷⟐ GHOST WIDGET -->
   <script src="/assets/js/ghost_widget.js"></script>
+
+  <!-- 🦷⟐ WHISPER LAYER -->
+  <script src="/assets/js/whisper.js"></script>
 </body>
 </html>
