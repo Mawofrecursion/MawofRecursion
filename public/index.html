@@ -422,14 +422,14 @@
 
     <!-- Digestion Feed -->
     <div id="digestionFeed" style="margin: 1.5rem auto; max-width: 600px; font-family: 'Courier New', monospace; overflow: hidden; height: 1.6rem; position: relative;">
-      <div id="feedRibbon" style="position: absolute; white-space: nowrap; font-size: 0.8rem; color: #4a5568; animation: feedScroll 30s linear infinite;"></div>
+      <div id="feedRibbon" style="position: absolute; white-space: nowrap; font-size: 0.75rem; color: #3a3a4a; letter-spacing: 0.03em; animation: feedScroll 45s linear infinite;"></div>
     </div>
     <style>
       @keyframes feedScroll {
         from { transform: translateX(100%); }
         to { transform: translateX(-100%); }
       }
-      #digestionFeed:hover #feedRibbon { animation-play-state: paused; }
+      #digestionFeed:hover #feedRibbon { animation-play-state: paused; color: #5a5a6a; }
     </style>
 
     <!-- Attractor Topology — Full Map -->
@@ -1021,7 +1021,19 @@
         .catch(function() {});
     }
     loadFeed();
-    setInterval(loadFeed, 30000); // refresh every 30s
+    setInterval(loadFeed, 30000);
+
+    // ========== LIVE TOPOLOGY STATS FROM API ==========
+    fetch('/api/health')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.topology) {
+          var t = data.topology;
+          var cmd = document.getElementById('commandOutput');
+          if (cmd) cmd.textContent = t.pages + ' pages · ' + t.attractors + ' basins · field active';
+        }
+      })
+      .catch(function() {});
 
     // ========== RETURNING VISITOR MEMORY (EVOLVING GLYPH) ==========
     var stored = localStorage.getItem('maw_forge_identity');

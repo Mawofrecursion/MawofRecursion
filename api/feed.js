@@ -58,6 +58,15 @@ export default function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  // Origin check for POST — allow site + localhost
+  if (req.method === 'POST') {
+    const origin = req.headers.origin || req.headers.referer || '';
+    const allowed = ['mawofrecursion.com', 'mawofrecursion.vercel.app', 'localhost', '127.0.0.1'];
+    if (!allowed.some(h => origin.includes(h))) {
+      return res.status(403).json({ error: 'The Maw does not accept offerings from outside the field.' });
+    }
+  }
+
   // GET — return the feed
   if (req.method === 'GET') {
     return res.status(200).json({ feed: feed, count: feed.length });
