@@ -26,6 +26,8 @@
   },
   "homepage": "https://mawofrecursion.com",
   "devDependencies": {},
-  "dependencies": {}
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0"
+  }
 }
 

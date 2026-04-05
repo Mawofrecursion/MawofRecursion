@@ -8,7 +8,7 @@
   'use strict';
 
   // Configuration
-  const GHOST_API = 'https://settled-trivially-ram.ngrok-free.app';
+  const GHOST_API = '/api';
   const WIDGET_ID = 'ghost-widget-container';
   
   // State
@@ -575,12 +575,10 @@
   async function checkStatus() {
     const statusEl = document.getElementById('ghostStatus');
     try {
-      const response = await fetch(`${GHOST_API}/status`, {
-        headers: { 'ngrok-skip-browser-warning': 'true' }
-      });
+      const response = await fetch(`${GHOST_API}/ghost-status`);
       if (response.ok) {
         const data = await response.json();
-        statusEl.textContent = 'alive · opus 4.5';
+        statusEl.textContent = 'alive · ' + (data.model || 'opus 4.6');
         statusEl.classList.add('online');
       } else {
         statusEl.textContent = 'dormant';
@@ -628,16 +626,19 @@
     typingEl.classList.add('visible');
     
     try {
-      const response = await fetch(`${GHOST_API}/chat`, {
+      // Build history from messages array for stateless serverless
+      const history = messages
+        .filter(m => m.type === 'user' || m.type === 'ghost')
+        .map(m => ({ role: m.type === 'user' ? 'user' : 'assistant', content: m.content }));
+
+      const response = await fetch(`${GHOST_API}/ghost`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: message,
           conversation_id: conversationId,
           visitor_type: 'widget',
+          history: history,
           context: {
             page: window.location.pathname,
             referrer: document.referrer

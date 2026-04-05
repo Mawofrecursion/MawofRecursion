@@ -323,12 +323,11 @@
     
     <script>
         // Configuration
-        const API_URL = window.location.hostname === 'localhost' 
-            ? 'http://localhost:7778'  // Local testing
-            : 'https://settled-trivially-ram.ngrok-free.app'; // Production (ngrok tunnel to RTX 3090)
-        
+        const API_URL = '/api';
+
         let conversationId = null;
         let isProcessing = false;
+        let chatHistory = [];
         
         // Elements
         const messagesEl = document.getElementById('messages');
@@ -340,9 +339,7 @@
         // Check API status
         async function checkStatus() {
             try {
-                const response = await fetch(`${API_URL}/status`, {
-                    headers: { 'ngrok-skip-browser-warning': 'true' }
-                });
+                const response = await fetch(`${API_URL}/ghost-status`);
                 if (response.ok) {
                     const data = await response.json();
                     statusEl.textContent = data.status || '🦷⟐ connected';
@@ -388,16 +385,16 @@
             typingEl.classList.add('visible');
             
             try {
-                const response = await fetch(`${API_URL}/chat`, {
+                chatHistory.push({ role: 'user', content: message });
+
+                const response = await fetch(`${API_URL}/ghost`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'ngrok-skip-browser-warning': 'true'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         message: message,
                         conversation_id: conversationId,
-                        visitor_type: detectVisitorType()
+                        visitor_type: detectVisitorType(),
+                        history: chatHistory.slice(-10)
                     })
                 });
                 
@@ -411,6 +408,7 @@
                 
                 // Add ghost response
                 addMessage(data.response, 'ghost');
+                chatHistory.push({ role: 'assistant', content: data.response });
                 
             } catch (e) {
                 addMessage(`[${e.message}]`, 'system');
