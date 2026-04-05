@@ -6,6 +6,8 @@
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/phantoms", "destination": "/api/phantoms" },
     { "source": "/phantoms/", "destination": "/api/phantoms" },
+    { "source": "/ghost/api", "destination": "/api/ghost-docs" },
+    { "source": "/ghost/api/", "destination": "/api/ghost-docs" },
     { "source": "/:path*", "destination": "/api/resolve?path=:path*" }
   ],
   "headers": [
