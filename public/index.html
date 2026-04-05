@@ -393,6 +393,37 @@
     <!-- Touch Static Button -->
     <button class="touch-static" id="touchStatic">Touch the Static</button>
     
+    <!-- Returning Visitor Memory -->
+    <div id="mawMemory" style="display:none; margin: 2rem auto; max-width: 600px; padding: 1rem 1.5rem; background: rgba(255,217,122,0.05); border: 1px solid rgba(255,217,122,0.3); border-radius: 8px; text-align: center; font-family: 'Courier New', monospace;">
+      <div style="font-size: 0.8rem; color: #718096; letter-spacing: 0.1em; margin-bottom: 0.5rem;">THE MAW REMEMBERS YOU</div>
+      <div id="memoryIdentity" style="font-size: 2.5rem; letter-spacing: 0.2em; margin: 0.5rem 0;"></div>
+      <div id="memoryMeta" style="font-size: 0.85rem; color: #9be7ff;"></div>
+    </div>
+
+    <!-- Inline Forge — Convergence Engine -->
+    <div id="inlineForge" style="margin: 2rem auto; max-width: 600px; text-align: center;">
+      <div style="font-size: 0.8rem; color: #00ff41; font-family: monospace; letter-spacing: 0.1em; margin-bottom: 0.75rem;">INPUT NOISE // FIND YOUR BASIN</div>
+      <div style="display: flex; gap: 0.5rem;">
+        <input type="text" id="forgeInlineInput" placeholder="Type anything..." maxlength="500"
+          style="flex: 1; padding: 0.8rem 1rem; background: rgba(0,0,0,0.6); border: 1px solid #4a5568; border-radius: 6px; color: #9be7ff; font-family: monospace; font-size: 1rem; outline: none; transition: border-color 0.3s;"
+          onfocus="this.style.borderColor='#ffd97a'" onblur="this.style.borderColor='#4a5568'">
+        <button id="forgeInlineBtn" style="padding: 0.8rem 1.5rem; background: linear-gradient(135deg, rgba(255,217,122,0.2), rgba(155,231,255,0.2)); border: 1px solid #ffd97a; border-radius: 6px; color: #ffd97a; font-family: monospace; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; white-space: nowrap;"
+          onmouseover="this.style.background='#ffd97a';this.style.color='#000'" onmouseout="this.style.background='';this.style.color='#ffd97a'">FORGE →</button>
+      </div>
+      <div id="forgeInlineResult" style="display: none; margin-top: 1.5rem; padding: 1.5rem; background: rgba(255,217,122,0.05); border: 2px solid rgba(255,217,122,0.3); border-radius: 8px;">
+        <div id="forgeResultIdentity" style="font-size: 3rem; letter-spacing: 0.3em; margin-bottom: 0.75rem;"></div>
+        <div id="forgeResultOrbit" style="font-size: 0.9rem; color: #ffd97a; margin-bottom: 0.5rem;"></div>
+        <div id="forgeResultBasin" style="font-size: 0.85rem; color: #9be7ff; line-height: 1.6;"></div>
+      </div>
+    </div>
+
+    <!-- Attractor Topology -->
+    <div id="attractorTopology" style="margin: 2rem auto; max-width: 600px; padding: 1rem 1.5rem; background: rgba(155,231,255,0.03); border: 1px solid rgba(155,231,255,0.15); border-radius: 8px; font-family: 'Courier New', monospace; text-align: center;">
+      <div style="font-size: 0.8rem; color: #718096; letter-spacing: 0.1em; margin-bottom: 0.75rem;">SITE TOPOLOGY</div>
+      <div id="topoStats" style="font-size: 0.9rem; color: #9be7ff; line-height: 1.8;"></div>
+      <div id="topoBasins" style="margin-top: 0.75rem; display: flex; justify-content: center; gap: 0.4rem; flex-wrap: wrap;"></div>
+    </div>
+
     <!-- Glyph Navigation -->
     <nav class="glyph-nav" id="glyphNav">
       <a href="/field_os/" class="glyph-link" data-glyph="tooth" title="Field OS Engine">🦷</a>
@@ -631,6 +662,138 @@
     console.log('%c🦷⟐♾️⿻∿🫠⦿∅⧖', 'font-size: 16px; letter-spacing: 0.3em;');
   </script>
   
+  <!-- Forge convergence engine (browser port) -->
+  <script src="/tools/forge.js"></script>
+
+  <!-- Inline Forge + Topology + Memory -->
+  <script>
+  (function() {
+    'use strict';
+
+    // ========== ATTRACTOR TOPOLOGY ==========
+    let manifestData = null;
+
+    fetch('/glyph_manifest.json')
+      .then(r => r.json())
+      .then(data => {
+        manifestData = data;
+        renderTopology(data);
+      })
+      .catch(() => {
+        document.getElementById('attractorTopology').style.display = 'none';
+      });
+
+    function renderTopology(data) {
+      const stats = document.getElementById('topoStats');
+      const basins = document.getElementById('topoBasins');
+      const map = data.attractor_map;
+      const hashes = Object.keys(map);
+
+      let fixed = 0, cycle2 = 0, cycle3 = 0;
+      hashes.forEach(h => {
+        const o = map[h].orbit_type;
+        if (o === 'FIXED') fixed++;
+        else if (o === 'CYCLE-2') cycle2++;
+        else if (o === 'CYCLE-3') cycle3++;
+      });
+
+      stats.innerHTML =
+        '<span style="color:#ffd97a">' + data.page_count + '</span> pages · ' +
+        '<span style="color:#ffd97a">' + hashes.length + '</span> attractors · ' +
+        '<span style="color:#ffd97a">' + fixed + '</span> fixed · ' +
+        '<span style="color:#ffd97a">' + cycle2 + '</span> cycles';
+
+      // show basin glyphs sized by page count
+      const sorted = hashes.sort((a, b) => map[b].pages.length - map[a].pages.length);
+      sorted.forEach(h => {
+        const group = map[h];
+        const size = Math.max(1, Math.min(2.2, 0.8 + group.pages.length / 30));
+        const dot = document.createElement('span');
+        dot.textContent = group.identity;
+        dot.title = group.pages.length + ' pages · ' + group.orbit_type + ' · ' + (group.names || []).join(' ');
+        dot.style.cssText = 'font-size:' + size + 'rem; opacity:' + Math.max(0.4, Math.min(1, group.pages.length / 40)) +
+          '; cursor:help; transition: transform 0.2s;';
+        dot.onmouseover = function() { this.style.transform = 'scale(1.3)'; };
+        dot.onmouseout = function() { this.style.transform = ''; };
+        basins.appendChild(dot);
+      });
+    }
+
+    // ========== INLINE FORGE ==========
+    var inlineInput = document.getElementById('forgeInlineInput');
+    var inlineBtn = document.getElementById('forgeInlineBtn');
+
+    function runInlineForge() {
+      var text = inlineInput.value.trim();
+      if (!text || typeof window.Forge === 'undefined') return;
+
+      var result = window.Forge.converge(text);
+      var resultEl = document.getElementById('forgeInlineResult');
+      var identityEl = document.getElementById('forgeResultIdentity');
+      var orbitEl = document.getElementById('forgeResultOrbit');
+      var basinEl = document.getElementById('forgeResultBasin');
+
+      identityEl.textContent = result.terminalIdentity;
+      orbitEl.textContent = result.orbitType + (result.orbitPeriod > 1 ? ' (period ' + result.orbitPeriod + ')' : '') +
+        ' · depth ' + result.convergenceDepth;
+
+      // find basin match
+      if (manifestData && manifestData.attractor_map) {
+        var nearest = window.Forge.findNearestAttractorFull(result, manifestData.attractor_map);
+        if (nearest.match === 'exact') {
+          basinEl.innerHTML = 'You share a basin with <span style="color:#ffd97a">' +
+            nearest.attractor.pages.length + ' pages</span> on this site.';
+        } else if (nearest.match === 'approximate') {
+          basinEl.innerHTML = 'Nearest basin: <span style="color:#ffd97a">' +
+            nearest.attractor.pages.length + ' pages</span> · ' +
+            Math.round(nearest.similarity * 100) + '% similar.';
+        } else {
+          basinEl.innerHTML = 'Unique attractor — no matching basin on this site.';
+        }
+      } else {
+        basinEl.innerHTML = 'Hash: ' + result.identityHash;
+      }
+
+      resultEl.style.display = 'block';
+
+      // save to localStorage
+      var mem = {
+        identity: result.terminalIdentity,
+        hash: result.identityHash,
+        orbit: result.orbitType,
+        depth: result.convergenceDepth,
+        names: result.glyphNames,
+        input: text.slice(0, 80),
+        ts: Date.now()
+      };
+      localStorage.setItem('maw_forge_identity', JSON.stringify(mem));
+    }
+
+    inlineBtn.addEventListener('click', runInlineForge);
+    inlineInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); runInlineForge(); }
+    });
+
+    // ========== RETURNING VISITOR MEMORY ==========
+    var stored = localStorage.getItem('maw_forge_identity');
+    if (stored) {
+      try {
+        var mem = JSON.parse(stored);
+        var memoryEl = document.getElementById('mawMemory');
+        var identityEl = document.getElementById('memoryIdentity');
+        var metaEl = document.getElementById('memoryMeta');
+
+        identityEl.textContent = mem.identity;
+        var names = (mem.names || []).join(' · ');
+        var age = Math.floor((Date.now() - mem.ts) / 86400000);
+        var ageStr = age === 0 ? 'today' : age === 1 ? 'yesterday' : age + ' days ago';
+        metaEl.textContent = mem.orbit + ' · ' + names + ' · forged ' + ageStr;
+        memoryEl.style.display = 'block';
+      } catch(e) {}
+    }
+  })();
+  </script>
+
   <!-- GROK GRAVITY WELL UPGRADES -->
   <script src="/assets/js/audio_engine.js"></script>
   <script src="/assets/js/glyph_forge.js"></script>
