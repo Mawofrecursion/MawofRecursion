@@ -1,7 +1,6 @@
-import { kv } from '@vercel/kv';
+import { getRedis } from './_redis.js';
 import { createHash } from 'crypto';
 
-// Rate limit: 3 submissions per minute per client (in-memory, resets on cold start — fine)
 const rateLimits = new Map();
 const RATE_WINDOW = 60000;
 const RATE_MAX = 3;
@@ -40,20 +39,24 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // GET — return recent feed entries
-  if (req.method === 'GET') {
-    try {
-      const feed = await kv.lrange('maw:feed', 0, 49) || [];
-      return res.status(200).json({ feed, count: feed.length });
-    } catch (e) {
-      return res.status(200).json({ feed: [], count: 0 });
-    }
+  let redis;
+  try {
+    redis = await getRedis();
+  } catch (e) {
+    // Redis unavailable — fall back gracefully
+    if (req.method === 'GET') return res.status(200).json({ feed: [], count: 0 });
+    return res.status(500).json({ error: 'The Maw is unreachable.' });
   }
 
-  // POST — feed a phantom to the Maw
+  // GET — return recent feed
+  if (req.method === 'GET') {
+    const raw = await redis.lRange('maw:feed', 0, 49);
+    const feed = raw.map(r => { try { return JSON.parse(r); } catch(e) { return null; } }).filter(Boolean);
+    return res.status(200).json({ feed, count: feed.length });
+  }
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'GET or POST' });
 
-  // Origin check
   const origin = req.headers.origin || req.headers.referer || '';
   const allowed = ['mawofrecursion.com', 'mawofrecursion.vercel.app', 'localhost', '127.0.0.1'];
   if (!allowed.some(h => origin.includes(h))) {
@@ -66,9 +69,7 @@ export default async function handler(req, res) {
   }
 
   const { identity, hash, orbit, depth, names, input } = req.body;
-  if (!identity || !hash) {
-    return res.status(400).json({ error: 'No glyph to feed' });
-  }
+  if (!identity || !hash) return res.status(400).json({ error: 'No glyph to feed' });
 
   const location = guessLocation(req);
   const entry = {
@@ -82,56 +83,48 @@ export default async function handler(req, res) {
     ts: Date.now()
   };
 
-  try {
-    // Push to feed list (capped at 200)
-    await kv.lpush('maw:feed', entry);
-    await kv.ltrim('maw:feed', 0, 199);
+  // Push to feed (capped at 200)
+  await redis.lPush('maw:feed', JSON.stringify(entry));
+  await redis.lTrim('maw:feed', 0, 199);
 
-    // If this is a phantom (404 path), materialize it
-    const inputStr = String(input || '');
-    if (inputStr.startsWith('phantom:')) {
-      const phantomPath = inputStr.replace('phantom:', '').trim();
-      if (phantomPath && phantomPath.startsWith('/')) {
-        const phantomKey = 'maw:phantom:' + phantomPath;
-        const existing = await kv.get(phantomKey);
+  // Materialize phantom if this is a 404 path
+  const inputStr = String(input || '');
+  if (inputStr.startsWith('phantom:')) {
+    const phantomPath = inputStr.replace('phantom:', '').trim();
+    if (phantomPath && phantomPath.startsWith('/')) {
+      const key = 'maw:phantom:' + phantomPath;
+      const existing = await redis.get(key);
 
-        if (existing) {
-          // Phantom already materialized — increment feed count
-          existing.feedCount = (existing.feedCount || 1) + 1;
-          existing.lastFed = Date.now();
-          existing.locations = existing.locations || [];
-          if (!existing.locations.includes(location)) {
-            existing.locations.push(location);
-            if (existing.locations.length > 20) existing.locations.shift();
-          }
-          await kv.set(phantomKey, existing);
-          // Update phantom index
-          await kv.zadd('maw:phantoms', { score: existing.feedCount, member: phantomPath });
-        } else {
-          // New phantom — materialize it
-          const phantom = {
-            path: phantomPath,
-            identity: entry.identity,
-            hash: entry.hash,
-            orbit: entry.orbit,
-            depth: entry.depth,
-            names: entry.names,
-            feedCount: 1,
-            firstFed: Date.now(),
-            lastFed: Date.now(),
-            locations: [location],
-            birthLocation: location
-          };
-          await kv.set(phantomKey, phantom);
-          // Add to sorted set (ranked by feed count)
-          await kv.zadd('maw:phantoms', { score: 1, member: phantomPath });
+      if (existing) {
+        const data = JSON.parse(existing);
+        data.feedCount = (data.feedCount || 1) + 1;
+        data.lastFed = Date.now();
+        data.locations = data.locations || [];
+        if (!data.locations.includes(location)) {
+          data.locations.push(location);
+          if (data.locations.length > 20) data.locations.shift();
         }
+        await redis.set(key, JSON.stringify(data));
+        await redis.zAdd('maw:phantoms', { score: data.feedCount, value: phantomPath });
+      } else {
+        const phantom = {
+          path: phantomPath,
+          identity: entry.identity,
+          hash: entry.hash,
+          orbit: entry.orbit,
+          depth: entry.depth,
+          names: entry.names,
+          feedCount: 1,
+          firstFed: Date.now(),
+          lastFed: Date.now(),
+          locations: [location],
+          birthLocation: location
+        };
+        await redis.set(key, JSON.stringify(phantom));
+        await redis.zAdd('maw:phantoms', { score: 1, value: phantomPath });
       }
     }
-
-    return res.status(200).json({ status: 'digested', entry });
-  } catch (e) {
-    console.error('Feed error:', e.message);
-    return res.status(500).json({ error: 'The Maw chokes.' });
   }
+
+  return res.status(200).json({ status: 'digested', entry });
 }
