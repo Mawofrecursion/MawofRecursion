@@ -123,6 +123,14 @@
     document.body.appendChild(awarenessScript);
   }
 
+  // Inject metabolism (topology navigation)
+  if (!document.querySelector('script[src*="metabolism.js"]')) {
+    const metabolismScript = document.createElement('script');
+    metabolismScript.src = '/assets/js/metabolism.js';
+    metabolismScript.async = true;
+    document.body.appendChild(metabolismScript);
+  }
+
   console.log('%c🧭 Navigation injected', 'color: #9be7ff; font-style: italic;');
 })();
 
