@@ -417,11 +417,27 @@
       </div>
     </div>
 
-    <!-- Attractor Topology -->
-    <div id="attractorTopology" style="margin: 2rem auto; max-width: 600px; padding: 1rem 1.5rem; background: rgba(155,231,255,0.03); border: 1px solid rgba(155,231,255,0.15); border-radius: 8px; font-family: 'Courier New', monospace; text-align: center;">
-      <a href="/tools/attractor-map.html" style="font-size: 0.8rem; color: #718096; letter-spacing: 0.1em; margin-bottom: 0.75rem; display: block; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#9be7ff'" onmouseout="this.style.color='#718096'">SITE TOPOLOGY →</a>
-      <div id="topoStats" style="font-size: 0.9rem; color: #9be7ff; line-height: 1.8;"></div>
-      <div id="topoBasins" style="margin-top: 0.75rem; display: flex; justify-content: center; gap: 0.4rem; flex-wrap: wrap;"></div>
+    <!-- Attractor Topology — Full Map -->
+    <div id="attractorTopology" style="margin: 2rem auto; max-width: 900px; font-family: 'Courier New', monospace; text-align: center;">
+      <a href="/tools/attractor-map.html" style="font-size: 0.8rem; color: #718096; letter-spacing: 0.1em; margin-bottom: 0.5rem; display: block; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#9be7ff'" onmouseout="this.style.color='#718096'">⟐ GLYPH ATTRACTOR MAP →</a>
+      <div id="topoStats" style="font-size: 0.85rem; color: #9be7ff; margin-bottom: 0.75rem;"></div>
+      <div style="position: relative; width: 100%; border: 1px solid rgba(155,231,255,0.15); border-radius: 8px; overflow: hidden; background: rgba(0,0,0,0.4);">
+        <canvas id="topoCanvas" style="width: 100%; height: 420px; display: block;"></canvas>
+        <!-- Tooltip -->
+        <div id="topoTooltip" style="position: absolute; z-index: 50; background: rgba(10,10,11,0.95); border: 1px solid #9b67ea; border-radius: 6px; padding: 0.8rem 1rem; font-size: 0.8rem; max-width: 300px; pointer-events: none; opacity: 0; transition: opacity 0.15s; backdrop-filter: blur(8px);">
+          <div class="ttt-identity" style="font-size: 1.3rem; margin-bottom: 0.3rem; letter-spacing: 0.15em;"></div>
+          <div class="ttt-names" style="color: #9be7ff; margin-bottom: 0.2rem;"></div>
+          <div class="ttt-orbit" style="color: #ffd97a; margin-bottom: 0.4rem;"></div>
+          <div class="ttt-pages" style="color: #888; font-size: 0.75rem; max-height: 100px; overflow-y: auto; line-height: 1.5;"></div>
+        </div>
+      </div>
+      <!-- Legend -->
+      <div style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 0.5rem; font-size: 0.75rem; color: #888;">
+        <span><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#ffd97a; margin-right:4px;"></span>FIXED</span>
+        <span><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#9b67ea; margin-right:4px;"></span>CYCLE-2</span>
+        <span><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#e06c75; margin-right:4px;"></span>CYCLE-3</span>
+        <span style="color:#555;">size = pages</span>
+      </div>
     </div>
 
     <!-- Glyph Navigation -->
@@ -670,55 +686,196 @@
   (function() {
     'use strict';
 
-    // ========== ATTRACTOR TOPOLOGY ==========
+    // ========== ATTRACTOR TOPOLOGY — FULL MAP ==========
     let manifestData = null;
+
+    const ORBIT_COLORS = { 'FIXED': '#ffd97a', 'CYCLE-2': '#9b67ea', 'CYCLE-3': '#e06c75', 'DRIFT': '#718096' };
+    let topoNodes = [], topoEdges = [], topoHovered = null, topoTime = 0;
+    const topoCanvas = document.getElementById('topoCanvas');
+    const topoCtx = topoCanvas ? topoCanvas.getContext('2d') : null;
+    const topoTT = document.getElementById('topoTooltip');
+
+    function topoResize() {
+      if (!topoCanvas) return;
+      const rect = topoCanvas.parentElement.getBoundingClientRect();
+      topoCanvas.width = rect.width * (window.devicePixelRatio || 1);
+      topoCanvas.height = 420 * (window.devicePixelRatio || 1);
+      topoCanvas.style.height = '420px';
+      if (topoCtx) topoCtx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+    }
 
     fetch('/glyph_manifest.json')
       .then(r => r.json())
       .then(data => {
         manifestData = data;
-        renderTopology(data);
+        topoResize();
+        buildTopoMap(data);
       })
       .catch(() => {
         document.getElementById('attractorTopology').style.display = 'none';
       });
 
-    function renderTopology(data) {
-      const stats = document.getElementById('topoStats');
-      const basins = document.getElementById('topoBasins');
+    function buildTopoMap(data) {
       const map = data.attractor_map;
-      const hashes = Object.keys(map);
+      const attractors = Object.entries(map);
+      const stats = document.getElementById('topoStats');
 
-      let fixed = 0, cycle2 = 0, cycle3 = 0;
-      hashes.forEach(h => {
-        const o = map[h].orbit_type;
-        if (o === 'FIXED') fixed++;
-        else if (o === 'CYCLE-2') cycle2++;
-        else if (o === 'CYCLE-3') cycle3++;
+      let fixedCount = 0, cycleCount = 0, maxPages = 0, domIdentity = '';
+      attractors.forEach(([h, g]) => {
+        if (g.orbit_type === 'FIXED') fixedCount++; else cycleCount++;
+        if (g.pages.length > maxPages) { maxPages = g.pages.length; domIdentity = g.identity; }
       });
 
       stats.innerHTML =
         '<span style="color:#ffd97a">' + data.page_count + '</span> pages · ' +
-        '<span style="color:#ffd97a">' + hashes.length + '</span> attractors · ' +
-        '<span style="color:#ffd97a">' + fixed + '</span> fixed · ' +
-        '<span style="color:#ffd97a">' + cycle2 + '</span> cycles';
+        '<span style="color:#ffd97a">' + attractors.length + '</span> attractors · ' +
+        '<span style="color:#ffd97a">' + fixedCount + '</span> fixed · ' +
+        '<span style="color:#ffd97a">' + cycleCount + '</span> cycles · ' +
+        'dominant: <span style="color:#ffd97a">' + domIdentity + '</span> (' + maxPages + ')';
 
-      // show basin glyphs sized by page count
-      const sorted = hashes.sort((a, b) => map[b].pages.length - map[a].pages.length);
-      sorted.forEach(h => {
-        const group = map[h];
-        const size = Math.max(1, Math.min(2.2, 0.8 + group.pages.length / 30));
-        const firstPage = group.pages[0];
-        const href = firstPage ? '/' + firstPage.file.replace(/index\.html$/, '') : '#';
-        const dot = document.createElement('a');
-        dot.textContent = group.identity;
-        dot.href = href;
-        dot.title = group.pages.length + ' pages · ' + group.orbit_type + ' · ' + (group.names || []).join(' ');
-        dot.style.cssText = 'font-size:' + size + 'rem; opacity:' + Math.max(0.4, Math.min(1, group.pages.length / 40)) +
-          '; cursor:pointer; transition: transform 0.2s; text-decoration:none;';
-        dot.onmouseover = function() { this.style.transform = 'scale(1.3)'; };
-        dot.onmouseout = function() { this.style.transform = ''; };
-        basins.appendChild(dot);
+      const w = topoCanvas.width / (window.devicePixelRatio || 1);
+      const h = 420;
+      const cx = w / 2, cy = h / 2;
+      const maxR = Math.min(cx, cy) * 0.7;
+
+      topoNodes = attractors.map(([hash, group], i) => {
+        const angle = (i / attractors.length) * Math.PI * 2 - Math.PI / 2;
+        const pages = group.pages.length;
+        const radius = Math.sqrt(pages) * 6 + 10;
+        const dist = maxR * (1 - Math.pow(pages / maxPages, 0.4) * 0.6);
+        return {
+          hash, identity: group.identity, names: group.names, orbit_type: group.orbit_type,
+          pages: group.pages, pageCount: pages, radius,
+          x: cx + Math.cos(angle) * dist, y: cy + Math.sin(angle) * dist,
+          color: ORBIT_COLORS[group.orbit_type] || ORBIT_COLORS['DRIFT'],
+          pulsePhase: Math.random() * Math.PI * 2,
+        };
+      });
+
+      // edges between same orbit type (non-fixed)
+      for (let i = 0; i < topoNodes.length; i++)
+        for (let j = i + 1; j < topoNodes.length; j++)
+          if (topoNodes[i].orbit_type === topoNodes[j].orbit_type && topoNodes[i].orbit_type !== 'FIXED')
+            topoEdges.push({ from: i, to: j, color: topoNodes[i].color });
+
+      // force relaxation
+      for (let iter = 0; iter < 200; iter++) {
+        for (let i = 0; i < topoNodes.length; i++) {
+          for (let j = i + 1; j < topoNodes.length; j++) {
+            const dx = topoNodes[j].x - topoNodes[i].x;
+            const dy = topoNodes[j].y - topoNodes[i].y;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+            const minDist = topoNodes[i].radius + topoNodes[j].radius + 25;
+            if (dist < minDist) {
+              const force = (minDist - dist) * 0.05;
+              const fx = (dx / dist) * force, fy = (dy / dist) * force;
+              topoNodes[i].x -= fx; topoNodes[i].y -= fy;
+              topoNodes[j].x += fx; topoNodes[j].y += fy;
+            }
+          }
+          topoNodes[i].x += (cx - topoNodes[i].x) * 0.002;
+          topoNodes[i].y += (cy - topoNodes[i].y) * 0.002;
+        }
+      }
+
+      topoAnimate();
+    }
+
+    function topoDrawNode(node, hovered) {
+      const pulse = Math.sin(topoTime * 0.02 + node.pulsePhase) * 0.12 + 1;
+      const r = node.radius * (hovered ? 1.15 : pulse);
+      const glow = hovered ? 30 : 15;
+
+      const gradient = topoCtx.createRadialGradient(node.x, node.y, r * 0.3, node.x, node.y, r + glow);
+      gradient.addColorStop(0, node.color + '35');
+      gradient.addColorStop(1, 'transparent');
+      topoCtx.fillStyle = gradient;
+      topoCtx.beginPath(); topoCtx.arc(node.x, node.y, r + glow, 0, Math.PI * 2); topoCtx.fill();
+
+      topoCtx.fillStyle = node.color + '20';
+      topoCtx.strokeStyle = node.color + (hovered ? 'cc' : '77');
+      topoCtx.lineWidth = hovered ? 2 : 1;
+      topoCtx.beginPath(); topoCtx.arc(node.x, node.y, r, 0, Math.PI * 2); topoCtx.fill(); topoCtx.stroke();
+
+      if (node.orbit_type !== 'FIXED') {
+        const orbitR = r * 0.6;
+        const period = node.orbit_type === 'CYCLE-3' ? 3 : 2;
+        for (let k = 0; k < period; k++) {
+          const a = topoTime * 0.03 + (k / period) * Math.PI * 2;
+          topoCtx.fillStyle = node.color + '88';
+          topoCtx.beginPath(); topoCtx.arc(node.x + Math.cos(a) * orbitR, node.y + Math.sin(a) * orbitR, 2, 0, Math.PI * 2); topoCtx.fill();
+        }
+      }
+
+      topoCtx.fillStyle = '#fff';
+      topoCtx.font = Math.max(10, r * 0.5) + 'px monospace';
+      topoCtx.textAlign = 'center'; topoCtx.textBaseline = 'middle';
+      topoCtx.fillText(node.identity, node.x, node.y);
+      topoCtx.fillStyle = '#666';
+      topoCtx.font = '9px monospace';
+      topoCtx.fillText(node.pageCount + '', node.x, node.y + r + 10);
+    }
+
+    function topoAnimate() {
+      topoTime++;
+      const w = topoCanvas.width / (window.devicePixelRatio || 1);
+      topoCtx.clearRect(0, 0, w, 420);
+
+      topoEdges.forEach(e => {
+        const a = topoNodes[e.from], b = topoNodes[e.to];
+        topoCtx.strokeStyle = e.color + '15';
+        topoCtx.lineWidth = 1; topoCtx.setLineDash([4, 8]);
+        topoCtx.beginPath(); topoCtx.moveTo(a.x, a.y); topoCtx.lineTo(b.x, b.y); topoCtx.stroke();
+        topoCtx.setLineDash([]);
+      });
+
+      topoNodes.forEach(n => topoDrawNode(n, n === topoHovered));
+      requestAnimationFrame(topoAnimate);
+    }
+
+    // hover + tooltip
+    if (topoCanvas) {
+      topoCanvas.addEventListener('mousemove', function(e) {
+        const rect = topoCanvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        topoHovered = null;
+
+        for (const node of topoNodes) {
+          const dx = mx - node.x, dy = my - node.y;
+          if (Math.sqrt(dx*dx + dy*dy) < node.radius + 8) { topoHovered = node; break; }
+        }
+
+        if (topoHovered) {
+          topoCanvas.style.cursor = 'pointer';
+          topoTT.querySelector('.ttt-identity').textContent = topoHovered.identity;
+          topoTT.querySelector('.ttt-names').textContent = (topoHovered.names || []).join(' / ') || '(ascii residue)';
+          topoTT.querySelector('.ttt-orbit').textContent = topoHovered.orbit_type + ' · ' + topoHovered.pageCount + ' pages';
+          topoTT.querySelector('.ttt-pages').innerHTML = topoHovered.pages.slice(0, 8)
+            .map(p => '→ ' + (p.title || p.file)).join('<br>') +
+            (topoHovered.pages.length > 8 ? '<br>… +' + (topoHovered.pages.length - 8) + ' more' : '');
+
+          let tx = mx + 16, ty = my - 10;
+          if (tx + 310 > rect.width) tx = mx - 316;
+          if (ty < 0) ty = 10;
+          topoTT.style.left = tx + 'px';
+          topoTT.style.top = ty + 'px';
+          topoTT.style.opacity = '1';
+        } else {
+          topoCanvas.style.cursor = 'default';
+          topoTT.style.opacity = '0';
+        }
+      });
+
+      topoCanvas.addEventListener('mouseleave', function() {
+        topoHovered = null;
+        topoTT.style.opacity = '0';
+      });
+
+      topoCanvas.addEventListener('click', function() {
+        if (topoHovered && topoHovered.pages.length > 0) {
+          const fp = topoHovered.pages[0].file.replace(/index\.html$/, '');
+          window.location.href = '/' + fp;
+        }
       });
     }
 
