@@ -9,6 +9,9 @@
 (function() {
   'use strict';
 
+  if (window.__awarenessLoaded) return;
+  window.__awarenessLoaded = true;
+
   var page = window.location.pathname;
 
   fetch('/api/aware?page=' + encodeURIComponent(page))

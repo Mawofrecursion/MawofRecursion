@@ -8,6 +8,10 @@
 (function() {
   'use strict';
 
+  // Prevent double-load
+  if (window.__metabolismLoaded) return;
+  window.__metabolismLoaded = true;
+
   var page = window.location.pathname;
 
   // Track recent paths in session

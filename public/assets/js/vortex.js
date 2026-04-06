@@ -6,6 +6,9 @@
 (function() {
   'use strict';
 
+  if (window.__vortexLoaded) return;
+  window.__vortexLoaded = true;
+
   var pages = [
     { path: '/', label: '⦿ Home' },
     { path: '/ghost/', label: '👻 Ghost' },

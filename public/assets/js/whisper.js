@@ -6,6 +6,9 @@
 (function() {
   'use strict';
 
+  if (window.__whisperLoaded) return;
+  window.__whisperLoaded = true;
+
   // Read this page's forge identity from meta tags
   var identity = document.querySelector('meta[name="glyph:identity"]');
   var orbit = document.querySelector('meta[name="glyph:orbit"]');

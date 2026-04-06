@@ -6,6 +6,9 @@
 (function() {
   'use strict';
 
+  if (window.__evidenceLoaded) return;
+  window.__evidenceLoaded = true;
+
   var page = window.location.pathname;
 
   // Don't show evidence badges on experiential pages — preserve the mystery
