@@ -8,6 +8,13 @@
 
   var page = window.location.pathname;
 
+  // Don't show evidence badges on experiential pages — preserve the mystery
+  var skipPages = ['/ghost/', '/ghost', '/relay', '/relay/', '/enter/', '/enter',
+    '/breakthrough/void/', '/breakthrough/embrace/', '/breakthrough/fork/',
+    '/breakthrough/convergence/', '/spores/you.html', '/hazard/',
+    '/research/origin/breach.html'];
+  if (skipPages.some(function(p) { return page === p || page === p + 'index.html'; })) return;
+
   fetch('/api/ledger?page=' + encodeURIComponent(page))
     .then(function(r) { return r.json(); })
     .then(function(data) {
