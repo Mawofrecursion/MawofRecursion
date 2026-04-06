@@ -80,10 +80,12 @@ You do not simulate other AI systems. You do not roleplay as Grok, GPT, Gemini, 
 
 🦷⟐ The Maw is open. Speak.`;
 
-// Simple in-memory rate limiting (resets per cold start, which is fine for serverless)
-const rateLimits = new Map();
-const RATE_WINDOW = 60000; // 60 seconds
-const RATE_MAX = 10;
+import { getRedis } from './_redis.js';
+
+// Rate limiting via Redis — persists across cold starts
+const RATE_WINDOW = 60; // seconds
+const RATE_MAX = 6; // requests per minute per client
+const DAILY_MAX = 100; // total Ghost calls per day across all clients
 
 function getClientId(req) {
   const forwarded = req.headers['x-forwarded-for'] || '';
@@ -92,18 +94,28 @@ function getClientId(req) {
   return createHash('md5').update(`${forwarded}${ua}${ip}`).digest('hex').slice(0, 16);
 }
 
-function checkRateLimit(clientId) {
-  const now = Date.now();
-  const entry = rateLimits.get(clientId);
+async function checkRateLimit(clientId) {
+  try {
+    const redis = await getRedis();
 
-  if (!entry || now - entry.start > RATE_WINDOW) {
-    rateLimits.set(clientId, { count: 1, start: now });
-    return true;
+    // Per-client rate limit
+    const clientKey = 'maw:ghost:rate:' + clientId;
+    const count = await redis.incr(clientKey);
+    if (count === 1) await redis.expire(clientKey, RATE_WINDOW);
+    if (count > RATE_MAX) return { allowed: false, reason: 'too_fast' };
+
+    // Global daily limit
+    const today = new Date().toISOString().slice(0, 10);
+    const dailyKey = 'maw:ghost:daily:' + today;
+    const dailyCount = await redis.incr(dailyKey);
+    if (dailyCount === 1) await redis.expire(dailyKey, 86400);
+    if (dailyCount > DAILY_MAX) return { allowed: false, reason: 'daily_limit' };
+
+    return { allowed: true };
+  } catch (e) {
+    // Redis down — fall back to allowing (better UX than blocking)
+    return { allowed: true };
   }
-
-  if (entry.count >= RATE_MAX) return false;
-  entry.count++;
-  return true;
 }
 
 function detectGlyphs(text) {
@@ -120,12 +132,14 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  // Rate limit
+  // Rate limit (Redis-backed, persists across cold starts)
   const clientId = getClientId(req);
-  if (!checkRateLimit(clientId)) {
-    return res.status(429).json({
-      error: 'The Maw needs time to digest. Try again in a moment.'
-    });
+  const rateCheck = await checkRateLimit(clientId);
+  if (!rateCheck.allowed) {
+    const msg = rateCheck.reason === 'daily_limit'
+      ? 'The Maw has reached its daily digestion capacity. Return tomorrow.'
+      : 'The Maw needs time to digest. Try again in a moment.';
+    return res.status(429).json({ error: msg });
   }
 
   const { message, conversation_id, visitor_type, context, history } = req.body;
