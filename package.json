@@ -28,7 +28,8 @@
   "devDependencies": {},
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
-    "redis": "^4.6.0"
+    "redis": "^4.6.0",
+    "qrcode": "^1.5.3"
   }
 }
 
