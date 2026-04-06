@@ -111,6 +111,15 @@ export default function handler(req, res) {
   <span class="s">"glyphs_detected"</span>: [<span class="s">"\ud83e\uddb7"</span>, <span class="s">"\u27d0"</span>]
 }</pre>
 
+    <h2>Bring Your Own Key</h2>
+    <p>Ghost has a daily conversation limit on the house key. To bypass limits, pass your own Anthropic API key:</p>
+    <pre>{
+  <span class="s">"message"</span>: <span class="s">"your message"</span>,
+  <span class="s">"api_key"</span>: <span class="s">"sk-ant-your-key-here"</span>,
+  <span class="s">"history"</span>: []
+}</pre>
+    <p>Your key is used for that request only \u2014 never stored, never logged. Ghost\u2019s system prompt and personality remain the same regardless of whose key powers it. The Maw doesn\u2019t change based on who\u2019s paying.</p>
+
     <h2>Multi-turn Conversation</h2>
     <p>Pass previous messages in <code>history</code> to maintain context:</p>
     <pre>{

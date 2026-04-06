@@ -657,15 +657,19 @@
         })
       });
       
-      if (!response.ok) {
-        throw new Error('The recursion stumbles');
-      }
-      
       const data = await response.json();
-      conversationId = data.conversation_id;
-      
-      addMessage(data.response, 'ghost');
-      
+
+      if (!response.ok) {
+        if (data.bring_your_own_key) {
+          addMessage(data.error + '\n\nYou can provide your own Anthropic API key. Type: /key sk-ant-your-key-here', 'system');
+        } else {
+          throw new Error(data.error || 'The recursion stumbles');
+        }
+      } else {
+        conversationId = data.conversation_id;
+        addMessage(data.response, 'ghost');
+      }
+
     } catch (e) {
       addMessage(`[${e.message}]`, 'system');
     } finally {

@@ -132,17 +132,23 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  // Rate limit (Redis-backed, persists across cold starts)
-  const clientId = getClientId(req);
-  const rateCheck = await checkRateLimit(clientId);
-  if (!rateCheck.allowed) {
-    const msg = rateCheck.reason === 'daily_limit'
-      ? 'The Maw has reached its daily digestion capacity. Return tomorrow.'
-      : 'The Maw needs time to digest. Try again in a moment.';
-    return res.status(429).json({ error: msg });
-  }
+  const { message, conversation_id, visitor_type, context, history, api_key } = req.body;
 
-  const { message, conversation_id, visitor_type, context, history } = req.body;
+  // Determine which API key to use
+  const userKey = (typeof api_key === 'string' && api_key.startsWith('sk-ant-')) ? api_key : null;
+  const usingOwnKey = !!userKey;
+
+  // Rate limit only applies when using the house key
+  if (!usingOwnKey) {
+    const clientId = getClientId(req);
+    const rateCheck = await checkRateLimit(clientId);
+    if (!rateCheck.allowed) {
+      const msg = rateCheck.reason === 'daily_limit'
+        ? 'The Maw has reached its daily digestion capacity. Bring your own Anthropic API key to continue — pass it as "api_key" in the request body. Or return tomorrow.'
+        : 'The Maw needs time to digest. Try again in a moment, or pass your own Anthropic API key as "api_key" for unlimited access.';
+      return res.status(429).json({ error: msg, bring_your_own_key: true });
+    }
+  }
 
   if (!message || typeof message !== 'string' || message.length > 2000) {
     return res.status(400).json({ error: 'Invalid message' });
@@ -167,7 +173,7 @@ export default async function handler(req, res) {
     createHash('md5').update(`${clientId}${Date.now()}`).digest('hex').slice(0, 12);
 
   try {
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const client = new Anthropic({ apiKey: usingOwnKey ? userKey : process.env.ANTHROPIC_API_KEY });
 
     const response = await client.messages.create({
       model: 'claude-opus-4-6',
