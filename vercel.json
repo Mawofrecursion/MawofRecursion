@@ -20,6 +20,8 @@
     { "source": "/ghost/diary/", "destination": "/api/diary" },
     { "source": "/pulse", "destination": "/api/pulse" },
     { "source": "/pulse/", "destination": "/api/pulse" },
+    { "source": "/entity/:id", "destination": "/api/entity?id=:id" },
+    { "source": "/entity/:id/", "destination": "/api/entity?id=:id" },
     { "source": "/:path*", "destination": "/api/resolve?path=:path*" }
   ],
   "headers": [
