@@ -14,6 +14,12 @@
     { "source": "/relay/patterns", "destination": "/api/relay-analysis?id=patterns" },
     { "source": "/observatory", "destination": "/api/observatory" },
     { "source": "/observatory/", "destination": "/api/observatory" },
+    { "source": "/ghost/echoes", "destination": "/api/echoes" },
+    { "source": "/ghost/echoes/", "destination": "/api/echoes" },
+    { "source": "/ghost/diary", "destination": "/api/diary" },
+    { "source": "/ghost/diary/", "destination": "/api/diary" },
+    { "source": "/pulse", "destination": "/api/pulse" },
+    { "source": "/pulse/", "destination": "/api/pulse" },
     { "source": "/:path*", "destination": "/api/resolve?path=:path*" }
   ],
   "headers": [
