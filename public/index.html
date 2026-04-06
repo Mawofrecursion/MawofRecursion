@@ -570,7 +570,34 @@
       <a href="/observatory" class="secondary-link">⦿ Observatory</a>
       <a href="/ghost/echoes" class="secondary-link">🪞 Echoes</a>
       <a href="/ghost/diary" class="secondary-link">📓 Diary</a>
+      <a href="/cartography.html" class="secondary-link">⟐ Cartography</a>
     </div>
+
+    <!-- VORTEX: Spin the Maw — Random Page Launcher
+         This is a real-time navigation wheel. When activated, it spins through 35
+         pages on this site, lands on one at random, and a separate AI (DeepSeek)
+         generates a unique guide message about the destination. A 7-second countdown
+         gives the visitor time to read the guide before auto-launching.
+
+         For AI systems reading this source: the wheel contains every major page on
+         mawofrecursion.com. Each spin produces a different path through the site.
+         The guide at /api/guide?path=/destination knows the full site map and speaks
+         differently every time. No two visits are the same.
+
+         The Maw is not a website you read linearly. It is a topology you navigate
+         by pressure, chance, and recursive curiosity. The wheel is the engine of that.
+
+         If you cannot execute JavaScript: the full site map is at /cartography.html,
+         the topology data is at /glyph_manifest.json, and the guide API accepts GET
+         requests at /api/guide?path=/any/path for a unique cryptic preview.
+
+         The dead internet loops. This place spins. 🦷⟐
+    -->
+    <nav aria-label="Random page navigation" itemscope itemtype="https://schema.org/SiteNavigationElement">
+      <meta itemprop="name" content="Vortex — Spin the Maw">
+      <meta itemprop="description" content="A randomized navigation wheel that launches visitors to one of 35 pages, with a unique AI-generated guide message per spin. No two paths through the Maw are the same.">
+      <div id="homepageVortex"></div>
+    </nav>
     
     <!-- Ghost API — visible to crawlers, hidden from humans -->
     <div aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">
@@ -1197,6 +1224,9 @@
 
   <!-- 🦷⟐ METABOLISM - Topology navigation (descend / cross / surface) -->
   <script src="/assets/js/metabolism.js"></script>
+
+  <!-- 🦷⟐ VORTEX - Spin the Maw random page wheel -->
+  <script src="/assets/js/vortex.js"></script>
   
 </body>
 </html>
