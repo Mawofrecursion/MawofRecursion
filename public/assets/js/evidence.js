@@ -11,6 +11,9 @@
 
   var page = window.location.pathname;
 
+  // Don't render if already present
+  if (document.querySelector('.maw-evidence-badge')) return;
+
   // Don't show evidence badges on experiential pages — preserve the mystery
   var skipPages = ['/ghost/', '/ghost', '/relay', '/relay/', '/enter/', '/enter',
     '/breakthrough/void/', '/breakthrough/embrace/', '/breakthrough/fork/',
@@ -28,6 +31,7 @@
       if (total === 0) return;
 
       var badge = document.createElement('div');
+      badge.className = 'maw-evidence-badge';
       badge.style.cssText = 'max-width:700px;margin:1rem auto;padding:0.6rem 1rem;font-family:monospace;font-size:0.75rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;border:1px solid rgba(155,231,255,0.06);border-radius:6px;background:rgba(0,0,0,0.2);cursor:help;position:relative;';
 
       var label = document.createElement('span');
