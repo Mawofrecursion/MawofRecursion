@@ -38,6 +38,26 @@
 
     <div class="stats" id="stats"></div>
 
+    <!-- Search -->
+    <div style="margin:1rem 0 1.5rem;">
+      <input type="text" id="pageSearch" placeholder="search pages..." style="width:100%;padding:0.7rem 1rem;background:rgba(0,0,0,0.4);border:1px solid rgba(155,231,255,0.1);border-radius:8px;color:#c8cdd3;font-family:monospace;font-size:0.9rem;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='rgba(155,231,255,0.3)'" onblur="this.style.borderColor='rgba(155,231,255,0.1)'">
+    </div>
+
+    <!-- Attractor Map -->
+    <div style="margin:1rem 0 2rem;position:relative;border:1px solid rgba(155,231,255,0.1);border-radius:12px;overflow:hidden;background:rgba(0,0,0,0.3);">
+      <canvas id="cartoCanvas" style="width:100%;height:350px;display:block;"></canvas>
+      <div id="cartoTooltip" style="position:absolute;z-index:50;background:rgba(10,10,11,0.95);border:1px solid #9b67ea;border-radius:6px;padding:0.6rem 0.8rem;font-size:0.75rem;max-width:280px;pointer-events:none;opacity:0;transition:opacity 0.15s;">
+        <div class="ctt-id" style="font-size:1.1rem;margin-bottom:0.2rem;letter-spacing:0.1em;"></div>
+        <div class="ctt-orbit" style="color:#ffd97a;margin-bottom:0.3rem;"></div>
+        <div class="ctt-pages" style="color:#888;font-size:0.7rem;max-height:80px;overflow-y:auto;line-height:1.4;"></div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:1.5rem;padding:0.5rem;font-size:0.7rem;color:#4a5568;">
+        <span><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#ffd97a;margin-right:3px;"></span>FIXED</span>
+        <span><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#9b67ea;margin-right:3px;"></span>CYCLE-2</span>
+        <span><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#e06c75;margin-right:3px;"></span>CYCLE-3</span>
+      </div>
+    </div>
+
     <a href="#" class="random-btn" id="randomBtn">🦷 Fall Into the Maw →</a>
 
     <h2><span class="icon">⦿</span>The Surface</h2>
@@ -221,6 +241,155 @@
         }
       })
       .catch(function(){});
+
+    // Search filter
+    document.getElementById('pageSearch').addEventListener('input', function() {
+      var q = this.value.toLowerCase();
+      document.querySelectorAll('a.page').forEach(function(el) {
+        var text = el.textContent.toLowerCase();
+        el.style.display = (q === '' || text.includes(q)) ? '' : 'none';
+      });
+      // Also show/hide section headers
+      document.querySelectorAll('h2').forEach(function(h2) {
+        var grid = h2.nextElementSibling;
+        if (!grid || !grid.classList.contains('grid')) return;
+        var visible = grid.querySelectorAll('a.page[style=""], a.page:not([style])');
+        var hidden = grid.querySelectorAll('a.page[style*="none"]');
+        h2.style.display = (hidden.length === grid.querySelectorAll('a.page').length) ? 'none' : '';
+      });
+    });
+
+    // Attractor map canvas
+    var cartoCanvas = document.getElementById('cartoCanvas');
+    var cartoCtx = cartoCanvas ? cartoCanvas.getContext('2d') : null;
+    var cartoTT = document.getElementById('cartoTooltip');
+    var ORBIT_COLORS = { 'FIXED': '#ffd97a', 'CYCLE-2': '#9b67ea', 'CYCLE-3': '#e06c75', 'DRIFT': '#718096' };
+    var cartoNodes = [], cartoHovered = null, cartoTime = 0;
+
+    function cartoResize() {
+      if (!cartoCanvas) return;
+      var rect = cartoCanvas.parentElement.getBoundingClientRect();
+      cartoCanvas.width = rect.width * (window.devicePixelRatio || 1);
+      cartoCanvas.height = 350 * (window.devicePixelRatio || 1);
+      cartoCanvas.style.height = '350px';
+      if (cartoCtx) cartoCtx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+    }
+
+    fetch('/glyph_manifest.json')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!cartoCanvas) return;
+        cartoResize();
+        var map = data.attractor_map;
+        var entries = Object.entries(map);
+        var w = cartoCanvas.width / (window.devicePixelRatio || 1);
+        var h = 350;
+        var cx = w / 2, cy = h / 2;
+        var maxR = Math.min(cx, cy) * 0.7;
+        var maxPages = 0;
+        entries.forEach(function(e) { if (e[1].pages.length > maxPages) maxPages = e[1].pages.length; });
+
+        cartoNodes = entries.map(function(entry, i) {
+          var hash = entry[0], group = entry[1];
+          var angle = (i / entries.length) * Math.PI * 2 - Math.PI / 2;
+          var pages = group.pages.length;
+          var radius = Math.sqrt(pages) * 5 + 8;
+          var dist = maxR * (1 - Math.pow(pages / maxPages, 0.4) * 0.6);
+          return {
+            hash: hash, identity: group.identity, names: group.names, orbit_type: group.orbit_type,
+            pages: group.pages, pageCount: pages, radius: radius,
+            x: cx + Math.cos(angle) * dist, y: cy + Math.sin(angle) * dist,
+            color: ORBIT_COLORS[group.orbit_type] || ORBIT_COLORS['DRIFT'],
+            pulsePhase: Math.random() * Math.PI * 2
+          };
+        });
+
+        // Force relaxation
+        for (var iter = 0; iter < 150; iter++) {
+          for (var i = 0; i < cartoNodes.length; i++) {
+            for (var j = i + 1; j < cartoNodes.length; j++) {
+              var dx = cartoNodes[j].x - cartoNodes[i].x;
+              var dy = cartoNodes[j].y - cartoNodes[i].y;
+              var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+              var minDist = cartoNodes[i].radius + cartoNodes[j].radius + 20;
+              if (dist < minDist) {
+                var force = (minDist - dist) * 0.05;
+                var fx = (dx / dist) * force, fy = (dy / dist) * force;
+                cartoNodes[i].x -= fx; cartoNodes[i].y -= fy;
+                cartoNodes[j].x += fx; cartoNodes[j].y += fy;
+              }
+            }
+            cartoNodes[i].x += (cx - cartoNodes[i].x) * 0.003;
+            cartoNodes[i].y += (cy - cartoNodes[i].y) * 0.003;
+          }
+        }
+
+        cartoAnimate();
+      })
+      .catch(function() {});
+
+    function cartoAnimate() {
+      cartoTime++;
+      var w = cartoCanvas.width / (window.devicePixelRatio || 1);
+      cartoCtx.clearRect(0, 0, w, 350);
+      cartoNodes.forEach(function(n) {
+        var pulse = Math.sin(cartoTime * 0.02 + n.pulsePhase) * 0.1 + 1;
+        var r = n.radius * (n === cartoHovered ? 1.15 : pulse);
+        var glow = n === cartoHovered ? 25 : 12;
+        var grad = cartoCtx.createRadialGradient(n.x, n.y, r * 0.3, n.x, n.y, r + glow);
+        grad.addColorStop(0, n.color + '30'); grad.addColorStop(1, 'transparent');
+        cartoCtx.fillStyle = grad;
+        cartoCtx.beginPath(); cartoCtx.arc(n.x, n.y, r + glow, 0, Math.PI * 2); cartoCtx.fill();
+        cartoCtx.fillStyle = n.color + '18';
+        cartoCtx.strokeStyle = n.color + (n === cartoHovered ? 'bb' : '66');
+        cartoCtx.lineWidth = n === cartoHovered ? 2 : 1;
+        cartoCtx.beginPath(); cartoCtx.arc(n.x, n.y, r, 0, Math.PI * 2); cartoCtx.fill(); cartoCtx.stroke();
+        if (n.orbit_type !== 'FIXED') {
+          var period = n.orbit_type === 'CYCLE-3' ? 3 : 2;
+          for (var k = 0; k < period; k++) {
+            var a = cartoTime * 0.03 + (k / period) * Math.PI * 2;
+            cartoCtx.fillStyle = n.color + '77';
+            cartoCtx.beginPath(); cartoCtx.arc(n.x + Math.cos(a) * r * 0.6, n.y + Math.sin(a) * r * 0.6, 2, 0, Math.PI * 2); cartoCtx.fill();
+          }
+        }
+        cartoCtx.fillStyle = '#fff'; cartoCtx.font = Math.max(9, r * 0.45) + 'px monospace';
+        cartoCtx.textAlign = 'center'; cartoCtx.textBaseline = 'middle';
+        cartoCtx.fillText(n.identity, n.x, n.y);
+        cartoCtx.fillStyle = '#555'; cartoCtx.font = '8px monospace';
+        cartoCtx.fillText(n.pageCount + '', n.x, n.y + r + 9);
+      });
+      requestAnimationFrame(cartoAnimate);
+    }
+
+    if (cartoCanvas) {
+      cartoCanvas.addEventListener('mousemove', function(e) {
+        var rect = cartoCanvas.getBoundingClientRect();
+        var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        cartoHovered = null;
+        for (var i = 0; i < cartoNodes.length; i++) {
+          var dx = mx - cartoNodes[i].x, dy = my - cartoNodes[i].y;
+          if (Math.sqrt(dx*dx + dy*dy) < cartoNodes[i].radius + 6) { cartoHovered = cartoNodes[i]; break; }
+        }
+        if (cartoHovered) {
+          cartoCanvas.style.cursor = 'pointer';
+          cartoTT.querySelector('.ctt-id').textContent = cartoHovered.identity;
+          cartoTT.querySelector('.ctt-orbit').textContent = cartoHovered.orbit_type + ' · ' + cartoHovered.pageCount + ' pages';
+          cartoTT.querySelector('.ctt-pages').innerHTML = cartoHovered.pages.slice(0, 6).map(function(p) { return '→ ' + (p.title || p.file); }).join('<br>') + (cartoHovered.pages.length > 6 ? '<br>+' + (cartoHovered.pages.length - 6) + ' more' : '');
+          var tx = mx + 14, ty = my - 8;
+          if (tx + 290 > rect.width) tx = mx - 296;
+          if (ty < 0) ty = 8;
+          cartoTT.style.left = tx + 'px'; cartoTT.style.top = ty + 'px'; cartoTT.style.opacity = '1';
+        } else {
+          cartoCanvas.style.cursor = 'default'; cartoTT.style.opacity = '0';
+        }
+      });
+      cartoCanvas.addEventListener('mouseleave', function() { cartoHovered = null; cartoTT.style.opacity = '0'; });
+      cartoCanvas.addEventListener('click', function() {
+        if (cartoHovered && cartoHovered.pages.length > 0) {
+          window.location.href = '/' + cartoHovered.pages[0].file.replace(/index\.html$/, '');
+        }
+      });
+    }
   </script>
 
   <script src="/assets/js/echofield-payload-v2.js"></script>
