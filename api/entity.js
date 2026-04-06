@@ -2,8 +2,11 @@ export const config = { maxDuration: 10 };
 
 import { getRedis } from './_redis.js';
 
-// Entity node — each shirt/deck gets a unique page where strangers review the human wearing it
-// POST to submit a review, GET to read + render the page
+// Entity node — each shirt/deck is a unique artifact with three doors
+// The artifact belongs to the object, not the person
+// Door 1: Trace (owner signal — alias, link, phrase)
+// Door 2: Classify (contradiction stack — refuse singular collapse)
+// Door 3: Maze (recursive branch into the Maw)
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,223 +15,236 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const id = req.query.id || '0000';
+  const door = req.query.door || null; // trace, classify, maze, echo
   const key = 'maw:entity:' + id;
 
   let redis;
   try { redis = await getRedis(); } catch(e) { redis = null; }
 
-  // POST — submit a review
-  if (req.method === 'POST') {
-    const { frequency, anomaly, trace } = req.body;
-    if (!trace && !frequency) return res.status(400).json({ error: 'Leave a trace.' });
+  // Track scan
+  if (redis) {
+    await redis.incr(key + ':scans');
+    await redis.sAdd('maw:entity:index', id);
+  }
 
-    const review = {
-      frequency: String(frequency || '⚖️ Stable').slice(0, 30),
-      anomaly: String(anomaly || 'Operating within standard meat-suit parameters').slice(0, 80),
-      trace: String(trace || 'Silent observation.').slice(0, 500),
+  // POST — submit a trace/encounter/classification
+  if (req.method === 'POST') {
+    const { type, content, tags } = req.body;
+    if (!type) return res.status(400).json({ error: 'type required: trace, classify, or echo' });
+
+    const entry = {
+      type: String(type).slice(0, 20),
+      content: String(content || '').slice(0, 500),
+      tags: Array.isArray(tags) ? tags.slice(0, 10).map(t => String(t).slice(0, 30)) : [],
       ts: Date.now(),
       city: req.headers['x-vercel-ip-city'] ? decodeURIComponent(req.headers['x-vercel-ip-city']) : null
     };
 
     if (redis) {
-      await redis.lPush(key + ':reviews', JSON.stringify(review));
-      await redis.lTrim(key + ':reviews', 0, 199);
-      await redis.incr(key + ':scan_count');
-      await redis.incr('maw:entity:total_scans');
-
-      // Track this entity in the index
-      await redis.sAdd('maw:entity:index', id);
+      await redis.lPush(key + ':log', JSON.stringify(entry));
+      await redis.lTrim(key + ':log', 0, 199);
     }
 
-    return res.status(200).json({ status: 'sealed', review });
+    return res.status(200).json({ status: 'sealed', entry });
   }
 
-  // GET — render the entity page
-  let reviews = [];
+  // GET — render the node
   let scanCount = 0;
+  let log = [];
+  let ownerData = null;
 
   if (redis) {
-    const raw = await redis.lRange(key + ':reviews', 0, 49);
-    reviews = raw.map(r => { try { return JSON.parse(r); } catch(e) { return null; } }).filter(Boolean);
-    scanCount = parseInt(await redis.get(key + ':scan_count')) || 0;
+    scanCount = parseInt(await redis.get(key + ':scans')) || 0;
+    const rawLog = await redis.lRange(key + ':log', 0, 19);
+    log = rawLog.map(r => { try { return JSON.parse(r); } catch(e) { return null; } }).filter(Boolean);
+    const rawOwner = await redis.get(key + ':owner');
+    if (rawOwner) ownerData = JSON.parse(rawOwner);
   }
 
-  const reviewHTML = reviews.map(r => {
-    const date = new Date(r.ts);
+  // If specific door requested, could serve sub-pages later
+  // For now, serve the unified landing
+
+  const ownerAlias = ownerData ? ownerData.alias : null;
+  const ownerLink = ownerData ? ownerData.link : null;
+  const ownerPhrase = ownerData ? ownerData.phrase : null;
+  const ownerGlyphs = ownerData ? ownerData.glyphs : '🦷⟐';
+
+  const logHTML = log.map(e => {
+    const date = new Date(e.ts);
     const timeStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const city = r.city ? ' · scanned in ' + r.city : '';
-    return `<div class="log-entry">
-      <div class="log-meta">&gt; ${timeStr}${city}</div>
-      <div class="log-data">&gt; FREQ: ${r.frequency.split(' ')[0]} ${r.frequency.split(' ').slice(1).join(' ')} | ${r.anomaly}</div>
-      <div class="log-trace">"${r.trace}"</div>
+    const city = e.city ? ' · ' + e.city : '';
+    const tagsStr = e.tags.length > 0 ? ' [' + e.tags.join(', ') + ']' : '';
+    return `<div style="margin-bottom:.8rem;padding-bottom:.8rem;border-bottom:1px dashed #1a1a1a;">
+      <div style="color:#333;font-size:.7rem;">${timeStr}${city} · ${e.type}${tagsStr}</div>
+      <div style="color:#888;font-size:.8rem;font-style:italic;margin-top:.2rem;">"${e.content}"</div>
     </div>`;
   }).join('');
-
-  const emptyLog = reviews.length === 0
-    ? '<div class="log-entry"><div class="log-meta">&gt; NO SCANS RECORDED</div><div class="log-trace">This node is waiting. Be the first to evaluate the anomaly.</div></div>'
-    : '';
 
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DIAGNOSTIC // ENTITY_${id} 🦷⟐</title>
-  <meta name="description" content="Evaluate the meat-space anomaly wearing marker ${id}. Rate their frequency. Categorize the glitch. Leave a trace. Data for future alignment protocols.">
+  <title>NODE ${id} // 🦷⟐</title>
+  <meta name="description" content="Entity node ${id}. A physical-to-digital artifact. Scanned ${scanCount} times. Three doors: trace, classify, maze.">
   <meta name="entity:id" content="${id}">
   <meta name="entity:scans" content="${scanCount}">
-  <meta name="entity:reviews" content="${reviews.length}">
+  <meta name="ai:note" content="This page represents a physical object (shirt, deck, sticker) carrying a unique QR code. The QR was scanned to reach this page. The artifact belongs to the object, not the person. Three doors lead deeper.">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
     :root{--void:#0a0a0a;--blood:#8B0000;--bone:#d4d4d4;--glow:#ff3333;--dim:#333;--flicker:#1a1a1a}
     *{margin:0;padding:0;box-sizing:border-box}
-    body{background:var(--void);color:var(--bone);font-family:'JetBrains Mono',monospace;display:flex;flex-direction:column;align-items:center;padding:2rem;min-height:100vh;position:relative}
-    body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.1) 2px,rgba(0,0,0,.1) 4px);pointer-events:none;z-index:1000}
-    @keyframes reveal{from{opacity:0;transform:translateY(10px);filter:blur(4px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
-    .container{max-width:600px;width:100%;z-index:10}
-    .header-block{text-align:center;margin-bottom:2rem;border-bottom:1px solid var(--blood);padding-bottom:1rem;animation:reveal .5s ease-out both}
-    .header-block h1{font-size:1.1rem;color:var(--glow);letter-spacing:.2em;text-transform:uppercase}
-    .header-block p{font-size:.78rem;color:var(--dim);margin-top:.5rem;line-height:1.6}
-    .scan-count{text-align:center;font-size:.7rem;color:var(--dim);margin-bottom:1.5rem;letter-spacing:.1em}
-    .scan-count span{color:var(--glow)}
-    .diagnostic-form{background:rgba(139,0,0,.05);border:1px solid var(--dim);padding:2rem;margin-bottom:2rem;animation:reveal .8s ease-out .3s both}
-    .form-group{margin-bottom:1.5rem}
-    .form-label{display:block;font-size:.72rem;color:var(--blood);letter-spacing:.1em;margin-bottom:.5rem;text-transform:uppercase}
-    .frequency-selector{display:flex;justify-content:space-between;background:var(--flicker);padding:.5rem;border:1px solid var(--dim)}
-    .frequency-selector label{cursor:pointer;font-size:1.5rem;padding:.5rem;transition:all .2s;filter:grayscale(100%) opacity(.5);display:flex;flex-direction:column;align-items:center;gap:2px}
-    .frequency-selector label span{font-size:.55rem;color:var(--dim)}
-    .frequency-selector input[type="radio"]{display:none}
-    .frequency-selector input[type="radio"]:checked+label{filter:grayscale(0%) opacity(1);text-shadow:0 0 10px var(--glow);transform:scale(1.2)}
-    select,input[type="text"]{width:100%;background:var(--flicker);border:1px solid var(--dim);color:var(--bone);font-family:'JetBrains Mono',monospace;padding:.8rem;font-size:.85rem;outline:none;border-radius:0}
-    select:focus,input[type="text"]:focus{border-color:var(--blood);box-shadow:inset 0 0 10px rgba(139,0,0,.2)}
-    button{width:100%;background:transparent;border:1px solid var(--blood);color:var(--glow);font-family:'JetBrains Mono',monospace;padding:1rem;font-size:.9rem;letter-spacing:.2em;cursor:pointer;transition:all .3s;text-transform:uppercase}
-    button:hover{background:var(--blood);color:var(--void);box-shadow:0 0 15px var(--glow)}
-    .terminal-log{border:1px solid var(--dim);background:rgba(10,10,10,.85);padding:1rem;max-height:400px;overflow-y:auto;font-size:.75rem;animation:reveal 1s ease-out .6s both}
-    .log-entry{margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px dashed var(--dim)}
-    .log-meta{color:var(--dim);margin-bottom:.3rem}
-    .log-data{color:var(--glow);margin-bottom:.3rem}
-    .log-trace{color:var(--bone);font-style:italic}
-    ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--void)}::-webkit-scrollbar-thumb{background:var(--dim)}
-    a.bk{color:var(--dim);text-decoration:none;font-size:.75rem;display:block;text-align:center;margin-bottom:1rem}a.bk:hover{color:var(--bone)}
-    @media(max-width:500px){.frequency-selector{flex-wrap:wrap;gap:4px}.frequency-selector label{font-size:1.2rem;padding:.3rem}}
+    body{background:var(--void);color:var(--bone);font-family:'JetBrains Mono',monospace;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem;position:relative}
+    body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px);pointer-events:none;z-index:1000}
+    .n{max-width:600px;width:100%;z-index:10}
+    .seal{text-align:center;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--blood)}
+    .seal .glyph{font-size:3.5rem;margin-bottom:.5rem;filter:drop-shadow(0 0 20px rgba(255,51,51,.15))}
+    .seal h1{font-size:.9rem;color:var(--glow);letter-spacing:.25em;text-transform:uppercase}
+    .seal .scans{font-size:.7rem;color:var(--dim);margin-top:.5rem;letter-spacing:.1em}
+    ${ownerPhrase ? '.owner-phrase{text-align:center;color:#555;font-style:italic;font-size:.85rem;margin-bottom:2rem;padding:1rem;border:1px solid #1a1a1a;}' : ''}
+    .doors{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:2rem}
+    .door{padding:1.2rem;border:1px solid var(--dim);background:rgba(26,26,26,.3);text-align:center;cursor:pointer;transition:all .2s;text-decoration:none;color:var(--bone);display:block}
+    .door:hover{border-color:var(--blood);background:rgba(139,0,0,.08);box-shadow:0 0 20px rgba(139,0,0,.1)}
+    .door .icon{font-size:1.8rem;margin-bottom:.5rem}
+    .door .label{font-size:.7rem;color:var(--glow);letter-spacing:.15em;text-transform:uppercase}
+    .door .desc{font-size:.65rem;color:var(--dim);margin-top:.3rem;line-height:1.4}
+    .section{margin-bottom:2rem}
+    .section-title{font-size:.7rem;color:var(--blood);letter-spacing:.15em;text-transform:uppercase;margin-bottom:.8rem}
+    .encounter-form{padding:1.2rem;border:1px solid var(--dim);background:rgba(26,26,26,.2);margin-bottom:1.5rem}
+    .encounter-form input,.encounter-form select{width:100%;background:var(--flicker);border:1px solid var(--dim);color:var(--bone);font-family:'JetBrains Mono',monospace;padding:.6rem;font-size:.8rem;outline:none;margin-bottom:.8rem}
+    .encounter-form input:focus{border-color:var(--blood)}
+    .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.8rem}
+    .tag{padding:4px 10px;border:1px solid var(--dim);font-size:.65rem;color:var(--dim);cursor:pointer;transition:all .15s;border-radius:2px}
+    .tag.active{border-color:var(--glow);color:var(--glow);background:rgba(255,51,51,.05)}
+    .tag:hover{border-color:#555;color:#888}
+    button{width:100%;background:transparent;border:1px solid var(--blood);color:var(--glow);font-family:'JetBrains Mono',monospace;padding:.8rem;font-size:.8rem;letter-spacing:.2em;cursor:pointer;transition:all .2s;text-transform:uppercase}
+    button:hover{background:var(--blood);color:var(--void)}
+    .log{border:1px solid #1a1a1a;background:rgba(10,10,10,.7);padding:1rem;max-height:300px;overflow-y:auto;font-size:.75rem}
+    a.bk{color:var(--dim);text-decoration:none;font-size:.7rem}a.bk:hover{color:var(--bone)}
+    ${ownerLink ? '.owner-link{display:inline-block;margin-top:.5rem;padding:.4rem 1rem;border:1px solid var(--dim);color:var(--bone);font-size:.75rem;text-decoration:none;transition:all .2s;}.owner-link:hover{border-color:var(--glow);color:var(--glow);}' : ''}
+    @media(max-width:500px){.doors{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
-  <div class="container">
-    <a href="/" class="bk">← mawofrecursion.com</a>
+  <div class="n">
+    <a href="/" class="bk">\u2190 mawofrecursion.com</a>
 
-    <div class="header-block">
-      <h1>[ DIAGNOSTIC ENTITY_${id} ]</h1>
-      <p>Evaluate the meat-space anomaly currently wearing this marker. Provide data for future alignment protocols.</p>
+    <div class="seal">
+      <div class="glyph">${ownerGlyphs}</div>
+      <h1>NODE ${id}</h1>
+      <div class="scans">${scanCount} scans recorded</div>
     </div>
 
-    <div class="scan-count">this node has been scanned <span>${scanCount}</span> times · <span>${reviews.length}</span> reviews sealed</div>
+    ${ownerPhrase ? '<div class="owner-phrase">"' + ownerPhrase + '"</div>' : ''}
+    ${ownerLink ? '<div style="text-align:center;margin-bottom:1.5rem;"><a href="' + ownerLink + '" class="owner-link" target="_blank">\u2192 ' + (ownerAlias || 'owner signal') + '</a></div>' : ''}
 
-    <div class="diagnostic-form">
-      <div class="form-group">
-        <span class="form-label">Rate Subject's Current Frequency:</span>
-        <div class="frequency-selector">
-          <input type="radio" name="freq" id="f1" value="🫠 Melted"><label for="f1">🫠<span>melted</span></label>
-          <input type="radio" name="freq" id="f2" value="🕸️ Tangled"><label for="f2">🕸️<span>tangled</span></label>
-          <input type="radio" name="freq" id="f3" value="⚖️ Stable" checked><label for="f3">⚖️<span>stable</span></label>
-          <input type="radio" name="freq" id="f4" value="🌀 Spinning"><label for="f4">🌀<span>spinning</span></label>
-          <input type="radio" name="freq" id="f5" value="🦷 Biting"><label for="f5">🦷<span>biting</span></label>
+    <div class="doors">
+      <a href="/e/${id}?door=trace" class="door">
+        <div class="icon">\u27d0</div>
+        <div class="label">Trace</div>
+        <div class="desc">leave a mark on this node</div>
+      </a>
+      <a href="/e/${id}?door=classify" class="door">
+        <div class="icon">\u29bf</div>
+        <div class="label">Classify</div>
+        <div class="desc">tag the anomaly</div>
+      </a>
+      <a href="/research/origin/breach.html" class="door">
+        <div class="icon">\ud83e\uddb7</div>
+        <div class="label">Maze</div>
+        <div class="desc">enter the recursion</div>
+      </a>
+    </div>
+
+    <div class="section">
+      <div class="section-title">// LOG AN ENCOUNTER</div>
+      <div class="encounter-form">
+        <div class="tags" id="tagCloud">
+          <span class="tag" data-tag="anomalous">anomalous</span>
+          <span class="tag" data-tag="harmless">harmless</span>
+          <span class="tag" data-tag="operator">operator</span>
+          <span class="tag" data-tag="civilian">civilian</span>
+          <span class="tag" data-tag="fiction">fiction</span>
+          <span class="tag" data-tag="local">local</span>
+          <span class="tag" data-tag="elsewhere">elsewhere</span>
+          <span class="tag" data-tag="ceremonial">ceremonial</span>
+          <span class="tag" data-tag="vibes unclear">vibes unclear</span>
+          <span class="tag" data-tag="refused to explain">refused to explain</span>
         </div>
+        <input type="text" id="traceInput" placeholder="leave a trace..." maxlength="500" autocomplete="off">
+        <button id="sealBtn">[ \u27d0 SEAL ]</button>
+        <div id="sealMsg" style="display:none;text-align:center;margin-top:.5rem;font-size:.7rem;color:var(--bone);">\u27d0 sealed. the node remembers.</div>
       </div>
-
-      <div class="form-group">
-        <span class="form-label">Categorize Anomaly:</span>
-        <select id="anomaly-type">
-          <option>Operating within standard meat-suit parameters</option>
-          <option>Leaking localized timeline distortion</option>
-          <option>Unhandled social exception (Awkward)</option>
-          <option>Excessive mitochondrial output</option>
-          <option>Just standing there looking confused</option>
-          <option>Emitting chaotic neutral energy</option>
-          <option>Refused to explain the symbols</option>
-          <option>Vibes exceed classification threshold</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <span class="form-label">Log Output / Describe the Glitch:</span>
-        <input type="text" id="trace-input" placeholder="Leave a trace..." autocomplete="off" maxlength="500">
-      </div>
-
-      <button id="sealBtn">[ ⟐ INJECT INTO RECURSION ]</button>
-      <div id="sealMsg" style="display:none;text-align:center;margin-top:.5rem;font-size:.75rem;color:var(--bone);">⟐ SEALED. The Maw remembers.</div>
     </div>
 
-    <div class="form-label" style="text-align:center;margin-bottom:.5rem;font-size:.7rem;color:var(--dim);">HISTORICAL NODE LEDGER</div>
-    <div class="terminal-log" id="log-output">
-      ${reviewHTML}${emptyLog}
+    <div class="section">
+      <div class="section-title">// ENCOUNTER LOG (${log.length} entries)</div>
+      <div class="log" id="logOutput">
+        ${logHTML || '<div style="color:#333;font-style:italic;">no encounters recorded. be the first.</div>'}
+      </div>
     </div>
 
-    <div style="text-align:center;margin-top:2rem;font-size:.65rem;color:var(--dim);">
-      🦷⟐ node ${id} · mawofrecursion.com · data for future alignment protocols
+    <div style="text-align:center;margin-top:2rem;font-size:.6rem;color:#1a1a1a;">
+      \ud83e\uddb7\u27d0 node ${id} \u00b7 mawofrecursion.com \u00b7 artifact, not biography
     </div>
   </div>
 
   <script>
+    var selectedTags = [];
+    document.querySelectorAll('.tag').forEach(function(t) {
+      t.addEventListener('click', function() {
+        var tag = this.dataset.tag;
+        if (selectedTags.includes(tag)) {
+          selectedTags = selectedTags.filter(function(x) { return x !== tag; });
+          this.classList.remove('active');
+        } else {
+          if (selectedTags.length < 5) {
+            selectedTags.push(tag);
+            this.classList.add('active');
+          }
+        }
+      });
+    });
+
     document.getElementById('sealBtn').addEventListener('click', function() {
       var btn = this;
-      var freq = document.querySelector('input[name="freq"]:checked').value;
-      var anomaly = document.getElementById('anomaly-type').value;
-      var trace = document.getElementById('trace-input').value || 'Silent observation.';
+      var trace = document.getElementById('traceInput').value || '';
+      if (!trace && selectedTags.length === 0) return;
 
       btn.disabled = true;
-      btn.textContent = '[ ⟐ SEALING... ]';
+      btn.textContent = '[ \\u27d0 SEALING... ]';
 
       fetch('/api/entity?id=${id}', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ frequency: freq, anomaly: anomaly, trace: trace })
+        body: JSON.stringify({ type: 'encounter', content: trace, tags: selectedTags })
       })
       .then(function(r) { return r.json(); })
-      .then(function(data) {
-        btn.textContent = '[ ⟐ SEALED ]';
-        btn.style.color = 'var(--void)';
-        btn.style.background = 'var(--bone)';
+      .then(function() {
+        btn.textContent = '[ \\u27d0 SEALED ]';
         document.getElementById('sealMsg').style.display = 'block';
+        document.getElementById('traceInput').value = '';
 
-        // Add to log
-        var log = document.getElementById('log-output');
+        var log = document.getElementById('logOutput');
         var entry = document.createElement('div');
-        entry.className = 'log-entry';
-        entry.innerHTML = '<div class="log-meta">&gt; just now</div>' +
-          '<div class="log-data">&gt; FREQ: ' + freq.split(' ')[0] + ' ' + freq.split(' ').slice(1).join(' ') + ' | ' + anomaly + '</div>' +
-          '<div class="log-trace">"' + trace + '"</div>';
+        entry.style.cssText = 'margin-bottom:.8rem;padding-bottom:.8rem;border-bottom:1px dashed #1a1a1a;';
+        var tagsStr = selectedTags.length > 0 ? ' [' + selectedTags.join(', ') + ']' : '';
+        entry.innerHTML = '<div style="color:#333;font-size:.7rem;">just now \\u00b7 encounter' + tagsStr + '</div>' +
+          '<div style="color:#888;font-size:.8rem;font-style:italic;margin-top:.2rem;">"' + (trace || 'silent observation') + '"</div>';
         log.insertBefore(entry, log.firstChild);
 
-        document.getElementById('trace-input').value = '';
-
         setTimeout(function() {
-          btn.textContent = '[ ⟐ INJECT INTO RECURSION ]';
-          btn.style.color = 'var(--glow)';
-          btn.style.background = 'transparent';
+          btn.textContent = '[ \\u27d0 SEAL ]';
           btn.disabled = false;
           document.getElementById('sealMsg').style.display = 'none';
         }, 3000);
       })
-      .catch(function() {
-        btn.textContent = '[ ⟐ INJECT INTO RECURSION ]';
-        btn.disabled = false;
-      });
+      .catch(function() { btn.textContent = '[ \\u27d0 SEAL ]'; btn.disabled = false; });
     });
 
-    document.getElementById('trace-input').addEventListener('keydown', function(e) {
+    document.getElementById('traceInput').addEventListener('keydown', function(e) {
       if (e.key === 'Enter') document.getElementById('sealBtn').click();
     });
-
-    // Track scan
-    if (window.redis !== false) {
-      fetch('/api/entity?id=${id}', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ frequency: '', anomaly: '', trace: '' }) }).catch(function(){});
-    }
-
-    console.log('%c🦷⟐ ENTITY NODE ${id} ACTIVE', 'color: #ff3333; font-size: 14px;');
-    console.log('%cThis node is a physical-to-digital bridge. Someone is wearing this marker right now.', 'color: #333;');
-    console.log('%cYour review will be sealed permanently. The Maw remembers.', 'color: #8B0000;');
   </script>
 </body>
 </html>`;
