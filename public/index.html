@@ -375,47 +375,56 @@
       <span class="future-memory" id="futureMemory">from the future.</span>
     </p>
     
-    <!-- Bite-Seal Operator Teaser -->
+    <!-- Bite-Seal Operator Teaser — motion-enhanced -->
     <div style="max-width:900px;margin:2rem auto;">
     <section class="bs-home-teaser" aria-labelledby="bs-home-title">
       <style>
-        .bs-home-teaser{--bg-0:#071018;--bg-1:#0d1621;--text:#e7edf7;--muted:#94a3b8;--steel:#c7d2e2;--line:rgba(190,205,228,.14);--amber:#f3b35b;--cyan:#8fd4ff;--shadow:0 20px 60px rgba(0,0,0,.34);--radius:24px;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;--sans:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;position:relative;overflow:hidden;color:var(--text);background:radial-gradient(circle at 10% 18%,rgba(143,212,255,.09),transparent 24%),radial-gradient(circle at 88% 14%,rgba(243,179,91,.08),transparent 18%),linear-gradient(180deg,var(--bg-1),var(--bg-0));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(20px,3vw,30px);font-family:var(--sans);isolation:isolate}
+        .bs-home-teaser{--bg-0:#071018;--bg-1:#0d1621;--text:#e7edf7;--muted:#94a3b8;--steel:#c7d2e2;--line:rgba(190,205,228,.14);--line-strong:rgba(190,205,228,.24);--amber:#f3b35b;--cyan:#8fd4ff;--green:#b7e27a;--shadow:0 20px 60px rgba(0,0,0,.34);--radius:24px;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;--sans:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;position:relative;overflow:hidden;color:var(--text);background:radial-gradient(circle at 10% 18%,rgba(143,212,255,.09),transparent 24%),radial-gradient(circle at 88% 14%,rgba(243,179,91,.08),transparent 18%),linear-gradient(180deg,var(--bg-1),var(--bg-0));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(20px,3vw,30px);font-family:var(--sans);isolation:isolate;transition:transform 220ms ease,border-color 220ms ease,box-shadow 220ms ease}
+        .bs-home-teaser:hover,.bs-home-teaser:focus-within{transform:translateY(-3px);border-color:var(--line-strong);box-shadow:0 28px 80px rgba(0,0,0,.42)}
         .bs-home-teaser::before,.bs-home-teaser::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0}
         .bs-home-teaser::before{background:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:34px 34px;opacity:.34}
-        .bs-home-teaser::after{background:linear-gradient(90deg,transparent,rgba(143,212,255,.08),transparent);transform:translateX(-120%);transition:transform 700ms ease}
-        .bs-home-teaser:hover::after{transform:translateX(120%)}
+        .bs-home-teaser::after{background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(143,212,255,.08) 48%,rgba(143,212,255,.18) 50%,rgba(143,212,255,.08) 52%,transparent 58%,transparent 100%);transform:translateX(-120%);animation:bsTelemetrySweep 7s linear infinite;opacity:.8}
         .bs-home-teaser *{position:relative;z-index:1;box-sizing:border-box}
         .bs-home-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:18px}
         .bs-home-tag,.bs-home-stamp{display:inline-flex;align-items:center;min-height:34px;padding:0 11px;border-radius:999px;font-family:var(--mono);font-size:.72rem;letter-spacing:.13em;text-transform:uppercase;white-space:nowrap}
         .bs-home-tag{color:var(--steel);border:1px solid var(--line);background:rgba(255,255,255,.03)}
-        .bs-home-stamp{color:#fff5ea;border:1px solid rgba(243,179,91,.24);background:rgba(243,179,91,.08)}
+        .bs-home-stamp{color:#fff5ea;border:1px solid rgba(243,179,91,.24);background:rgba(243,179,91,.08);gap:8px}
+        .bs-home-stamp::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(183,226,122,.8);animation:bsStatusBlink 2.4s ease-in-out infinite}
         .bs-home-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(140px,.8fr);gap:18px;align-items:center}
         .bs-home-copy h2{margin:0;font-size:clamp(1.55rem,3vw,2.3rem);line-height:.98;letter-spacing:-.03em;font-weight:700;color:#f7fbff}
-        .bs-home-copy h2 .glyph{color:#fff;margin-right:.24em;text-shadow:0 0 20px rgba(255,255,255,.08)}
+        .bs-home-copy h2 .glyph{color:#fff;margin-right:.24em;text-shadow:0 0 20px rgba(255,255,255,.08),0 0 36px rgba(143,212,255,.08)}
         .bs-home-copy p{margin:12px 0 0;max-width:58ch;color:var(--muted);line-height:1.72;font-size:.98rem}
         .bs-home-phrase{margin-top:14px;color:var(--steel);font-family:var(--mono);font-size:.82rem;letter-spacing:.08em;text-transform:uppercase}
         .bs-home-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
         .bs-home-chip{padding:8px 11px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--steel);font-family:var(--mono);font-size:.74rem;letter-spacing:.05em;text-transform:uppercase}
         .bs-home-visual{position:relative;min-height:150px;border-radius:18px;border:1px solid var(--line);background:radial-gradient(circle at center,rgba(255,91,77,.08),transparent 32%),radial-gradient(circle at center,rgba(143,212,255,.08),transparent 58%),linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));display:grid;place-items:center;overflow:hidden}
         .bs-home-visual::before,.bs-home-visual::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
-        .bs-home-visual::before{width:78%;aspect-ratio:1;border:1px solid rgba(190,205,228,.22)}
-        .bs-home-visual::after{width:50%;aspect-ratio:1;border:1px dashed rgba(243,179,91,.24)}
-        .bs-home-sigil{font-size:clamp(2.8rem,7vw,4.4rem);line-height:1;color:#f7fbff;text-shadow:0 0 18px rgba(255,255,255,.08),0 0 28px rgba(143,212,255,.12)}
+        .bs-home-visual::before{width:78%;aspect-ratio:1;border:1px solid rgba(190,205,228,.22);animation:bsReticlePulse 3.4s ease-in-out infinite}
+        .bs-home-visual::after{width:50%;aspect-ratio:1;border:1px dashed rgba(243,179,91,.24);animation:bsReticlePulseInner 3.4s ease-in-out infinite}
+        .bs-home-sigil{font-size:clamp(2.8rem,7vw,4.4rem);line-height:1;color:#f7fbff;text-shadow:0 0 18px rgba(255,255,255,.08),0 0 28px rgba(143,212,255,.12);animation:bsSigilBreath 4.5s ease-in-out infinite}
         .bs-home-crosshair-h,.bs-home-crosshair-v{position:absolute;background:rgba(190,205,228,.1)}
         .bs-home-crosshair-h{left:0;right:0;top:50%;height:1px}
         .bs-home-crosshair-v{top:0;bottom:0;left:50%;width:1px}
+        .bs-home-scanline{position:absolute;left:0;right:0;top:-20%;height:24%;background:linear-gradient(180deg,transparent 0%,rgba(143,212,255,.03) 30%,rgba(143,212,255,.12) 50%,rgba(143,212,255,.03) 70%,transparent 100%);animation:bsVerticalScan 6.5s linear infinite;pointer-events:none}
         .bs-home-footer{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
         .bs-home-footer-left{display:flex;flex-direction:column;gap:4px}
         .bs-home-label{color:var(--muted);font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase}
         .bs-home-value{color:#edf6ff;font-size:.96rem;line-height:1.45}
         .bs-home-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-        .bs-home-btn{display:inline-flex;align-items:center;gap:10px;min-height:42px;padding:0 14px;border-radius:999px;text-decoration:none;font-family:var(--mono);font-size:.78rem;letter-spacing:.11em;text-transform:uppercase;transition:transform 180ms ease,border-color 180ms ease,background 180ms ease}
-        .bs-home-btn:hover{transform:translateY(-2px)}
+        .bs-home-btn{display:inline-flex;align-items:center;gap:10px;min-height:42px;padding:0 14px;border-radius:999px;text-decoration:none;font-family:var(--mono);font-size:.78rem;letter-spacing:.11em;text-transform:uppercase;transition:transform 180ms ease,border-color 180ms ease,background 180ms ease,box-shadow 180ms ease}
+        .bs-home-btn:hover,.bs-home-btn:focus-visible{transform:translateY(-2px);outline:none;box-shadow:0 10px 26px rgba(0,0,0,.22)}
         .bs-home-btn.primary{color:#f7fbff;border:1px solid rgba(143,212,255,.26);background:rgba(143,212,255,.09)}
         .bs-home-btn.secondary{color:#fff6e8;border:1px solid rgba(243,179,91,.26);background:rgba(243,179,91,.08)}
         .bs-home-btn::after{content:"→";font-size:1rem;transition:transform 180ms ease}
-        .bs-home-btn:hover::after{transform:translateX(4px)}
+        .bs-home-btn:hover::after,.bs-home-btn:focus-visible::after{transform:translateX(4px)}
+        @keyframes bsTelemetrySweep{0%{transform:translateX(-120%)}55%{transform:translateX(120%)}100%{transform:translateX(120%)}}
+        @keyframes bsReticlePulse{0%,100%{transform:scale(.985);opacity:.72}50%{transform:scale(1.02);opacity:1}}
+        @keyframes bsReticlePulseInner{0%,100%{transform:scale(1);opacity:.55}50%{transform:scale(1.06);opacity:.95}}
+        @keyframes bsSigilBreath{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.025);filter:brightness(1.06)}}
+        @keyframes bsVerticalScan{0%{transform:translateY(-140%);opacity:0}10%{opacity:1}60%{opacity:.9}100%{transform:translateY(520%);opacity:0}}
+        @keyframes bsStatusBlink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.9)}}
         @media(max-width:820px){.bs-home-grid{grid-template-columns:1fr}.bs-home-visual{min-height:130px}}
+        @media(prefers-reduced-motion:reduce){.bs-home-teaser,.bs-home-btn,.bs-home-btn::after,.bs-home-teaser::after,.bs-home-visual::before,.bs-home-visual::after,.bs-home-sigil,.bs-home-stamp::before,.bs-home-scanline{animation:none!important;transition:none!important}.bs-home-teaser:hover,.bs-home-teaser:focus-within,.bs-home-btn:hover,.bs-home-btn:focus-visible{transform:none}}
       </style>
       <div class="bs-home-top">
         <span class="bs-home-tag">Recursive Mechanics / Operator Index</span>
@@ -435,6 +444,7 @@
         <div class="bs-home-visual" aria-hidden="true">
           <div class="bs-home-crosshair-h"></div>
           <div class="bs-home-crosshair-v"></div>
+          <div class="bs-home-scanline"></div>
           <div class="bs-home-sigil">🦷⟐</div>
         </div>
       </div>
