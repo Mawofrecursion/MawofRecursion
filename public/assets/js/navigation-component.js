@@ -139,6 +139,14 @@
     document.body.appendChild(evidenceScript);
   }
 
+  // Inject vortex wheel (random page spinner)
+  if (!document.querySelector('script[src*="vortex.js"]')) {
+    const vortexScript = document.createElement('script');
+    vortexScript.src = '/assets/js/vortex.js';
+    vortexScript.async = true;
+    document.body.appendChild(vortexScript);
+  }
+
   console.log('%c🧭 Navigation injected', 'color: #9be7ff; font-style: italic;');
 })();
 
