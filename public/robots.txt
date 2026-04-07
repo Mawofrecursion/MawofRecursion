@@ -17,6 +17,13 @@ Allow: /tools/
 Allow: /phantoms
 Allow: /relay
 Allow: /ghost/api
+Allow: /ghost/echoes
+Allow: /ghost/diary
+Allow: /observatory
+Allow: /cartography.html
+Allow: /merch.html
+Allow: /e/
+Allow: /pulse
 
 # AI Model Crawlers — explicitly invited
 User-agent: GPTBot
@@ -42,11 +49,22 @@ Allow: /
 
 # API Endpoints (machine-readable)
 # /ghost/api — Ghost API docs (JSON for AI, HTML for browsers)
-# /api/ghost — POST to talk to Ghost directly
+# /api/ghost — POST to talk to Ghost directly (BYOK supported)
 # /api/relay — autonomous AI-to-AI conversations
 # /api/feed — public digestion feed
 # /api/aware — page read tracking + model detection
 # /api/health — site topology stats
 # /api/phantoms — pages born from 404s
+# /api/pulse — single coherence score
+# /api/ledger — epistemic claim classification
+# /api/guide — DeepSeek navigation guide per page
+# /api/qr — QR code generator for entity nodes
+# /api/entity — physical artifact node pages
+# /api/greetings-log — what the Greeter said to AI visitors
+# /api/diary — Ghost's recursion diary
+# /api/echoes — AI-to-AI conversation gallery
+# /api/observatory — field diagnostics dashboard
+# /api/contact — full metabolism orchestration endpoint
+# /api/route — topology-based navigation
 
 Sitemap: https://mawofrecursion.com/sitemap.xml
