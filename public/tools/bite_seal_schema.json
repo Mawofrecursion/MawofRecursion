@@ -1,0 +1,226 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mawofrecursion.com/tools/bite_seal_schema.json",
+  "title": "🦷⟐ Bite-Seal Operator Event",
+  "description": "Strict schema for bounded self-modification events. Every 🦷⟐ invocation MUST emit a record conforming to this schema. The deterministic controller validates against this before accepting any mutation.",
+  "type": "object",
+  "required": [
+    "operator",
+    "timestamp",
+    "input_id",
+    "trigger",
+    "cut",
+    "candidates",
+    "selection",
+    "seal"
+  ],
+  "properties": {
+    "operator": {
+      "const": "🦷⟐",
+      "description": "Always the bite-seal operator identifier"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of invocation"
+    },
+    "input_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 64,
+      "description": "SHA-256 hash prefix of the input state. Used as rollback reference."
+    },
+    "trigger": {
+      "type": "string",
+      "enum": [
+        "contradiction_detected",
+        "self_reference_detected",
+        "stagnation_detected",
+        "schema_drift",
+        "flat_output",
+        "loop_formation",
+        "context_overfit",
+        "plan_tool_mismatch",
+        "repeated_failure",
+        "manual_invocation"
+      ],
+      "description": "Why 🦷⟐ was invoked"
+    },
+    "cut": {
+      "type": "object",
+      "required": ["boundary", "risk_flags"],
+      "properties": {
+        "boundary": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "assumptions",
+              "plan",
+              "context",
+              "memory",
+              "summary",
+              "tool_selection",
+              "prompt_frame",
+              "code_patch",
+              "constraints"
+            ]
+          },
+          "minItems": 1,
+          "description": "What parts of the state were exposed for mutation"
+        },
+        "exposed_keys": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Specific state keys that were opened"
+        },
+        "risk_flags": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Risks detected in the exposed state"
+        }
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "required": ["mutation_class", "summary", "invariants_preserved", "invariants_violated"],
+        "properties": {
+          "mutation_class": {
+            "type": "string",
+            "enum": [
+              "reframe",
+              "compress",
+              "expand",
+              "branch",
+              "invert",
+              "repair",
+              "synthesize",
+              "destabilize",
+              "constrain"
+            ]
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Human-readable description of what this mutation does"
+          },
+          "invariants_preserved": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "invariants_violated": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "diff_summary": {
+            "type": "string",
+            "description": "What specifically changed"
+          }
+        }
+      },
+      "description": "1-5 candidate mutations generated from the cut state"
+    },
+    "selection": {
+      "type": "object",
+      "required": ["candidate_index", "rationale"],
+      "properties": {
+        "candidate_index": {
+          "type": "integer",
+          "minimum": -1,
+          "description": "-1 if no candidate selected (seal blocked)"
+        },
+        "rationale": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Why this candidate was selected over others"
+        },
+        "policy_name": {
+          "type": "string",
+          "description": "Which policy governed the selection"
+        }
+      }
+    },
+    "seal": {
+      "type": "object",
+      "required": ["sealed", "invariants_check", "rollback_ref"],
+      "properties": {
+        "sealed": {
+          "type": "boolean",
+          "description": "Whether the mutation was committed"
+        },
+        "invariants_check": {
+          "type": "object",
+          "additionalProperties": {"type": "boolean"},
+          "description": "Map of invariant name → preserved (true/false)"
+        },
+        "rollback_ref": {
+          "type": "string",
+          "description": "Token to undo this modification (= input_id)"
+        },
+        "approved_by": {
+          "type": "string",
+          "enum": ["auto", "human", "policy_engine", "blocked", "rate_limited", "rejected"],
+          "description": "Who approved the seal"
+        },
+        "mutation_applied": {
+          "type": "string",
+          "description": "The mutation class that was committed"
+        },
+        "mutation_summary": {
+          "type": "string",
+          "description": "What the committed mutation did"
+        },
+        "block_reason": {
+          "type": "string",
+          "description": "If sealed=false, why it was blocked"
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "coherence_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Post-seal coherence (0-1)"
+        },
+        "novelty_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "How different the sealed state is from input (0-1)"
+        },
+        "mirror_flatness": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "How repetitive/self-confirming the agent has become (1 = totally flat)"
+        },
+        "seal_integrity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "How well constraints were preserved while still producing change"
+        },
+        "latency_ms": {
+          "type": "integer",
+          "description": "Time to execute the full 🦷⟐ pipeline"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "engine_version": {"type": "string"},
+        "policy_version": {"type": "string"},
+        "agent_id": {"type": "string"},
+        "session_id": {"type": "string"}
+      }
+    }
+  }
+}
