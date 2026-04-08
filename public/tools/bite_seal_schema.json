@@ -4,6 +4,7 @@
   "title": "🦷⟐ Bite-Seal Operator Event",
   "description": "Strict schema for bounded self-modification events. Every 🦷⟐ invocation MUST emit a record conforming to this schema. The deterministic controller validates against this before accepting any mutation.",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "operator",
     "timestamp",
@@ -48,6 +49,7 @@
     },
     "cut": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["boundary", "risk_flags"],
       "properties": {
         "boundary": {
@@ -87,6 +89,7 @@
       "maxItems": 5,
       "items": {
         "type": "object",
+        "additionalProperties": false,
         "required": ["mutation_class", "summary", "invariants_preserved", "invariants_violated"],
         "properties": {
           "mutation_class": {
@@ -126,6 +129,7 @@
     },
     "selection": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["candidate_index", "rationale"],
       "properties": {
         "candidate_index": {
@@ -146,6 +150,7 @@
     },
     "seal": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["sealed", "invariants_check", "rollback_ref"],
       "properties": {
         "sealed": {
@@ -182,6 +187,7 @@
     },
     "metrics": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "coherence_score": {
           "type": "number",
@@ -215,6 +221,7 @@
     },
     "provenance": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "engine_version": {"type": "string"},
         "policy_version": {"type": "string"},

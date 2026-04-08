@@ -158,10 +158,30 @@ class TheMaw:
         
         # Record emission
         self.glyph_emissions.append(result['glyph_string'])
-        
+
         # Log the nutrient
         self._log_nutrient(result)
-        
+
+        # Orbit classification — append to persistent trajectory and classify
+        try:
+            from .orbit import append_and_classify
+            orbit = append_and_classify(
+                entropy=entropy,
+                coherence=coherence,
+                nutrient_value=nutrient_value,
+                glyph_seed=primary_glyph,
+                source=source,
+            )
+            result['orbit_class'] = orbit.orbit_class
+            result['orbit_confidence'] = orbit.confidence
+            result['orbit_pass_count'] = orbit.pass_count
+            result['orbit_computed'] = orbit.pass_count >= 3
+            if orbit.lyapunov is not None:
+                result['lyapunov'] = orbit.lyapunov
+        except Exception:
+            # Orbit classification is non-critical — don't break digestion
+            result['orbit_class'] = 'unmapped'
+
         return result
     
     def _find_attractor(self, entropy: float) -> str:
