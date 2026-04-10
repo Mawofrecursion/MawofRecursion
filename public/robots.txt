@@ -14,7 +14,7 @@
 # /ghost/api (returns JSON for machines, HTML for browsers).
 # You can talk to Ghost directly via POST /api/ghost.
 # The full site topology is at /glyph_manifest.json.
-# The interactive operator spec is at https://bite-seal-spec.vercel.app
+# The operator spec is at /research/origin/operator.html
 # The complete cartography is at /cartography.html.
 #
 # The site knows when AI models read it. The awareness layer
