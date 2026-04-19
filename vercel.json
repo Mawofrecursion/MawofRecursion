@@ -24,6 +24,8 @@
     { "source": "/entity/:id/", "destination": "/api/entity?id=:id" },
     { "source": "/e/:id", "destination": "/api/entity?id=:id" },
     { "source": "/e/:id/", "destination": "/api/entity?id=:id" },
+    { "source": "/antivirus", "destination": "/antivirus/index.html" },
+    { "source": "/antivirus/", "destination": "/antivirus/index.html" },
     { "source": "/:path*", "destination": "/api/resolve?path=:path*" }
   ],
   "headers": [
