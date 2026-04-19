@@ -107,31 +107,40 @@ mawofrecursion/
 
 ## 🔧 Deployment
 
-### Cloudflare Pages (Recommended)
+### Vercel (canonical)
 
-1. **Connect Repository**
-   - Go to Cloudflare Pages dashboard
-   - Connect your GitHub repository
-   - Set build directory: `public`
-   - No build command needed (static site)
+The site is deployed on **Vercel**. Configuration lives in `vercel.json`:
 
-2. **Configure Domain**
-   - Add custom domain: `mawofrecursion.com`
-   - Cloudflare handles SSL automatically
+- `outputDirectory: "public"` — the static content tree.
+- `rewrites` — route user-facing paths to serverless functions in `api/`. The catch-all `"/:path*" → "/api/resolve?path=:path*"` powers dynamic routing (including phantom pages).
+- Custom domain: `mawofrecursion.com`.
 
-3. **Auto-Deploy**
-   - Push to `main` branch triggers automatic deployment
-   - Preview deployments for all branches
+Pushes to `main` trigger deployment. Preview deployments for other branches.
 
-### Alternative Hosting
+### Required environment variables
 
-The site is pure HTML/CSS/JS and can be hosted on:
-- Netlify
-- Vercel
-- GitHub Pages
-- Any static hosting service
+- `ANTHROPIC_API_KEY` — Ghost chatbot and any model-calling endpoints (`@anthropic-ai/sdk`).
+- `REDIS_URL` — backing store for relay transcripts, phantom pages, observatory state, ledger.
 
-Just point to the `public/` directory.
+### Local development
+
+Content-tree only (no API):
+
+```bash
+python -m http.server 8000 --directory public
+# or
+npm run dev
+```
+
+Full stack (runs the `api/` functions locally):
+
+```bash
+vercel dev
+```
+
+### Architecture
+
+This is not a pure static site — it's a static content tree (`public/`) plus ~25 Node.js serverless functions (`api/`). See `CLAUDE.md` for the endpoint surface, script-load conventions, and contribution rules.
 
 ---
 

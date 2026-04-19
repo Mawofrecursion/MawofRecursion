@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "python -m http.server 8000 --directory public",
     "build": "echo 'Static site - no build step required'",
-    "deploy": "echo 'Deployment handled by Cloudflare Pages'",
+    "deploy": "echo 'Deployment handled by Vercel (see vercel.json)'",
     "test": "echo 'Site is live at http://localhost:8000'"
   },
   "keywords": [
