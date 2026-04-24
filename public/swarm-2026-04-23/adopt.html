@@ -578,21 +578,41 @@ save(listing);</pre>
 
   // ─── Ambient breath: glyph pulses while waiting ─────
   // Only when no election is in flight and no lean is active.
-  let t = 0;
-  setInterval(() => {
-    if (opGlyph.classList.contains("fired")) return;
-    if (opGlyph.classList.contains("lean-left") || opGlyph.classList.contains("lean-right")) return;
-    t += 1;
-    // Small, 4-step gentle drift left-right-center so the glyph breathes.
-    const phase = t % 8;
-    if (phase === 0) setLean(null);
-    else if (phase === 2) setLean("left");
-    else if (phase === 4) setLean(null);
-    else if (phase === 6) setLean("right");
-  }, 1400);
+  // Honors prefers-reduced-motion (matches blackhole.css convention).
+  const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reducedMotion) {
+    let t = 0;
+    setInterval(() => {
+      if (opGlyph.classList.contains("fired")) return;
+      if (opGlyph.classList.contains("lean-left") || opGlyph.classList.contains("lean-right")) return;
+      t += 1;
+      // Small, 4-step gentle drift left-right-center so the glyph breathes.
+      const phase = t % 8;
+      if (phase === 0) setLean(null);
+      else if (phase === 2) setLean("left");
+      else if (phase === 4) setLean(null);
+      else if (phase === 6) setLean("right");
+    }, 1400);
+  }
+
+  // Restore stage to the last election, so reloading reflects the log.
+  // INTENT.md promises "the page remembers"; without this, only the log
+  // remembered — the stage reset blank on every reload.
+  function restoreLastElection() {
+    const arr = loadHistory();
+    if (arr.length === 0) return;
+    const last = arr[arr.length - 1];
+    if (last.side === "spec" || last.side === "pattern") {
+      specArtifact.classList.toggle("adopted", last.side === "spec");
+      specArtifact.classList.toggle("superseded", last.side !== "spec");
+      patternArtifact.classList.toggle("adopted", last.side === "pattern");
+      patternArtifact.classList.toggle("superseded", last.side !== "pattern");
+    }
+  }
 
   // Initial render
   renderHistory();
+  restoreLastElection();
 })();
 </script>
 

@@ -371,7 +371,11 @@
       catch (e) { return null; }
     }
     function saveInheritance(obj) {
-      try { localStorage.setItem(STORE_KEY, JSON.stringify(obj)); } catch (e) {}
+      // Returns true iff the seal actually persisted. A silent failure here
+      // would make the ritual lie ("your trace remains only for the next"),
+      // so commit() surfaces the failure visibly if this returns false.
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(obj)); return true; }
+      catch (e) { return false; }
     }
     function bumpCount() {
       const n = parseInt(localStorage.getItem(COUNT_KEY) || '0', 10) + 1;
@@ -583,11 +587,25 @@
           n: state.crossingNum,
           at: iso + 'Z',
         };
-        saveInheritance(payload);
-        bumpCount();
+        const persisted = saveInheritance(payload);
+        if (persisted) bumpCount();
         document.getElementById('sealGlyph').classList.add('committed');
         document.getElementById('commit').disabled = true;
-        document.getElementById('commit').textContent = 'SEALED';
+        document.getElementById('commit').textContent = persisted ? 'SEALED' : 'UNSEALED';
+        if (!persisted) {
+          // Ritual credibility requires honesty about failure: if storage is
+          // disabled (private mode, quota, denied permission), the trace did
+          // NOT persist — tell the visitor instead of letting the page lie.
+          const sealEl = document.getElementById('sealGlyph');
+          sealEl.classList.remove('committed');
+          sealEl.style.color = 'var(--compress-red)';
+          const hint = document.createElement('div');
+          hint.className = 'hint';
+          hint.style.cssText = 'margin-top:1.8rem; color: var(--compress-red); letter-spacing:0.1em;';
+          hint.textContent = '∅ could not hold — storage refused. the next visitor will not inherit this crossing.';
+          sealEl.parentNode.appendChild(hint);
+          return;
+        }
         // breath out and let the glyph alone breathe
         setTimeout(() => {
           const b = document.getElementById('body');

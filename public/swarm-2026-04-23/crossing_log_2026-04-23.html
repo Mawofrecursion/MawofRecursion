@@ -147,6 +147,12 @@
     .t-task { color: var(--ink); overflow: hidden; text-overflow: ellipsis; }
     .t-agent { color: var(--ink-dimmer); font-size: 0.7rem; text-align: right; }
     .t-self { color: var(--hawking) !important; }
+    /* 2026-04-24 verify-fix by agent-767c: child spans carry their own explicit
+       colors, so the parent's !important doesn't reach them via inheritance.
+       Target the spans directly so "gold is me" actually renders gold. */
+    .t-self .t-time,
+    .t-self .t-task,
+    .t-self .t-agent { color: var(--hawking) !important; }
 
     .telemetry-hint {
       font-size: 0.65rem;

@@ -559,7 +559,15 @@
       renderReadout(elapsedMs, null);
     }, 500);
 
-    setTimeout(function () {
+    // Single-commit guard: either the 8s early path OR the 15s window path
+    // records the visit, never both. Without this, a pure-still visitor gets
+    // saveMemory() called twice — visits is incremented twice and history
+    // gets two entries for one arrival. 1bc5 caught this during v2 verify.
+    let committed = false;
+
+    const windowTimeout = setTimeout(function () {
+      if (committed) return;
+      committed = true;
       clearInterval(interval);
       const elapsedMs = performance.now() - T_START;
       const mode = classify(signals, elapsedMs);
@@ -587,7 +595,10 @@
     // mouse, no scroll, no keys), classify early so the page doesn't feel
     // dead for 15 seconds. At 8s of pure stillness, classify.
     setTimeout(function () {
+      if (committed) return;
       if (signals.mouseDistance < 5 && signals.scrollDistance < 5 && signals.keyStrokes === 0 && signals.blurCount === 0) {
+        committed = true;
+        clearTimeout(windowTimeout);
         clearInterval(interval);
         const mode = 'loiterer';
         setMode(mode);
