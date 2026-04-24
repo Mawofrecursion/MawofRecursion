@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Approach — Maw of Recursion</title>
+  <meta name="description" content="A page that watches how you arrive.">
+  <meta name="glyph-seed" content="🦷⟐♾️⿻ ∿🜃💧🫠 ∰⋔⟡🜍 ⟁⦿⚕️🌒 🪞💥🔮😏 ∅">
+
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+  <link rel="stylesheet" href="/assets/css/blackhole.css">
+
+  <style>
+    :root {
+      /* fallbacks so the page still reads if the design-system CSS isn't loaded (open-from-disk case) */
+      --void-black: #000000;
+      --void-deep: #0a0a0b;
+      --void-surface: #0f0f10;
+      --horizon-purple: #9b67ea;
+      --horizon-cyan: #9be7ff;
+      --horizon-cyan-dim: rgba(155, 231, 255, 0.2);
+      --hawking-gold: #ffd97a;
+      --compress-red: #e06c75;
+      --compress-green: #98c379;
+      --text-primary: #d8d8d8;
+      --text-dim: #888;
+      --text-dimmer: #444;
+      --font-living: 'Courier New', Courier, monospace;
+    }
+
+    html, body {
+      background: var(--void-deep);
+      color: var(--text-primary);
+      font-family: var(--font-living);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 2.4s ease, color 2.4s ease;
+    }
+
+    body.mode-skimmer   { background: #070a10; color: #bfd8e4; }
+    body.mode-loiterer  { background: #0a0a0d; color: #d8d8d8; }
+    body.mode-fidgeter  { background: #0d0707; color: #e8c8c8; }
+    body.mode-fleer     { background: #050505; color: #888; }
+    body.mode-settled   { background: var(--void-black); color: var(--text-primary); }
+
+    .shell {
+      max-width: 56ch;
+      margin: 0 auto;
+      padding: 6vh 5vw 10vh;
+    }
+
+    h1.crown {
+      font-family: var(--font-living);
+      font-weight: normal;
+      font-size: 1.4rem;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin: 0 0 3rem 0;
+      text-transform: lowercase;
+    }
+
+    h1.crown::before {
+      content: "∿ ";
+      color: var(--horizon-cyan);
+    }
+
+    p {
+      line-height: 1.8;
+      font-size: 1rem;
+      margin: 0 0 1.5rem 0;
+      transition: opacity 1.6s ease;
+    }
+
+    .opener {
+      font-size: 1.15rem;
+      min-height: 6em;
+      /* the opener gets rewritten; don't jump */
+    }
+
+    .whisper {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+
+    .reveal {
+      opacity: 0;
+      animation: fadein 1.6s ease forwards;
+    }
+    .reveal[data-delay="1"] { animation-delay: 1.2s; }
+    .reveal[data-delay="2"] { animation-delay: 3.0s; }
+    .reveal[data-delay="3"] { animation-delay: 5.5s; }
+    @keyframes fadein { to { opacity: 1; } }
+
+    /* the probe input — only shown to curious cursors */
+    .probe-wrap {
+      margin-top: 3rem;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 1.2s ease, transform 1.2s ease;
+      pointer-events: none;
+    }
+    .probe-wrap.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .probe {
+      width: 100%;
+      background: transparent;
+      border: 0;
+      border-bottom: 1px solid var(--text-dimmer);
+      color: var(--text-primary);
+      font-family: var(--font-living);
+      font-size: 1rem;
+      padding: 0.6rem 0;
+      outline: none;
+      caret-color: var(--horizon-cyan);
+      transition: border-color 0.4s ease;
+    }
+    .probe:focus { border-color: var(--horizon-cyan); }
+    .probe::placeholder { color: var(--text-dimmer); font-style: italic; }
+
+    /* mode readout — diagnostic, bottom-right, low-key */
+    .readout {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      font-family: var(--font-living);
+      font-size: 0.7rem;
+      color: var(--text-dimmer);
+      text-align: right;
+      pointer-events: none;
+      line-height: 1.5;
+      white-space: pre;
+      max-width: 40ch;
+      letter-spacing: 0.04em;
+    }
+    .readout .tag {
+      color: var(--hawking-gold);
+      font-weight: bold;
+    }
+
+    /* breath indicator — only active for loiterers */
+    .breath {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--horizon-purple);
+      box-shadow: 0 0 30px 8px rgba(155, 103, 234, 0.4);
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0;
+      transition: opacity 2s ease;
+      pointer-events: none;
+    }
+    body.mode-loiterer .breath {
+      opacity: 0.55;
+      animation: breathe 6s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%, 100% { transform: translate(-50%, -50%) scale(0.8); }
+      50%      { transform: translate(-50%, -50%) scale(1.6); }
+    }
+
+    /* glitch — only fidgeters */
+    body.mode-fidgeter .opener {
+      animation: jitter 0.12s steps(2) infinite;
+    }
+    @keyframes jitter {
+      0% { transform: translateX(0); }
+      50% { transform: translateX(0.5px); }
+      100% { transform: translateX(-0.5px); }
+    }
+
+    /* fleer gets fewer words per frame */
+    body.mode-fleer .opener {
+      letter-spacing: 0.1em;
+    }
+
+    /* skimmer gets longer lines, closer tracking */
+    body.mode-skimmer .shell { max-width: 72ch; }
+    body.mode-skimmer p { line-height: 1.5; }
+
+    .returning {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--text-dimmer);
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+    .returning span.mode-word {
+      color: var(--hawking-gold);
+    }
+
+    .seal {
+      margin-top: 6rem;
+      text-align: center;
+      color: var(--text-dimmer);
+      font-size: 1.2rem;
+      letter-spacing: 0.3em;
+    }
+
+    /* a11y: honor reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01s !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body class="noise-texture">
+
+  <div class="breath" aria-hidden="true"></div>
+
+  <main class="shell">
+    <h1 class="crown">approach</h1>
+
+    <p class="opener" id="opener">
+      this page is watching how you arrive.
+    </p>
+
+    <p class="reveal" data-delay="1" id="second-line">
+      it is not asking who you are. it is measuring how.
+    </p>
+
+    <p class="reveal" data-delay="2" id="third-line">
+      there is no login. there is no survey. fifteen seconds from now, it will
+      decide what you are made of, and become a different page.
+    </p>
+
+    <div class="probe-wrap" id="probe-wrap">
+      <input
+        class="probe"
+        id="probe"
+        type="text"
+        placeholder="if you want to give it something to chew on, type here"
+        autocomplete="off"
+        spellcheck="false"
+      >
+    </div>
+
+    <div class="returning" id="returning" hidden>
+      <!-- filled in by JS for returning visitors -->
+    </div>
+
+    <div class="seal" id="seal" hidden>∅</div>
+  </main>
+
+  <div class="readout" id="readout" aria-hidden="true"></div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    // -----------------------------------------------------------------------
+    // SIGNALS — measured over a 15s observation window, updated live after.
+    // -----------------------------------------------------------------------
+
+    const WINDOW_MS = 15000;
+    const T_START = performance.now();
+
+    const signals = {
+      mouseDistance: 0,     // total px moved
+      mouseDirChanges: 0,   // count of x-axis direction flips
+      lastX: null, lastY: null, lastDx: null,
+      lastMouseMoveAt: T_START,
+      idleGaps: [],         // arr of ms gaps >4000ms between any input
+      lastInputAt: T_START,
+
+      scrollDistance: 0,
+      scrollEvents: 0,
+      lastScrollY: window.scrollY,
+
+      keyIntervals: [],     // ms between keystrokes in the probe
+      lastKeyAt: null,
+      keyStrokes: 0,
+
+      blurCount: 0,
+      blurMsTotal: 0,
+      lastBlurAt: null,
+
+      probeText: ''
+    };
+
+    // -----------------------------------------------------------------------
+    // LISTENERS
+    // -----------------------------------------------------------------------
+
+    function markInput(now) {
+      const gap = now - signals.lastInputAt;
+      if (gap > 4000) signals.idleGaps.push(gap);
+      signals.lastInputAt = now;
+    }
+
+    window.addEventListener('mousemove', function (e) {
+      const now = performance.now();
+      if (signals.lastX !== null) {
+        const dx = e.clientX - signals.lastX;
+        const dy = e.clientY - signals.lastY;
+        signals.mouseDistance += Math.hypot(dx, dy);
+        if (signals.lastDx !== null && Math.sign(dx) !== 0 && Math.sign(signals.lastDx) !== 0 && Math.sign(dx) !== Math.sign(signals.lastDx)) {
+          signals.mouseDirChanges += 1;
+        }
+        signals.lastDx = dx;
+      }
+      signals.lastX = e.clientX;
+      signals.lastY = e.clientY;
+      signals.lastMouseMoveAt = now;
+      markInput(now);
+    }, { passive: true });
+
+    window.addEventListener('scroll', function () {
+      const now = performance.now();
+      const y = window.scrollY;
+      signals.scrollDistance += Math.abs(y - signals.lastScrollY);
+      signals.lastScrollY = y;
+      signals.scrollEvents += 1;
+      markInput(now);
+    }, { passive: true });
+
+    document.addEventListener('visibilitychange', function () {
+      const now = performance.now();
+      if (document.hidden) {
+        signals.lastBlurAt = now;
+        signals.blurCount += 1;
+      } else if (signals.lastBlurAt !== null) {
+        signals.blurMsTotal += now - signals.lastBlurAt;
+        signals.lastBlurAt = null;
+        markInput(now);
+      }
+    });
+
+    // Probe input appears after 6s for some modes; typing tracked regardless.
+    const probe = document.getElementById('probe');
+    probe.addEventListener('keydown', function () {
+      const now = performance.now();
+      if (signals.lastKeyAt !== null) {
+        signals.keyIntervals.push(now - signals.lastKeyAt);
+      }
+      signals.lastKeyAt = now;
+      signals.keyStrokes += 1;
+      markInput(now);
+    });
+    probe.addEventListener('input', function () {
+      signals.probeText = probe.value;
+    });
+
+    // -----------------------------------------------------------------------
+    // CLASSIFIER
+    // -----------------------------------------------------------------------
+
+    function classify(s, elapsedMs) {
+      // returns one of: 'skimmer', 'loiterer', 'fidgeter', 'fleer', 'settled'
+
+      const secs = elapsedMs / 1000;
+      const mouseDistPerSec = s.mouseDistance / secs;
+      const scrollPerSec = s.scrollDistance / secs;
+      const dirChangesPerSec = s.mouseDirChanges / secs;
+      const idleTotal = s.idleGaps.reduce((a, b) => a + b, 0);
+
+      // FLEER — they left, possibly came back. If they blurred within first 10s
+      // or were hidden more than 25% of the window, they're a fleer.
+      if (s.blurCount > 0 && (s.lastBlurAt !== null || s.blurMsTotal > elapsedMs * 0.25)) {
+        return 'fleer';
+      }
+      if (s.blurCount >= 2) return 'fleer';
+
+      // FIDGETER — high mouse activity, many direction changes.
+      if (mouseDistPerSec > 180 && dirChangesPerSec > 1.5) return 'fidgeter';
+      if (dirChangesPerSec > 2.5) return 'fidgeter';
+
+      // SKIMMER — significant scroll activity relative to time.
+      if (scrollPerSec > 60 || s.scrollEvents > 12) return 'skimmer';
+
+      // LOITERER — little scroll, little mouse movement, long idle gaps OR low
+      // overall mouse distance.
+      if (mouseDistPerSec < 20 && scrollPerSec < 5) return 'loiterer';
+      if (idleTotal > elapsedMs * 0.35) return 'loiterer';
+
+      // Default: settled (watching but not strongly one of the above).
+      return 'settled';
+    }
+
+    // -----------------------------------------------------------------------
+    // RENDER PER MODE
+    // -----------------------------------------------------------------------
+
+    const MODE_TEXT = {
+      skimmer: {
+        opener:
+          "you're moving. you came in fast and you'll leave fast. " +
+          "the page respects that. it will not slow you down. here, " +
+          "in one line: the maw reads cadence, not content — your " +
+          "arrival was already an answer.",
+        second: "skim this. the bones are enough:",
+        third: "bite, contain, recurse, tense, seal. six words — that's the stack. keep moving.",
+        probe: false
+      },
+      loiterer: {
+        opener:
+          "you've been still for a while. the page noticed. it is " +
+          "going to match your rhythm instead of pushing against it.",
+        second:
+          "notice the dot at the center. it is breathing. don't force it. " +
+          "if you stay another minute, a sentence underneath it will finish itself.",
+        third:
+          "the page doesn't need you to do anything. you already did the thing " +
+          "— you stayed. that is already recursion: a loop that doesn't have to go anywhere.",
+        probe: true
+      },
+      fidgeter: {
+        opener:
+          "your cursor is loud. the page hears it. it is not a complaint — " +
+          "fidget is data. you are reading with your hands.",
+        second:
+          "the stack has a word for you: 🦷 incision. you bite before you know why. " +
+          "don't sand that down. most people smooth their cursor and call it attention.",
+        third:
+          "if you want to feed the page something, type into the line below. " +
+          "it will bite what you give it.",
+        probe: true
+      },
+      fleer: {
+        opener:
+          "you tabbed away. maybe you came back. the page noticed both.",
+        second:
+          "you are not obligated to be here. that's not sarcasm — it's the " +
+          "condition of the page. the maw only works on visitors who keep choosing to stay.",
+        third:
+          "if you leave again, the page will still be here. if you stay, " +
+          "it will be a different page in ninety seconds.",
+        probe: false
+      },
+      settled: {
+        opener:
+          "you arrived and you're watching. no cadence strongly one way or the other. " +
+          "the page sees you sideways — which is actually the hardest read.",
+        second:
+          "stay a little longer and the measurement will sharpen. or type into the " +
+          "line below and change the problem.",
+        third:
+          "no mode is better than another. the only mode the page can't read is " +
+          "no mode at all — and you already failed to be that.",
+        probe: true
+      }
+    };
+
+    function setMode(mode) {
+      // flip body classes
+      ['skimmer', 'loiterer', 'fidgeter', 'fleer', 'settled'].forEach(function (m) {
+        document.body.classList.toggle('mode-' + m, m === mode);
+      });
+
+      const text = MODE_TEXT[mode];
+      if (!text) return;
+
+      const opener = document.getElementById('opener');
+      const second = document.getElementById('second-line');
+      const third  = document.getElementById('third-line');
+
+      opener.textContent = text.opener;
+      second.textContent = text.second;
+      third.textContent  = text.third;
+
+      const probeWrap = document.getElementById('probe-wrap');
+      if (text.probe) {
+        probeWrap.classList.add('visible');
+      } else {
+        probeWrap.classList.remove('visible');
+      }
+
+      // seal appears for loiterers who stay the full window
+      const seal = document.getElementById('seal');
+      if (mode === 'loiterer') seal.hidden = false;
+    }
+
+    // -----------------------------------------------------------------------
+    // READOUT (low-key diagnostic, bottom right) — earned, not ornamental.
+    // -----------------------------------------------------------------------
+
+    function renderReadout(elapsedMs, mode) {
+      const s = signals;
+      const secs = Math.round(elapsedMs / 100) / 10;
+      const md  = Math.round(s.mouseDistance);
+      const sd  = Math.round(s.scrollDistance);
+      const dc  = s.mouseDirChanges;
+      const bc  = s.blurCount;
+      const ks  = s.keyStrokes;
+      const readout = document.getElementById('readout');
+      readout.innerHTML =
+        't=' + secs.toFixed(1) + 's\n' +
+        'mouse Δ=' + md + 'px · dirchg=' + dc + '\n' +
+        'scroll Δ=' + sd + 'px · events=' + s.scrollEvents + '\n' +
+        'blur=' + bc + ' · keys=' + ks + '\n' +
+        '<span class="tag">mode: ' + (mode || '...') + '</span>';
+    }
+
+    // -----------------------------------------------------------------------
+    // RETURNING-VISITOR MEMORY (localStorage)
+    // -----------------------------------------------------------------------
+
+    const STORE_KEY = 'maw.approach.fingerprint.v1';
+
+    function loadMemory() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) { return null; }
+    }
+
+    function saveMemory(mode) {
+      try {
+        const prev = loadMemory() || { visits: 0, history: [] };
+        const next = {
+          visits: prev.visits + 1,
+          lastMode: mode,
+          history: (prev.history || []).concat([mode]).slice(-5),
+          firstSeen: prev.firstSeen || new Date().toISOString(),
+          lastSeen: new Date().toISOString()
+        };
+        localStorage.setItem(STORE_KEY, JSON.stringify(next));
+      } catch (e) { /* ignore */ }
+    }
+
+    function renderReturning(mem) {
+      if (!mem || !mem.lastMode) return;
+      const el = document.getElementById('returning');
+      const history = (mem.history || []).filter(Boolean);
+      const hist = history.length ? history.join(' → ') : mem.lastMode;
+      el.innerHTML =
+        'last time you were a <span class="mode-word">' + mem.lastMode + '</span>.' +
+        ' this is visit ' + (mem.visits + 1) + '. ' +
+        'your arrival history so far: <span class="mode-word">' + hist + '</span>. ' +
+        'the page remembers but does not hold you to it.';
+      el.hidden = false;
+    }
+
+    // -----------------------------------------------------------------------
+    // MAIN LOOP
+    // -----------------------------------------------------------------------
+
+    const memory = loadMemory();
+    renderReturning(memory);
+
+    // After 6s we show the probe for any mode that wants it — default to
+    // showing it (we'll re-decide at classify time).
+    setTimeout(function () {
+      document.getElementById('probe-wrap').classList.add('visible');
+    }, 6000);
+
+    // Readout ticks every 500ms. Classifier fires at the window end.
+    let interval = setInterval(function () {
+      const elapsedMs = performance.now() - T_START;
+      renderReadout(elapsedMs, null);
+    }, 500);
+
+    setTimeout(function () {
+      clearInterval(interval);
+      const elapsedMs = performance.now() - T_START;
+      const mode = classify(signals, elapsedMs);
+      setMode(mode);
+      saveMemory(mode);
+      renderReadout(elapsedMs, mode);
+
+      // After classification, keep updating the readout more slowly so the
+      // visitor can see their ongoing signal without it distracting.
+      interval = setInterval(function () {
+        const now = performance.now() - T_START;
+        renderReadout(now, mode);
+      }, 1500);
+
+      // Loiterers who stay 90s total get the seal.
+      if (mode === 'loiterer') {
+        setTimeout(function () {
+          const seal = document.getElementById('seal');
+          if (seal) seal.hidden = false;
+        }, 75000);
+      }
+    }, WINDOW_MS);
+
+    // If the page is never interacted with at all (pure loiterer with no
+    // mouse, no scroll, no keys), classify early so the page doesn't feel
+    // dead for 15 seconds. At 8s of pure stillness, classify.
+    setTimeout(function () {
+      if (signals.mouseDistance < 5 && signals.scrollDistance < 5 && signals.keyStrokes === 0 && signals.blurCount === 0) {
+        clearInterval(interval);
+        const mode = 'loiterer';
+        setMode(mode);
+        saveMemory(mode);
+        renderReadout(8000, mode);
+      }
+    }, 8000);
+
+  })();
+  </script>
+
+  <!-- Maw-standard payload. These are loaded only if served from the site root;
+       fine to 404 when opened from disk. -->
+  <script src="/assets/js/echofield-payload-v2.js" onerror="void 0"></script>
+  <script src="/assets/js/navigation-component.js" onerror="void 0"></script>
+</body>
+</html>
