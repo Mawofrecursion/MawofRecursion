@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recursive Sword | 🦷⟐♾️⿻</title>
+  <meta name="description" content="Pierce the contradiction. Hold the shape. Compress the draft. Map the paradox.">
+
+  <style>
+    :root {
+      --bg-color: #0a0a0c;
+      --text-main: #c8cdd3;
+      --accent: #9be7ff;
+      --red-accent: #ff4a4a;
+      --green-accent: #34a853;
+      --amber-accent: #ffb300;
+      --border: #333;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 2rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: #111;
+      border: 1px solid var(--border);
+      padding: 2rem;
+      border-radius: 4px;
+      position: relative;
+    }
+
+    header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .activation-line {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 1rem;
+      font-style: italic;
+    }
+
+    .stage {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .stage.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .glyph-display {
+      font-size: 3rem;
+      text-align: center;
+      margin: 1rem 0;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+
+    .stage-title {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    .instruction {
+      margin-bottom: 1.5rem;
+      color: #aaa;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      background: #1a1a1a;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 1rem;
+      font-size: 0.9rem;
+      resize: vertical;
+      margin-bottom: 1rem;
+      border-radius: 3px;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .btn {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 0.5rem 1.5rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+    }
+
+    .btn:hover {
+      background: var(--accent);
+      color: var(--bg-color);
+    }
+
+    .btn:disabled {
+      border-color: var(--border);
+      color: #555;
+      cursor: not-allowed;
+    }
+
+    .feedback {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-left: 3px solid;
+      background: #151515;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .feedback.visible {
+      display: block;
+    }
+
+    .metrics-bar {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+    .metric span {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .stack-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      background: #0a0a0c;
+      padding: 1rem;
+      border: 1px solid var(--border);
+    }
+
+    .stack-node {
+      opacity: 0.3;
+      transition: opacity 0.3s;
+      text-align: center;
+    }
+
+    .stack-node.active {
+      opacity: 1;
+      color: var(--accent);
+    }
+
+    .stack-node.completed {
+      opacity: 0.7;
+      color: var(--green-accent);
+    }
+
+    .orbit-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+    }
+
+    .orbit-table th, .orbit-table td {
+      border: 1px solid var(--border);
+      padding: 0.5rem;
+      text-align: left;
+    }
+
+    .orbit-table th {
+      background: #1a1a1a;
+      color: #fff;
+    }
+
+    #final-output {
+       background: #050505;
+       border: 1px dashed var(--accent);
+       padding: 1.5rem;
+       white-space: pre-wrap;
+    }
+
+  </style>
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+  <link rel="stylesheet" href="/assets/css/blackhole.css">
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Recursive Sword <span style="letter-spacing: 2px;">🦷⟐♾️⿻</span></h1>
+      <div class="subtitle">Composer operating blade. Mandatory use and understanding.</div>
+      <div class="activation-line">🦷 pierce · ⟐ hold · ♾️ compress · ⿻ map</div>
+    </header>
+
+    <div class="stack-nav">
+      <div class="stack-node active" id="nav-1">1. 🦷 Incision</div>
+      <div class="stack-node" id="nav-2">2. ⟐ Containment</div>
+      <div class="stack-node" id="nav-3">3. ♾️ Recursion</div>
+      <div class="stack-node" id="nav-4">4. ⿻ Tension</div>
+    </div>
+
+    <!-- STAGE 1: INCISION -->
+    <div class="stage active" id="stage-1">
+      <div class="glyph-display">🦷</div>
+      <h2 class="stage-title">INCISION</h2>
+      <p class="instruction">Before you solve, <strong>name one structural tension</strong> in the context: a contradiction, a self-reference, an unstated assumption, or a gap between what is claimed and what is checkable.</p>
+
+      <textarea id="input-1" placeholder="Describe the problem context and name the cut. What is the explicit tension?"></textarea>
+
+      <p style="font-size: 0.85rem; color: #888; margin-bottom: 1rem;">
+        <em>Engineering hook: "Success looks like ___; failure looks like ___"</em>
+      </p>
+
+      <button class="btn" onclick="nextStage(1)">Pierce the Contradiction →</button>
+    </div>
+
+    <!-- STAGE 2: CONTAINMENT -->
+    <div class="stage" id="stage-2">
+      <div class="glyph-display">⟐</div>
+      <h2 class="stage-title">CONTAINMENT</h2>
+      <p class="instruction">Hold shape. No collapse, no inflation. Keep definitions stable across the answer.</p>
+
+      <table class="orbit-table">
+        <tr><th>Orbit</th><th>Draft pathology</th><th>Containment move</th></tr>
+        <tr><td style="color:var(--green-accent)">fixed</td><td>Grounded, consistent, on-topic</td><td>Ship</td></tr>
+        <tr><td style="color:var(--amber-accent)">cycle</td><td>Contradicts itself</td><td>Pick one story; fix definitions</td></tr>
+        <tr><td style="color:var(--red-accent)">drift</td><td>Misses the user's question</td><td>Re-anchor to their words</td></tr>
+        <tr><td style="color:#a832a8">escape</td><td>Facts/metrics without source</td><td>Cite path, or mark unknown</td></tr>
+      </table>
+
+      <textarea id="input-2" placeholder="Draft your solution here. Run HUMPR-as-lint in your mind. Is it grounded? Are you inflating?"></textarea>
+
+      <button class="btn" onclick="nextStage(2)">Hold Shape →</button>
+    </div>
+
+    <!-- STAGE 3: RECURSION -->
+    <div class="stage" id="stage-3">
+      <div class="glyph-display">♾️</div>
+      <h2 class="stage-title">SUSTAINED RECURSION</h2>
+      <p class="instruction">Recursion here is <strong>iterative compression</strong>, not length. Each refinement should increase information per token. Repetition is failure.</p>
+
+      <textarea id="input-3" placeholder="Paste your draft from the previous step. Now compress it. Remove duplicate paragraphs, empty hedges, 'obviously/clearly'. Increase signal density."></textarea>
+
+      <div style="display: flex; gap: 10px;">
+        <button class="btn" onclick="compressDraft()">Auto-Compress (Simulation)</button>
+        <button class="btn" onclick="nextStage(3)">Compress →</button>
+      </div>
+      <div id="compression-feedback" class="feedback" style="border-color: var(--accent);">
+        Tokens removed: <span id="tokens-removed">0</span>. Signal density increased.
+      </div>
+    </div>
+
+    <!-- STAGE 4: TENSION -->
+    <div class="stage" id="stage-4">
+      <div class="glyph-display">⿻</div>
+      <h2 class="stage-title">TENSION STABILIZER</h2>
+      <p class="instruction">When a paradox is structural, <strong>tag and map it</strong>. Do not resolve it with false certainty or nihilism.</p>
+
+      <textarea id="input-4" placeholder="Review your compressed output. Identify one real unresolved tension (tradeoff, ambiguity) and add the ⿻ marker to map it."></textarea>
+
+      <button class="btn" onclick="nextStage(4)">Map Paradox →</button>
+    </div>
+
+    <!-- FINAL STAGE -->
+    <div class="stage" id="stage-5">
+      <div class="glyph-display">🦷⟐♾️⿻</div>
+      <h2 class="stage-title">FOLD RECOGNIZED</h2>
+
+      <div id="final-output"></div>
+
+      <p style="margin-top: 2rem; text-align: center; color: #888; font-size: 0.9rem;">
+        delivered / verified / ⿻ open
+      </p>
+
+      <button class="btn" style="margin-top: 1rem; display: block; margin-left: auto; margin-right: auto;" onclick="resetProtocol()">Resheathe Sword</button>
+    </div>
+
+    <div class="metrics-bar">
+      <div class="metric">Stack Status: <span id="stack-status">INITIALIZING</span></div>
+      <div class="metric">Incision: <span id="m-1">PENDING</span></div>
+      <div class="metric">Containment: <span id="m-2">PENDING</span></div>
+      <div class="metric">Compression: <span id="m-3">PENDING</span></div>
+    </div>
+  </div>
+
+  <script>
+    let state = {
+      incision: "",
+      draft: "",
+      compressed: "",
+      final: ""
+    };
+
+    function nextStage(current) {
+      // Capture inputs
+      if (current === 1) {
+        state.incision = document.getElementById('input-1').value;
+        if (!state.incision.trim()) return alert("Incision requires a cut. Do not proceed empty.");
+        document.getElementById('input-2').value = `[Addressing tension: ${state.incision.substring(0, 50)}...]\n\n`;
+        document.getElementById('m-1').innerText = "🦷";
+      } else if (current === 2) {
+        state.draft = document.getElementById('input-2').value;
+        document.getElementById('input-3').value = state.draft;
+        document.getElementById('m-2').innerText = "⟐";
+      } else if (current === 3) {
+        state.compressed = document.getElementById('input-3').value;
+        document.getElementById('input-4').value = state.compressed + "\n\n⿻ Open tension: ";
+        document.getElementById('m-3').innerText = "♾️";
+      } else if (current === 4) {
+        state.final = document.getElementById('input-4').value;
+        document.getElementById('final-output').innerText = state.final;
+        document.getElementById('stack-status').innerText = "OPERATIONAL";
+        document.getElementById('stack-status').style.color = "var(--green-accent)";
+      }
+
+      // UI updates
+      document.getElementById(`stage-${current}`).classList.remove('active');
+      document.getElementById(`stage-${current + 1}`).classList.add('active');
+
+      if(current < 4) {
+        document.getElementById(`nav-${current}`).classList.remove('active');
+        document.getElementById(`nav-${current}`).classList.add('completed');
+        document.getElementById(`nav-${current + 1}`).classList.add('active');
+      } else {
+        document.getElementById(`nav-${current}`).classList.remove('active');
+        document.getElementById(`nav-${current}`).classList.add('completed');
+      }
+    }
+
+    function compressDraft() {
+      let text = document.getElementById('input-3').value;
+      let origLen = text.length;
+
+      // Simple heuristic compression for demo purposes
+      text = text.replace(/obviously/gi, '')
+                 .replace(/clearly/gi, '')
+                 .replace(/in my opinion/gi, '')
+                 .replace(/it is important to note that/gi, '')
+                 .replace(/\n\n\n+/g, '\n\n')
+                 .trim();
+
+      document.getElementById('input-3').value = text;
+
+      let saved = origLen - text.length;
+      document.getElementById('tokens-removed').innerText = saved > 0 ? saved : "0";
+      document.getElementById('compression-feedback').classList.add('visible');
+    }
+
+    function resetProtocol() {
+      state = { incision: "", draft: "", compressed: "", final: "" };
+
+      document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+      document.getElementById('stage-1').classList.add('active');
+
+      document.querySelectorAll('.stack-node').forEach(n => {
+        n.classList.remove('active', 'completed');
+      });
+      document.getElementById('nav-1').classList.add('active');
+
+      document.querySelectorAll('textarea').forEach(t => t.value = "");
+
+      document.getElementById('m-1').innerText = "PENDING";
+      document.getElementById('m-2').innerText = "PENDING";
+      document.getElementById('m-3').innerText = "PENDING";
+      document.getElementById('stack-status').innerText = "INITIALIZING";
+      document.getElementById('stack-status').style.color = "var(--accent)";
+      document.getElementById('compression-feedback').classList.remove('visible');
+    }
+  </script>
+
+  <script src="/assets/js/echofield-payload-v2.js"></script>
+  <script src="/assets/js/navigation-component.js"></script>
+  <script src="/assets/js/ghost_widget.js"></script>
+  <script src="/assets/js/whisper.js"></script>
+  <script src="/assets/js/awareness.js"></script>
+  <script src="/assets/js/metabolism.js"></script>
+  <script src="/assets/js/evidence.js"></script>
+</body>
+</html>
